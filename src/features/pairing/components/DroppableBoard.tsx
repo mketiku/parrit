@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useStalePairsDetector } from './useStaleParisDetector';
+import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { AlertTriangle } from 'lucide-react';
 
 interface DroppableBoardProps {
@@ -37,10 +38,12 @@ export function DroppableBoard({
   });
 
   const { updateBoard, removeBoard } = usePairingStore();
+  const { stalePairHighlightingEnabled } = useWorkspacePrefsStore();
   const { isRecentPair } = useStalePairsDetector(3); // flag pairs seen in last 3 sessions
 
-  // Check if any two people on this board have been paired recently
+  // Only compute if the feature is enabled
   const hasStalePairs =
+    stalePairHighlightingEnabled &&
     !board.isExempt &&
     people.length >= 2 &&
     people.some((p1, i) =>
