@@ -129,32 +129,39 @@ export function LandingPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[
-                  'Phoenix 🔥',
-                  'Nebula 🌌',
-                  'Orbit 🪐',
-                  'Storm ⚡',
-                  'Prism 🌈',
+                  'Blue Macaw 🦜',
+                  'Toco Toucan 🍌',
+                  'Sulphur Cockatoo 🕊️',
+                  'Canada Goose 🇨🇦',
+                  'Roseate Spoonbill 🦩',
                   'Out of Office 🛫',
-                ].map((name, i) => (
-                  <div
-                    key={i}
-                    className={`rounded-2xl border p-4 ${
-                      i === 5
-                        ? 'border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/50'
-                        : 'border-neutral-200/80 bg-white dark:border-neutral-800 dark:bg-neutral-900'
-                    }`}
-                  >
-                    <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-3">
-                      {name}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {i < 5 &&
-                        Array.from({
-                          length: i % 3 === 0 ? 2 : i % 2 === 0 ? 3 : 1,
-                        }).map((_, j) => (
+                ].map((name, i) => {
+                  const people = [
+                    ['Blu', 'Jewel'],
+                    ['Roberto', 'Eduardo', 'Mimi'],
+                    ['Rafael', 'Eva'],
+                    ['Nico', 'Pedro'],
+                    ['Alice', 'Chloe'],
+                    ['Nigel'], // OOO
+                  ][i];
+
+                  return (
+                    <div
+                      key={i}
+                      className={`rounded-2xl border p-4 ${
+                        i === 5
+                          ? 'border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/50'
+                          : 'border-neutral-200/80 bg-white dark:border-neutral-800 dark:bg-neutral-900'
+                      }`}
+                    >
+                      <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-3">
+                        {name}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {people.map((p, j) => (
                           <div
                             key={j}
-                            className="h-9 w-9 rounded-full shadow-inner"
+                            className="h-9 w-9 rounded-xl flex items-center justify-center text-[10px] font-bold text-white shadow-inner"
                             style={{
                               backgroundColor: [
                                 '#6366f1',
@@ -163,19 +170,16 @@ export function LandingPage() {
                                 '#f59e0b',
                                 '#10b981',
                                 '#3b82f6',
-                              ][(i * 2 + j) % 6],
+                              ][(i * 3 + j) % 6],
                             }}
-                          />
+                          >
+                            {p.substring(0, 2).toUpperCase()}
+                          </div>
                         ))}
-                      {i === 5 && (
-                        <div
-                          className="h-9 w-9 rounded-full shadow-inner"
-                          style={{ backgroundColor: '#94a3b8' }}
-                        />
-                      )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

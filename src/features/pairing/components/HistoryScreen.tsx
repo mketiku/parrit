@@ -7,9 +7,11 @@ import {
   LayoutDashboard,
   ChevronRight,
   Inbox,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { useToastStore } from '../../../store/useToastStore';
 
 interface HistorySession {
   id: string;
@@ -40,6 +42,29 @@ export function HistoryScreen() {
   const [details, setDetails] = useState<HistoryDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const { addToast } = useToastStore();
+
+  const deleteSession = async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this session snapshot?'))
+      return;
+
+    const { error } = await supabase
+      .from('pairing_sessions')
+      .delete()
+      .eq('id', sessionId);
+
+    if (error) {
+      addToast('Failed to delete session', 'error');
+    } else {
+      addToast('Session deleted', 'success');
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      if (selectedSessionId === sessionId) {
+        setSelectedSessionId(null);
+        setDetails([]);
+      }
+    }
+  };
 
   const loadSessions = useCallback(async () => {
     const { data, error } = await supabase
@@ -146,37 +171,48 @@ export function HistoryScreen() {
             </div>
           ) : (
             sessions.map((session) => (
-              <button
-                key={session.id}
-                onClick={() => loadSessionDetails(session.id)}
-                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
-                  selectedSessionId === session.id
-                    ? 'border-indigo-500 bg-indigo-50/50 shadow-md ring-1 ring-indigo-500 dark:bg-indigo-950/20'
-                    : 'border-neutral-200 bg-white hover:border-indigo-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-xl scale-90 ${selectedSessionId === session.id ? 'bg-indigo-500 text-white' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}
-                  >
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <div className="text-left">
-                    <p
-                      className={`font-semibold ${selectedSessionId === session.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-neutral-900 dark:text-neutral-100'}`}
+              <div key={session.id} className="group relative">
+                <button
+                  onClick={() => loadSessionDetails(session.id)}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                    selectedSessionId === session.id
+                      ? 'border-indigo-500 bg-indigo-50/50 shadow-md ring-1 ring-indigo-500 dark:bg-indigo-950/20'
+                      : 'border-neutral-200 bg-white hover:border-indigo-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2 rounded-xl scale-90 ${selectedSessionId === session.id ? 'bg-indigo-500 text-white' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}
                     >
-                      {format(new Date(session.session_date), 'MMMM do, yyyy')}
-                    </p>
-                    <p className="text-xs text-neutral-500 italic">
-                      Snapshot at{' '}
-                      {format(new Date(session.created_at), 'h:mm a')}
-                    </p>
+                      <Calendar className="h-4 w-4" />
+                    </div>
+                    <div className="text-left">
+                      <p
+                        className={`font-semibold ${selectedSessionId === session.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-neutral-900 dark:text-neutral-100'}`}
+                      >
+                        {format(
+                          new Date(session.session_date),
+                          'MMMM do, yyyy'
+                        )}
+                      </p>
+                      <p className="text-xs text-neutral-500 italic">
+                        Snapshot at{' '}
+                        {format(new Date(session.created_at), 'h:mm a')}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <ChevronRight
-                  className={`h-4 w-4 ${selectedSessionId === session.id ? 'text-indigo-500' : 'text-neutral-300'}`}
-                />
-              </button>
+                  <ChevronRight
+                    className={`h-4 w-4 ${selectedSessionId === session.id ? 'text-indigo-500' : 'text-neutral-300'} transition-transform group-hover:translate-x-1`}
+                  />
+                </button>
+                <button
+                  onClick={(e) => deleteSession(e, session.id)}
+                  className="absolute -right-2 -top-2 hidden h-8 w-8 items-center justify-center rounded-full bg-white text-neutral-400 shadow-sm border border-neutral-200 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-500 group-hover:flex"
+                  title="Delete Snapshot"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             ))
           )}
         </div>
