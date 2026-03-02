@@ -164,6 +164,7 @@ export function PairingWorkspace() {
           <DraggablePerson
             person={activeDragItem.person}
             sourceId={activeDragItem.sourceId}
+            isOverlay
           />
         ) : null}
       </DragOverlay>
@@ -185,7 +186,7 @@ function DroppableUnpairedPool({ people }: { people: Person[] }) {
         sticky top-6 flex min-h-[400px] flex-col rounded-2xl border p-5 shadow-xs transition-colors
         ${
           isOver
-            ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500/50 dark:bg-indigo-950/20'
+            ? 'border-indigo-400 border-dashed bg-indigo-50 dark:border-indigo-500/50 dark:bg-indigo-950/20'
             : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
         }
       `}
@@ -204,8 +205,8 @@ function DroppableUnpairedPool({ people }: { people: Person[] }) {
 
       <div className="flex flex-wrap content-start gap-3 flex-1">
         {people.length === 0 ? (
-          <span className="flex w-full items-center justify-center text-sm italic text-neutral-400 mt-10">
-            Everyone is paired!
+          <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-500">
+            {isOver ? 'Drop to unpair' : 'Everyone is paired!'}
           </span>
         ) : (
           people.map((person) => (

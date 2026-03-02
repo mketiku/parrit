@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Bird } from 'lucide-react';
+import { Bird, Moon, Sun } from 'lucide-react';
 
 export default function AppLayout() {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return (
+        document.documentElement.classList.contains('dark') ||
+        (window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches)
+      );
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark(!isDark);
+
   return (
     <div className="flex min-h-screen w-full flex-col font-sans selection:bg-indigo-500/30">
       {/* Header */}
@@ -58,8 +79,19 @@ export default function AppLayout() {
             </nav>
           </div>
 
-          {/* User Context (Placeholder for Auth) */}
+          {/* User Context (Placeholder for Auth) & Actions */}
           <div className="flex items-center gap-4">
+            <button
+              onClick={toggleTheme}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition-colors"
+              aria-label="Toggle Dark Mode"
+            >
+              {isDark ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </button>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 dark:bg-neutral-800 text-xs font-semibold text-neutral-600 dark:text-neutral-400 ring-1 ring-neutral-300 dark:ring-neutral-700">
               MK
             </div>
