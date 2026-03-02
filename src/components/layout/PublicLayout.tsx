@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { Bird, Moon, Sun } from 'lucide-react';
+import { Bird, Moon, Sun, Menu, X } from 'lucide-react';
 import { Toaster } from '../ui/Toaster';
+import { useAuthStore } from '../../features/auth/store/useAuthStore';
 
 export default function PublicLayout() {
+  const { session } = useAuthStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return (
@@ -41,11 +44,11 @@ export default function PublicLayout() {
             </span>
           </Link>
 
-          {/* Right side */}
-          <div className="flex items-center gap-3">
+          {/* Right side Desktop */}
+          <div className="hidden sm:flex items-center gap-3">
             <Link
               to="/about"
-              className="hidden sm:block text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
             >
               About
             </Link>
@@ -60,20 +63,96 @@ export default function PublicLayout() {
                 <Moon className="h-4 w-4" />
               )}
             </button>
-            <Link
-              to="/login"
-              className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            {session ? (
+              <Link
+                to="/app"
+                className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600"
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/login?signup=true"
+                  className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <div className="flex sm:hidden items-center gap-2">
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
             >
-              Sign In
-            </Link>
-            <Link
-              to="/login?signup=true"
-              className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600"
+              {isDark ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
             >
-              Get Started
-            </Link>
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown */}
+        {mobileMenuOpen && (
+          <div className="sm:hidden border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-4 shadow-lg flex flex-col gap-4">
+            <Link
+              to="/about"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-base font-medium text-neutral-600 hover:text-brand-500 dark:text-neutral-300 transition-colors"
+            >
+              About Parrit
+            </Link>
+            <div className="flex flex-col gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              {session ? (
+                <Link
+                  to="/app"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center rounded-xl bg-brand-500 px-4 py-3 text-base font-semibold text-white shadow-sm shadow-brand-500/20 transition-all"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center rounded-xl border border-neutral-200 bg-white px-4 py-3 text-base font-semibold text-neutral-700 shadow-sm transition-all dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/login?signup=true"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center rounded-xl bg-brand-500 px-4 py-3 text-base font-semibold text-white shadow-sm shadow-brand-500/20 transition-all"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}

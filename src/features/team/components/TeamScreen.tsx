@@ -187,7 +187,7 @@ export function TeamScreen() {
                         className="min-w-0 flex-1 rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-neutral-950"
                       />
                       {/* Color swatches */}
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         {PRESET_COLORS.map((color) => (
                           <button
                             key={color}
@@ -217,15 +217,15 @@ export function TeamScreen() {
                   ) : (
                     /* Display Row */
                     <>
-                      <div className="flex-1">
-                        <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-neutral-900 dark:text-neutral-100 truncate">
                           {person.name}
                         </p>
-                        <p className="text-xs text-neutral-400 dark:text-neutral-600">
+                        <p className="text-xs text-neutral-400 dark:text-neutral-600 truncate">
                           {getInitials(person.name)} · {person.avatarColorHex}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 sm:gap-2">
                         <button
                           onClick={() =>
                             startEdit(

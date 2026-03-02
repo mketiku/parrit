@@ -7,6 +7,7 @@ import {
   useSensors,
   PointerSensor,
   KeyboardSensor,
+  TouchSensor,
   useDroppable,
   type DragStartEvent,
   type DragEndEvent,
@@ -50,6 +51,12 @@ export function PairingWorkspace() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -175,11 +182,11 @@ export function PairingWorkspace() {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-start pb-24 sm:pb-0">
         {/* Main Workspaces Column */}
-        <div className="flex-1 min-w-0 space-y-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+        <div className="flex-1 min-w-0 space-y-4 sm:space-y-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
               Pairing Boards
             </h2>
 
@@ -298,7 +305,7 @@ export function PairingWorkspace() {
         </div>
 
         {/* Sidebar Pool Column */}
-        <div className="xl:w-80">
+        <div className="xl:w-80 w-full fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-neutral-200 p-4 dark:bg-neutral-950/95 dark:border-neutral-800 xl:relative xl:z-auto xl:bg-transparent xl:shadow-none xl:border-none xl:p-0 xl:dark:bg-transparent sm:block">
           <DroppableUnpairedPool
             people={unpairedPeople}
             selectedPersonIds={selectedPersonIds}
@@ -384,7 +391,7 @@ function DroppableUnpairedPool({
     <div
       ref={setNodeRef}
       className={`
-        sticky top-6 flex min-h-[400px] flex-col rounded-2xl border p-5 shadow-xs transition-colors
+        xl:sticky xl:top-6 flex xl:min-h-[400px] flex-col rounded-2xl border p-3 sm:p-4 xl:p-5 shadow-xs transition-colors
         ${
           isOver
             ? 'border-brand-400 border-dashed bg-brand-50 dark:border-brand-500/50 dark:bg-brand-950/20'
@@ -404,7 +411,7 @@ function DroppableUnpairedPool({
         </span>
       </div>
 
-      <div className="flex flex-wrap content-start gap-3 flex-1">
+      <div className="flex max-h-[150px] overflow-y-auto no-scrollbar xl:max-h-none xl:overflow-visible flex-wrap content-start gap-2 sm:gap-3 flex-1">
         <AnimatePresence>
           {people.length === 0 ? (
             <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-500">

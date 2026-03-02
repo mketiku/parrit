@@ -96,7 +96,7 @@ export function DroppableBoard({
     <div
       ref={setNodeRef}
       className={`
-        group flex min-h-[160px] flex-col rounded-2xl border bg-white p-5 shadow-xs transition-colors
+        group flex min-h-[120px] sm:min-h-[160px] flex-col rounded-2xl border bg-white p-3 sm:p-5 shadow-xs transition-colors
         dark:bg-neutral-900 
         ${
           isOver
@@ -106,7 +106,7 @@ export function DroppableBoard({
       `}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-3 sm:mb-4">
         {board.isExempt ? (
           <ShieldX className="h-5 w-5 shrink-0 text-neutral-400" />
         ) : (
@@ -319,7 +319,7 @@ export function DroppableBoard({
       {/* Draggable Zone */}
       <div
         className={`
-          flex flex-1 flex-wrap gap-2 rounded-xl p-3 border-2 border-transparent transition-all
+          flex flex-1 flex-wrap gap-1.5 sm:gap-2 rounded-xl p-2 sm:p-3 border-2 border-transparent transition-all
           ${
             isOver
               ? 'bg-brand-100/30 border-brand-300 border-dashed dark:bg-brand-900/10 dark:border-brand-700'

@@ -11,6 +11,7 @@ import {
   Wifi,
   MousePointerClick,
 } from 'lucide-react';
+import { useAuthStore } from '../../auth/store/useAuthStore';
 
 const features = [
   {
@@ -52,6 +53,8 @@ const features = [
 ];
 
 export function LandingPage() {
+  const { session } = useAuthStore();
+
   return (
     <div className="flex flex-col">
       {/* Hero */}
@@ -87,13 +90,23 @@ export function LandingPage() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/login?signup=true"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 text-base font-bold text-white shadow-lg shadow-brand-500/30 transition-all hover:bg-brand-600 hover:shadow-brand-500/40 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Create a Workspace
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
+            {session ? (
+              <Link
+                to="/app"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 text-base font-bold text-white shadow-lg shadow-brand-500/30 transition-all hover:bg-brand-600 hover:shadow-brand-500/40 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Go to Dashboard
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <Link
+                to="/login?signup=true"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 text-base font-bold text-white shadow-lg shadow-brand-500/30 transition-all hover:bg-brand-600 hover:shadow-brand-500/40 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Create a Workspace
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            )}
             <Link
               to="/about"
               className="inline-flex items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-8 py-4 text-base font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -234,13 +247,23 @@ export function LandingPage() {
             <p className="mt-3 text-brand-100 max-w-md mx-auto">
               Set up your workspace in under a minute. Free, forever.
             </p>
-            <Link
-              to="/login?signup=true"
-              className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-600 shadow-lg transition-all hover:bg-brand-50 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Create a Free Workspace
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {session ? (
+              <Link
+                to="/app"
+                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-600 shadow-lg transition-all hover:bg-brand-50 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Go to Dashboard
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link
+                to="/login?signup=true"
+                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-600 shadow-lg transition-all hover:bg-brand-50 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Create a Free Workspace
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         </div>
       </section>
