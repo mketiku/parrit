@@ -7,9 +7,16 @@ import { LayoutDashboard, ShieldX } from 'lucide-react';
 interface DroppableBoardProps {
   board: PairingBoard;
   people: Person[];
+  selectedPersonIds?: Set<string>;
+  onPersonClick?: (id: string) => void;
 }
 
-export function DroppableBoard({ board, people }: DroppableBoardProps) {
+export function DroppableBoard({
+  board,
+  people,
+  selectedPersonIds,
+  onPersonClick,
+}: DroppableBoardProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: board.id,
     data: {
@@ -82,6 +89,8 @@ export function DroppableBoard({ board, people }: DroppableBoardProps) {
               key={person.id}
               person={person}
               sourceId={board.id}
+              isSelected={selectedPersonIds?.has(person.id)}
+              onClick={() => onPersonClick?.(person.id)}
             />
           ))
         )}

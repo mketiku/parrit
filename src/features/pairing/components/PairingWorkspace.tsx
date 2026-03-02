@@ -15,7 +15,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import type { PairingBoard, Person, DragItem } from '../types';
-import { Users } from 'lucide-react';
+import { Users, X } from 'lucide-react';
 
 const MOCK_PEOPLE: Person[] = [
   { id: '1', name: 'Alice Bob', avatarColorHex: '#6366f1' },
@@ -64,6 +64,53 @@ export function PairingWorkspace() {
   const [people, setPeople] = useState<Person[]>(MOCK_PEOPLE);
   const [boards, setBoards] = useState<PairingBoard[]>(MOCK_BOARDS);
   const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
+  const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
+    new Set()
+  );
+
+  const handlePersonClick = (personId: string) => {
+    setSelectedPersonIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(personId)) {
+        next.delete(personId);
+      } else {
+        next.add(personId);
+      }
+      return next;
+    });
+  };
+
+  const handleBulkMove = (targetBoardId: string) => {
+    if (selectedPersonIds.size === 0) return;
+
+    setBoards((prevBoards) => {
+      return prevBoards.map((board) => {
+        // Remove selected people from their current boards
+        const newAssigned = (board.assignedPersonIds || []).filter(
+          (id) => !selectedPersonIds.has(id)
+        );
+
+        // Add them to the new board
+        if (board.id === targetBoardId && targetBoardId !== 'unpaired') {
+          return {
+            ...board,
+            assignedPersonIds: [
+              ...newAssigned,
+              ...Array.from(selectedPersonIds),
+            ],
+          };
+        }
+
+        return {
+          ...board,
+          assignedPersonIds: newAssigned,
+        };
+      });
+    });
+
+    // Clear selection after moving
+    setSelectedPersonIds(new Set());
+  };
 
   // Derive who is Unpaired
   const allAssignedIds = new Set(
@@ -82,6 +129,11 @@ export function PairingWorkspace() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveDragItem(null);
+
+    // If dragged while selected, we optionally can clear selection, let's just clear it.
+    if (selectedPersonIds.size > 0) {
+      setSelectedPersonIds(new Set());
+    }
 
     // If dropped nowhere, or didn't drop a person
     if (!over || active.data.current?.type !== 'PERSON') return;
@@ -147,6 +199,8 @@ export function PairingWorkspace() {
                   key={board.id}
                   board={board}
                   people={assignedPeople}
+                  selectedPersonIds={selectedPersonIds}
+                  onPersonClick={handlePersonClick}
                 />
               );
             })}
@@ -155,7 +209,11 @@ export function PairingWorkspace() {
 
         {/* Sidebar / Pool */}
         <div className="w-full shrink-0 xl:w-[350px]">
-          <DroppableUnpairedPool people={unpairedPeople} />
+          <DroppableUnpairedPool
+            people={unpairedPeople}
+            selectedPersonIds={selectedPersonIds}
+            onPersonClick={handlePersonClick}
+          />
         </div>
       </div>
 
@@ -168,12 +226,57 @@ export function PairingWorkspace() {
           />
         ) : null}
       </DragOverlay>
+
+      {/* Bulk Action / Click-to-Move Bar */}
+      {selectedPersonIds.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 rounded-full bg-white/95 px-6 py-4 shadow-2xl ring-1 ring-neutral-200 backdrop-blur-md transition-all dark:bg-neutral-900/95 dark:ring-neutral-800">
+          <span className="whitespace-nowrap font-semibold text-neutral-900 dark:text-neutral-100">
+            {selectedPersonIds.size} selected
+          </span>
+          <div className="h-6 w-px bg-neutral-200 dark:bg-neutral-700" />
+
+          <div className="flex max-w-[50vw] items-center gap-2 overflow-x-auto pb-1 sm:max-w-[60vw]">
+            <button
+              onClick={() => handleBulkMove('unpaired')}
+              className="whitespace-nowrap rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-medium hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            >
+              Move to Pool
+            </button>
+            {boards.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => handleBulkMove(b.id)}
+                className="whitespace-nowrap rounded-full bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
+              >
+                {b.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-6 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700" />
+          <button
+            onClick={() => setSelectedPersonIds(new Set())}
+            className="shrink-0 p-1 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            aria-label="Clear selection"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
     </DndContext>
   );
 }
 
 // A slightly different droppable region for "Unpaired"
-function DroppableUnpairedPool({ people }: { people: Person[] }) {
+function DroppableUnpairedPool({
+  people,
+  selectedPersonIds,
+  onPersonClick,
+}: {
+  people: Person[];
+  selectedPersonIds?: Set<string>;
+  onPersonClick?: (id: string) => void;
+}) {
   const { isOver, setNodeRef } = useDroppable({
     id: 'unpaired',
     data: { type: 'POOL' },
@@ -214,6 +317,8 @@ function DroppableUnpairedPool({ people }: { people: Person[] }) {
               key={person.id}
               person={person}
               sourceId="unpaired"
+              isSelected={selectedPersonIds?.has(person.id)}
+              onClick={() => onPersonClick?.(person.id)}
             />
           ))
         )}
