@@ -8,10 +8,13 @@ import {
   ChevronRight,
   Inbox,
   Trash2,
+  ArrowDownCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useToastStore } from '../../../store/useToastStore';
+import { usePairingStore } from '../store/usePairingStore';
+import type { PairingBoard, Person } from '../types';
 
 interface HistorySession {
   id: string;
@@ -29,12 +32,15 @@ interface HistoryDetail {
 }
 
 interface DbHistoryRow {
+  person_id: string;
+  board_id: string;
   people: { name: string; avatar_color_hex: string } | null;
   pairing_boards: { name: string } | null;
 }
 
 export function HistoryScreen() {
   const { user } = useAuthStore();
+  const { people: storePeople, boards: storeBoards } = usePairingStore();
   const [sessions, setSessions] = useState<HistorySession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null
@@ -85,31 +91,69 @@ export function HistoryScreen() {
     setIsLoading(false);
   }, []);
 
-  const loadSessionDetails = useCallback(async (sessionId: string) => {
-    setIsLoadingDetails(true);
-    setSelectedSessionId(sessionId);
+  const loadSessionDetails = useCallback(
+    async (sessionId: string) => {
+      setIsLoadingDetails(true);
+      setSelectedSessionId(sessionId);
+      setDetails([]); // Clear previous details
 
-    const { data, error } = await supabase
-      .from('pairing_history')
-      .select(
+      try {
+        const { data, error } = await supabase
+          .from('pairing_history')
+          .select(
+            `
+          person_id,
+          board_id,
+          people (name, avatar_color_hex),
+          pairing_boards (name)
         `
-        people (name, avatar_color_hex),
-        pairing_boards (name)
-      `
-      )
-      .eq('session_id', sessionId);
+          )
+          .eq('session_id', sessionId);
 
-    if (!error && data) {
-      const rows = data as unknown as DbHistoryRow[];
-      const formatted = rows.map((row) => ({
-        person_name: row.people?.name || 'Unknown',
-        board_name: row.pairing_boards?.name || 'General',
-        avatar_color: row.people?.avatar_color_hex || '#ccc',
-      }));
-      setDetails(formatted);
-    }
-    setIsLoadingDetails(false);
-  }, []);
+        if (error) throw error;
+
+        if (data) {
+          const rows = data as unknown as DbHistoryRow[];
+          const formatted = rows
+            .filter((row) => row.board_id && row.person_id) // skip fully null rows
+            .map((row) => {
+              // Try joined data first, fall back to in-memory store data
+              const storeBoard = storeBoards.find(
+                (b: PairingBoard) => b.id === row.board_id
+              );
+              const storePerson = storePeople.find(
+                (p: Person) => p.id === row.person_id
+              );
+
+              const board_name =
+                row.pairing_boards?.name ||
+                storeBoard?.name ||
+                `Board (${row.board_id.slice(0, 6)})…`;
+
+              const person_name =
+                row.people?.name ||
+                storePerson?.name ||
+                `Person (${row.person_id.slice(0, 6)})…`;
+
+              const avatar_color =
+                row.people?.avatar_color_hex ||
+                storePerson?.avatarColorHex ||
+                '#94a3b8';
+
+              return { person_name, board_name, avatar_color };
+            });
+          setDetails(formatted);
+        }
+      } catch (err: unknown) {
+        console.error('Error loading session details:', err);
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        addToast(`Failed to load session details: ${message}`, 'error');
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    },
+    [addToast, storePeople, storeBoards]
+  );
 
   useEffect(() => {
     (async () => {
@@ -152,7 +196,10 @@ export function HistoryScreen() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div
+        id="history-content"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+      >
         {/* Sessions List */}
         <div className="lg:col-span-4 space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-4 px-2">
@@ -163,17 +210,27 @@ export function HistoryScreen() {
               <Inbox className="h-10 w-10 text-neutral-300 mx-auto mb-3" />
               <p className="text-sm text-neutral-500">No sessions saved yet.</p>
               <Link
-                to="/"
+                to="/app"
                 className="text-brand-500 text-sm font-medium hover:underline mt-2 inline-block"
               >
-                Go to Workspace
+                Go to Dashboard
               </Link>
             </div>
           ) : (
             sessions.map((session) => (
               <div key={session.id} className="group relative">
                 <button
-                  onClick={() => loadSessionDetails(session.id)}
+                  onClick={() => {
+                    loadSessionDetails(session.id);
+                    // On mobile, scroll to details
+                    if (window.innerWidth < 1024) {
+                      setTimeout(() => {
+                        document
+                          .getElementById('session-details')
+                          ?.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }
+                  }}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
                     selectedSessionId === session.id
                       ? 'border-brand-500 bg-brand-50/50 shadow-md ring-1 ring-brand-500 dark:bg-brand-950/20'
@@ -218,7 +275,7 @@ export function HistoryScreen() {
         </div>
 
         {/* Selected Session Details */}
-        <div className="lg:col-span-8">
+        <div id="session-details" className="lg:col-span-8 scroll-mt-24">
           {!selectedSessionId ? (
             <div className="h-[400px] flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/20">
               <History className="h-12 w-12 text-neutral-300 mb-4" />
@@ -239,13 +296,20 @@ export function HistoryScreen() {
                       Session Snapshot
                     </h2>
                     <p className="opacity-90 text-sm">
-                      {format(
-                        new Date(
-                          sessions.find((s) => s.id === selectedSessionId)
-                            ?.session_date || ''
-                        ),
-                        'EEEE, MMMM do, yyyy'
-                      )}
+                      {(() => {
+                        const session = sessions.find(
+                          (s) => s.id === selectedSessionId
+                        );
+                        if (!session) return 'Unknown Session';
+                        try {
+                          return format(
+                            new Date(session.session_date),
+                            'EEEE, MMMM do, yyyy'
+                          );
+                        } catch (_) {
+                          return 'Invalid Date';
+                        }
+                      })()}
                     </p>
                   </div>
                   <History className="h-10 w-10 opacity-20" />
@@ -289,6 +353,17 @@ export function HistoryScreen() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Proactive: Add a way to hint that they can go back to Dashboard */}
+              <div className="flex justify-center pt-4">
+                <Link
+                  to="/app"
+                  className="flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-brand-500 transition-colors"
+                >
+                  <ArrowDownCircle className="h-4 w-4 rotate-90" />
+                  Back to current workspace
+                </Link>
               </div>
             </div>
           )}

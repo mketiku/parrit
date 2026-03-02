@@ -53,7 +53,7 @@ const features = [
 ];
 
 export function LandingPage() {
-  const { session } = useAuthStore();
+  const { user, workspaceName } = useAuthStore();
 
   return (
     <div className="flex flex-col">
@@ -69,13 +69,27 @@ export function LandingPage() {
         </div>
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 pt-20 pb-24 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 mb-8">
-            <Zap className="h-3.5 w-3.5" />
-            The modern replacement for parrit.io
-          </div>
+          {user ? (
+            <div className="mb-8 inline-flex items-center gap-3 rounded-2xl bg-brand-50/50 px-6 py-3 border border-brand-100 dark:bg-brand-500/5 dark:border-brand-500/10">
+              <div className="h-8 w-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-xs">
+                {workspaceName.substring(0, 1).toUpperCase()}
+              </div>
+              <div className="text-left">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                  Signed in as
+                </p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-white capitalize">
+                  {workspaceName} Workspace
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 mb-8">
+              <Zap className="h-3.5 w-3.5" />
+              The modern replacement for parrit.io
+            </div>
+          )}
 
-          {/* Headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.08]">
             Pairing,{' '}
             <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
@@ -90,12 +104,12 @@ export function LandingPage() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            {session ? (
+            {user ? (
               <Link
                 to="/app"
                 className="group inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 text-base font-bold text-white shadow-lg shadow-brand-500/30 transition-all hover:bg-brand-600 hover:shadow-brand-500/40 hover:scale-[1.02] active:scale-[0.98]"
               >
-                Go to Dashboard
+                Enter Dashboard
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             ) : (
@@ -111,13 +125,15 @@ export function LandingPage() {
               to="/about"
               className="inline-flex items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-8 py-4 text-base font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
-              Learn more
+              How it works
             </Link>
           </div>
 
-          <p className="mt-4 text-xs text-neutral-400 dark:text-neutral-600">
-            Free forever. No credit card. No emails.
-          </p>
+          {!user && (
+            <p className="mt-4 text-xs text-neutral-400 dark:text-neutral-600">
+              Free forever. No credit card. No emails.
+            </p>
+          )}
         </div>
 
         {/* App Preview mockup */}
@@ -247,7 +263,7 @@ export function LandingPage() {
             <p className="mt-3 text-brand-100 max-w-md mx-auto">
               Set up your workspace in under a minute. Free, forever.
             </p>
-            {session ? (
+            {user ? (
               <Link
                 to="/app"
                 className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-600 shadow-lg transition-all hover:bg-brand-50 hover:scale-[1.02] active:scale-[0.98]"
