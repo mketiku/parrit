@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
-import { Bird, Moon, Sun, LogOut } from 'lucide-react';
+import { Bird, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 
 export default function AppLayout() {
   const { signOut } = useAuthStore();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -45,7 +46,20 @@ export default function AppLayout() {
       {/* Header */}
       <header className="sticky top-0 z-50 shrink-0 border-b border-neutral-200 bg-white/50 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
-          <div className="flex items-center gap-6 sm:gap-8">
+          <div className="flex items-center gap-4 sm:gap-8">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex h-10 w-10 sm:hidden items-center justify-center rounded-xl bg-neutral-100/50 text-neutral-600 hover:bg-neutral-100 transition-colors dark:bg-neutral-800/50 dark:text-neutral-400 dark:hover:bg-neutral-800"
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </button>
+
             {/* Logo */}
             <Link
               to="/app"
@@ -57,8 +71,8 @@ export default function AppLayout() {
               <span className="font-bold tracking-tight">Parrit</span>
             </Link>
 
-            {/* Navigation */}
-            <nav className="flex items-center gap-1 text-sm font-medium overflow-x-auto whitespace-nowrap no-scrollbar hide-scrollbar">
+            {/* Desktop Navigation */}
+            <nav className="hidden sm:flex items-center gap-1 text-sm font-medium">
               <NavLink
                 to="/app"
                 end
@@ -111,11 +125,11 @@ export default function AppLayout() {
             </nav>
           </div>
 
-          {/* User Context (Placeholder for Auth) & Actions */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4 pl-2">
+          {/* User Actions */}
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={toggleTheme}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white/50 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
               aria-label="Toggle Dark Mode"
             >
               {isDark ? (
@@ -126,14 +140,97 @@ export default function AppLayout() {
             </button>
             <button
               onClick={() => signOut()}
-              className="flex h-8 items-center gap-2 shrink-0 rounded-lg bg-neutral-200 px-3 text-xs font-semibold text-neutral-600 ring-1 ring-neutral-300 transition-all hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:ring-neutral-700 dark:hover:bg-neutral-700"
+              className="flex h-10 items-center gap-2 shrink-0 rounded-xl bg-neutral-900 px-4 text-xs font-bold text-white shadow-xl transition-all hover:bg-neutral-800 active:scale-95 dark:bg-brand-500 dark:hover:bg-brand-600 sm:h-9"
               title="Sign Out"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
         </div>
+
+        {/* Mobile Sidebar/Menu overlay */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 top-[65px] z-[60] sm:hidden">
+            <div
+              className="absolute inset-0 bg-neutral-900/20 backdrop-blur-sm dark:bg-black/40"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="absolute left-0 h-full w-[280px] border-r border-neutral-200 bg-white p-6 shadow-2xl animate-in slide-in-from-left duration-300 dark:border-neutral-800 dark:bg-neutral-900">
+              <div className="flex flex-col gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2">
+                  Navigation
+                </p>
+                <NavLink
+                  to="/app"
+                  end
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                      isActive
+                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
+                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                    }`
+                  }
+                >
+                  Dashboard
+                </NavLink>
+                <NavLink
+                  to="/app/team"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                      isActive
+                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
+                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                    }`
+                  }
+                >
+                  Team
+                </NavLink>
+                <NavLink
+                  to="/app/history"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                      isActive
+                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
+                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                    }`
+                  }
+                >
+                  History
+                </NavLink>
+                <NavLink
+                  to="/app/settings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                      isActive
+                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
+                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                    }`
+                  }
+                >
+                  Settings
+                </NavLink>
+
+                <div className="mt-6 border-t border-neutral-100 pt-6 dark:border-neutral-800">
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-all active:scale-95 dark:bg-red-500/10 dark:text-red-400"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Offline Banner */}
