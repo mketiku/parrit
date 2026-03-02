@@ -256,7 +256,7 @@ export function TeamScreen() {
         )}
       </div>
 
-      <p className="text-center text-xs text-neutral-400 dark:text-neutral-600">
+      <p className="text-center text-xs text-neutral-400 dark:text-neutral-600 pb-12 sm:pb-4">
         {people.length} {people.length === 1 ? 'person' : 'people'} in workspace
       </p>
     </div>
