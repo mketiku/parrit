@@ -28,6 +28,7 @@ const mockBoard: PairingBoard = {
   id: 'board-1',
   name: 'Phoenix',
   isExempt: false,
+  sortOrder: 0,
   goalText: 'Ship the board logic',
 };
 
