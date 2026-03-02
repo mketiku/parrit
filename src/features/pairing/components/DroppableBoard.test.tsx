@@ -21,8 +21,12 @@ vi.mocked(usePairingStore).mockReturnValue({
   addBoard: vi.fn(),
   updateBoard: vi.fn(),
   removeBoard: vi.fn(),
+  saveSession: vi.fn(),
+  recommendPairs: vi.fn(),
+  saveCurrentAsTemplate: vi.fn(),
+  applyTemplate: vi.fn(),
   subscribeToRealtime: vi.fn().mockReturnValue(vi.fn()),
-});
+} as unknown as ReturnType<typeof usePairingStore>);
 
 const mockBoard: PairingBoard = {
   id: 'board-1',
