@@ -18,6 +18,7 @@ import {
   Clock,
   Tag,
   Share2,
+  HelpCircle,
 } from 'lucide-react';
 
 const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
@@ -46,6 +47,8 @@ export function SettingsScreen() {
     setShowFullName,
     publicViewEnabled,
     setPublicViewEnabled,
+    onboardingCompleted,
+    setOnboardingCompleted,
   } = useWorkspacePrefsStore();
   const {
     exportWorkspace,
@@ -307,9 +310,11 @@ export function SettingsScreen() {
                 const nextVal = !publicViewEnabled;
                 setPublicViewEnabled(nextVal);
                 if (user) {
-                  await supabase
-                    .from('workspace_settings')
-                    .upsert({ user_id: user.id, public_view_enabled: nextVal });
+                  await supabase.from('workspace_settings').upsert({
+                    user_id: user.id,
+                    public_view_enabled: nextVal,
+                    onboarding_completed: onboardingCompleted,
+                  });
                 }
               }}
               className={`relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
@@ -321,6 +326,47 @@ export function SettingsScreen() {
               <span
                 className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
                   publicViewEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="mx-6 mb-6 flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+            <div className="flex items-start gap-3">
+              <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
+              <div>
+                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
+                  Product Tutorial Completed
+                </p>
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                  If disabled, the guided tour will reappear on your next visit
+                  to the workspace.
+                </p>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={onboardingCompleted}
+              onClick={async () => {
+                const nextVal = !onboardingCompleted;
+                setOnboardingCompleted(nextVal);
+                if (user) {
+                  await supabase.from('workspace_settings').upsert({
+                    user_id: user.id,
+                    onboarding_completed: nextVal,
+                    public_view_enabled: publicViewEnabled,
+                  });
+                }
+              }}
+              className={`relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
+                onboardingCompleted
+                  ? 'bg-brand-500'
+                  : 'bg-neutral-200 dark:bg-neutral-700'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
+                  onboardingCompleted ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>

@@ -34,7 +34,11 @@ import {
   ImageDown,
   Share2,
   Check,
+  HelpCircle,
 } from 'lucide-react';
+import { useTutorialStore } from '../store/useTutorialStore';
+import { ProductTutorial } from './ProductTutorial';
+import { useEffect } from 'react';
 
 export function PairingWorkspace() {
   const {
@@ -58,6 +62,16 @@ export function PairingWorkspace() {
   );
   const [isExporting, setIsExporting] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
+
+  const { startTutorial } = useTutorialStore();
+  const { onboardingCompleted } = useWorkspacePrefsStore();
+
+  useEffect(() => {
+    // Auto-start tutorial if not completed and workspace is empty (likely first visit)
+    if (!onboardingCompleted && people.length === 0 && !isStoreLoading) {
+      startTutorial();
+    }
+  }, [onboardingCompleted, people.length, isStoreLoading, startTutorial]);
   const { user } = useAuthStore();
   const exportViewRef = useRef<HTMLDivElement>(null);
 
@@ -237,6 +251,7 @@ export function PairingWorkspace() {
                 <TemplateManager />
 
                 <button
+                  id="recommend-btn"
                   onClick={() => recommendPairs()}
                   disabled={isStoreLoading}
                   className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
@@ -264,6 +279,7 @@ export function PairingWorkspace() {
                 </button>
 
                 <button
+                  id="share-link-btn"
                   onClick={handleCopyShareLink}
                   disabled={isStoreLoading}
                   title="Copy read-only share link"
@@ -278,6 +294,7 @@ export function PairingWorkspace() {
                 </button>
 
                 <button
+                  id="save-session-btn"
                   onClick={saveSession}
                   disabled={isStoreLoading}
                   className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-brand-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
@@ -292,7 +309,10 @@ export function PairingWorkspace() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div
+              id="board-list"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+            >
               {boards.map((board) => {
                 const assignedPeople = (board.assignedPersonIds || [])
                   .map((id) => people.find((p) => p.id === id))
@@ -376,13 +396,27 @@ export function PairingWorkspace() {
           </div>
 
           {/* Sidebar Pool Column */}
-          <div className="xl:w-80 w-full fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-neutral-200 p-4 dark:bg-neutral-950/95 dark:border-neutral-800 xl:relative xl:z-auto xl:bg-transparent xl:shadow-none xl:border-none xl:p-0 xl:dark:bg-transparent sm:block">
+          <div
+            id="unpaired-pool"
+            className="xl:w-80 w-full fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-neutral-200 p-4 dark:bg-neutral-950/95 dark:border-neutral-800 xl:relative xl:z-auto xl:bg-transparent xl:shadow-none xl:border-none xl:p-0 xl:dark:bg-transparent sm:block"
+          >
             <DroppableUnpairedPool
               people={unpairedPeople}
               selectedPersonIds={selectedPersonIds}
               onPersonClick={handlePersonClick}
             />
           </div>
+
+          {/* Manual Tutorial Trigger */}
+          <button
+            onClick={startTutorial}
+            className="fixed bottom-24 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-xl border border-neutral-200 text-neutral-500 hover:text-brand-500 hover:border-brand-200 transition-all active:scale-95 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400"
+            title="Replay Tutorial"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </button>
+
+          <ProductTutorial />
         </div>
 
         <DragOverlay dropAnimation={null}>

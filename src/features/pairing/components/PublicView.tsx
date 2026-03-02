@@ -18,13 +18,14 @@ export function PublicView() {
 
       try {
         // 1. Check if public view is enabled
-        const { data: settings } = await supabase
+        const { data: settingsList } = await supabase
           .from('workspace_settings')
           .select('public_view_enabled')
-          .eq('user_id', userId)
-          .single();
+          .eq('user_id', userId);
 
-        if (!settings?.public_view_enabled) {
+        const isPublicEnabled = settingsList?.[0]?.public_view_enabled ?? false;
+
+        if (!isPublicEnabled) {
           setIsPublic(false);
           setIsLoading(false);
           return;

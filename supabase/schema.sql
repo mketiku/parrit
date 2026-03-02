@@ -185,6 +185,7 @@ create table if not exists public.pairing_templates (
 create table if not exists public.workspace_settings (
   user_id uuid primary key references auth.users(id) on delete cascade,
   public_view_enabled boolean not null default false,
+  onboarding_completed boolean not null default false,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
