@@ -33,6 +33,13 @@ interface BoardRow {
   assigned_person_ids: string[];
 }
 
+interface HistoryRow {
+  user_id: string;
+  session_id: string;
+  person_id: string;
+  board_id: string;
+}
+
 function rowToPerson(row: PersonRow): Person {
   return { id: row.id, name: row.name, avatarColorHex: row.avatar_color_hex };
 }
@@ -81,6 +88,9 @@ interface PairingStore {
     >
   ) => Promise<void>;
   removeBoard: (id: string) => Promise<void>;
+
+  // Session History
+  saveSession: () => Promise<void>;
 }
 
 const toast = () => useToastStore.getState();
@@ -455,7 +465,74 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .eq('id', id);
     if (error) {
       set({ boards: prev }); // rollback
-      toast().addToast('Failed to delete board.', 'error');
+      toast().addToast(`Failed to delete board: ${error.message}`, 'error');
+    }
+  },
+
+  saveSession: async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { boards } = get();
+    // Validate we actually have some assignments to save
+    const hasAssignments = boards.some(
+      (b) => (b.assignedPersonIds ?? []).length > 0
+    );
+    if (!hasAssignments) {
+      toast().addToast(
+        'Nothing to save! Assign some people to boards first.',
+        'info'
+      );
+      return;
+    }
+
+    set({ isLoading: true });
+
+    // 1. Create a session
+    const { data: session, error: sessionErr } = await supabase
+      .from('pairing_sessions')
+      .insert({ user_id: user.id })
+      .select()
+      .single();
+
+    if (sessionErr || !session) {
+      set({ isLoading: false });
+      toast().addToast(
+        `Failed to create session: ${sessionErr?.message}`,
+        'error'
+      );
+      return;
+    }
+
+    // 2. Prepare history rows
+    const historyRows: HistoryRow[] = [];
+    boards.forEach((board) => {
+      (board.assignedPersonIds ?? []).forEach((personId) => {
+        historyRows.push({
+          user_id: user.id,
+          session_id: session.id,
+          person_id: personId,
+          board_id: board.id,
+        });
+      });
+    });
+
+    // 3. Insert history
+    const { error: historyErr } = await supabase
+      .from('pairing_history')
+      .insert(historyRows);
+
+    set({ isLoading: false });
+
+    if (historyErr) {
+      toast().addToast(
+        `Failed to save history: ${historyErr.message}`,
+        'error'
+      );
+    } else {
+      toast().addToast('Pairing session saved successfully!', 'success');
     }
   },
 }));

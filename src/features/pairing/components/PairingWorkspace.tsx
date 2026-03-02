@@ -14,12 +14,29 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
-import type { PairingBoard, Person, DragItem } from '../types';
+import type { Person, DragItem } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
-import { Users, X, Plus, ShieldX } from 'lucide-react';
+import {
+  Users,
+  X,
+  Plus,
+  ShieldX,
+  Sparkles,
+  History,
+  Loader2,
+} from 'lucide-react';
+import { useToastStore } from '../../../store/useToastStore';
 
 export function PairingWorkspace() {
-  const { people, boards, setBoards, addBoard } = usePairingStore();
+  const {
+    people,
+    boards,
+    setBoards,
+    addBoard,
+    saveSession,
+    isLoading: isStoreLoading,
+  } = usePairingStore();
+  const { addToast } = useToastStore();
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newBoardIsExempt, setNewBoardIsExempt] = useState(false);
@@ -228,9 +245,39 @@ export function PairingWorkspace() {
       <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
         {/* Main Workspaces Column */}
         <div className="flex-1 min-w-0 space-y-6">
-          <h2 className="mb-6 text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-            Pairing Boards
-          </h2>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+              Pairing Boards
+            </h2>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() =>
+                  addToast(
+                    'Rotation engine coming in the next update! It will use your saved history to suggest best pairs.',
+                    'info'
+                  )
+                }
+                className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              >
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                Recommend Pairs
+              </button>
+
+              <button
+                onClick={saveSession}
+                disabled={isStoreLoading}
+                className="flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+              >
+                {isStoreLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <History className="h-4 w-4" />
+                )}
+                Save Session
+              </button>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {boards.map((board) => {
