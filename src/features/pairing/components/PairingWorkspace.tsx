@@ -130,14 +130,14 @@ export function PairingWorkspace() {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex flex-col gap-8 md:flex-row">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Main Workspaces Column */}
         <div className="flex-1 space-y-6">
-          <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-6">
+          <h2 className="mb-6 text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
             Pairing Boards
           </h2>
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {boards.map((board) => {
               const assignedPeople = people.filter((p) =>
                 (board.assignedPersonIds || []).includes(p.id)
@@ -154,7 +154,7 @@ export function PairingWorkspace() {
         </div>
 
         {/* Sidebar / Pool */}
-        <div className="w-full md:w-80 shrink-0">
+        <div className="shrink-0 w-full lg:w-80">
           <DroppableUnpairedPool people={unpairedPeople} />
         </div>
       </div>
