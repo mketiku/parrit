@@ -7,10 +7,29 @@ import {
   Loader2,
   X,
   ChevronDown,
+  Layers,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { supabase } from '../../../lib/supabase';
 import { useToastStore } from '../../../store/useToastStore';
+
+/** Hardcoded preset templates — no DB required */
+const BUILTIN_TEMPLATES: {
+  name: string;
+  description: string;
+  boards: { name: string; isExempt: boolean }[];
+}[] = [
+  {
+    name: '3-Board Starter',
+    description: 'Board 1, Board 2, Board 3 + OOO exempt',
+    boards: [
+      { name: 'Board 1', isExempt: false },
+      { name: 'Board 2', isExempt: false },
+      { name: 'Board 3', isExempt: false },
+      { name: 'OOO', isExempt: true },
+    ],
+  },
+];
 
 interface TemplateBoard {
   name: string;
@@ -25,7 +44,8 @@ interface Template {
 }
 
 export function TemplateManager() {
-  const { saveCurrentAsTemplate, applyTemplate } = usePairingStore();
+  const { saveCurrentAsTemplate, applyTemplate, applyBuiltinTemplate } =
+    usePairingStore();
   const { addToast } = useToastStore();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -122,7 +142,36 @@ export function TemplateManager() {
                 </button>
               </div>
 
-              {/* Save New Template */}
+              {/* Preset Templates */}
+              <div className="mb-5">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  Presets
+                </p>
+                <div className="space-y-1.5">
+                  {BUILTIN_TEMPLATES.map((preset) => (
+                    <button
+                      key={preset.name}
+                      onClick={() => {
+                        applyBuiltinTemplate(preset.name, preset.boards);
+                        setIsOpen(false);
+                      }}
+                      className="group flex w-full items-start gap-2.5 rounded-xl border border-neutral-100 bg-gradient-to-r from-brand-50 to-white p-3 text-left transition-all hover:border-brand-300 hover:from-brand-100 hover:to-brand-50 dark:border-neutral-800 dark:from-brand-900/20 dark:to-neutral-900 dark:hover:border-brand-500/50"
+                    >
+                      <Layers className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
+                      <div>
+                        <p className="text-xs font-bold text-neutral-900 group-hover:text-brand-700 dark:text-neutral-100 dark:group-hover:text-brand-300">
+                          {preset.name}
+                        </p>
+                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                          {preset.description}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-4 border-t border-neutral-100 dark:border-neutral-800" />
               <form onSubmit={handleSaveTemplate} className="mb-6">
                 <div className="flex gap-2">
                   <input

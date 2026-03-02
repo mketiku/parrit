@@ -96,6 +96,10 @@ interface PairingStore {
   recommendPairs: () => Promise<void>;
   saveCurrentAsTemplate: (name: string) => Promise<void>;
   applyTemplate: (templateId: string) => Promise<void>;
+  applyBuiltinTemplate: (
+    name: string,
+    boards: { name: string; isExempt: boolean }[]
+  ) => Promise<void>;
 
   // Export / Import
   exportWorkspace: () => Promise<string>; // returns JSON string
@@ -732,6 +736,48 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     } catch {
       set({ isLoading: false });
       toast().addToast('Failed to apply template.', 'error');
+    }
+  },
+
+  applyBuiltinTemplate: async (name, boards) => {
+    set({ isLoading: true });
+    try {
+      const currentBoards = get().boards;
+      await Promise.all(
+        currentBoards.map((b) =>
+          supabase.from('pairing_boards').delete().eq('id', b.id)
+        )
+      );
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated.');
+
+      const newBoardsRows = boards.map((b, i) => ({
+        user_id: user.id,
+        name: b.name,
+        goals: [] as string[],
+        is_exempt: b.isExempt,
+        sort_order: i,
+        assigned_person_ids: [] as string[],
+      }));
+
+      const { data: created, error: createErr } = await supabase
+        .from('pairing_boards')
+        .insert(newBoardsRows)
+        .select();
+
+      if (createErr) throw createErr;
+
+      set({
+        boards: (created as BoardRow[]).map(rowToBoard),
+        isLoading: false,
+      });
+      toast().addToast(`Applied preset "${name}" ✓`, 'success');
+    } catch {
+      set({ isLoading: false });
+      toast().addToast('Failed to apply preset template.', 'error');
     }
   },
 
