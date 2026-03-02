@@ -74,7 +74,7 @@ export function LandingPage() {
 
           {/* Headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.08]">
-            Pairing, finally{' '}
+            Pairing,{' '}
             <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
               done right.
             </span>
