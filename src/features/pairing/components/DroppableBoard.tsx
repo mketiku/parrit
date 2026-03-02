@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import type { PairingBoard, Person } from '../types';
 import { DraggablePerson } from './DraggablePerson';
+import { AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   ShieldX,
@@ -176,25 +177,35 @@ export function DroppableBoard({
       <div
         className={`
           flex flex-1 flex-wrap gap-2 rounded-xl p-3 border-2 border-transparent transition-all
-          ${isOver ? 'bg-indigo-100/30 border-indigo-300 border-dashed dark:bg-indigo-900/10 dark:border-indigo-700' : 'bg-neutral-50 dark:bg-neutral-950'}
-          ${people.length === 0 && !isOver ? 'border-dashed border-neutral-200 dark:border-neutral-800' : ''}
+          ${
+            isOver
+              ? 'bg-indigo-100/30 border-indigo-300 border-dashed dark:bg-indigo-900/10 dark:border-indigo-700'
+              : 'bg-neutral-50 dark:bg-neutral-950'
+          }
+          ${
+            people.length === 0 && !isOver
+              ? 'border-dashed border-neutral-200 dark:border-neutral-800'
+              : ''
+          }
         `}
       >
-        {people.length === 0 ? (
-          <span className="flex w-full min-h-[48px] items-center justify-center text-sm font-medium text-neutral-400 dark:text-neutral-500">
-            {isOver ? 'Drop to assign' : 'Empty Board'}
-          </span>
-        ) : (
-          people.map((person) => (
-            <DraggablePerson
-              key={person.id}
-              person={person}
-              sourceId={board.id}
-              isSelected={selectedPersonIds?.has(person.id)}
-              onClick={(e) => onPersonClick?.(person.id, e)}
-            />
-          ))
-        )}
+        <AnimatePresence>
+          {people.length === 0 ? (
+            <span className="flex w-full min-h-[48px] items-center justify-center text-sm font-medium text-neutral-400 dark:text-neutral-500">
+              {isOver ? 'Drop to assign' : 'Empty Board'}
+            </span>
+          ) : (
+            people.map((person) => (
+              <DraggablePerson
+                key={person.id}
+                person={person}
+                sourceId={board.id}
+                isSelected={selectedPersonIds?.has(person.id)}
+                onClick={(e) => onPersonClick?.(person.id, e)}
+              />
+            ))
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

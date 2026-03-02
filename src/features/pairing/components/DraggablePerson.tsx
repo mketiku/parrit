@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
+import { motion } from 'framer-motion';
 import type { Person, DragItem } from '../types';
 
 interface DraggablePersonProps {
@@ -54,7 +55,14 @@ export function DraggablePerson({
   };
 
   return (
-    <div className="relative flex items-center justify-center">
+    <motion.div
+      layout
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.8, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      className="relative flex items-center justify-center"
+    >
       <button
         ref={setNodeRef}
         {...listeners}
@@ -86,15 +94,17 @@ export function DraggablePerson({
 
       {/* Hover Tooltip */}
       {showTooltip && !isDragging && (
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
           className="pointer-events-none absolute -top-9 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-lg bg-neutral-900 px-2.5 py-1 text-xs font-medium text-white shadow-lg dark:bg-white dark:text-neutral-900"
           role="tooltip"
         >
           {person.name}
           {/* Arrow */}
           <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-neutral-900 dark:border-t-white" />
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

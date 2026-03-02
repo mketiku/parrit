@@ -8,6 +8,7 @@ import { SettingsScreen } from './features/settings/components/SettingsScreen';
 import { TeamScreen } from './features/team/components/TeamScreen';
 import { AboutScreen } from './features/static/components/AboutScreen';
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
+import { HistoryScreen } from './features/pairing/components/HistoryScreen';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
 
 // Placeholder views
@@ -78,6 +79,7 @@ function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardView />} />
           <Route path="/team" element={<TeamScreen />} />
+          <Route path="/history" element={<HistoryScreen />} />
           <Route path="/settings" element={<SettingsScreen />} />
           <Route path="/about" element={<AboutScreen />} />
         </Route>

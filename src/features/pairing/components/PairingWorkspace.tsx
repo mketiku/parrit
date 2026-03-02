@@ -1,20 +1,21 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
+  closestCenter,
   DndContext,
   DragOverlay,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
   useSensor,
   useSensors,
-  DragStartEvent,
-  DragEndEvent,
+  PointerSensor,
+  KeyboardSensor,
   useDroppable,
+  type DragStartEvent,
+  type DragEndEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { AnimatePresence } from 'framer-motion';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
-import type { Person, DragItem } from '../types';
+import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
 import {
   Users,
@@ -36,111 +37,44 @@ export function PairingWorkspace() {
     saveSession,
     isLoading: isStoreLoading,
   } = usePairingStore();
+
   const { addToast } = useToastStore();
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newBoardIsExempt, setNewBoardIsExempt] = useState(false);
-  const addBoardInputRef = useRef<HTMLInputElement>(null);
+  const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
+  const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
+    new Set()
+  );
 
-  const handleAddBoard = async () => {
-    const name = newBoardName.trim();
-    if (!name) {
-      setIsAddingBoard(false);
-      setNewBoardIsExempt(false);
-      return;
-    }
-    await addBoard(name, newBoardIsExempt);
-    setNewBoardName('');
-    setNewBoardIsExempt(false);
-    setIsAddingBoard(false);
-  };
-
-  const handleAddBoardKey = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAddBoard();
-    if (e.key === 'Escape') {
-      setNewBoardName('');
-      setNewBoardIsExempt(false);
-      setIsAddingBoard(false);
-    }
-  };
-
-  // Setup Sensors for Dragging
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
+      activationConstraint: { distance: 8 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
-  const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
-  const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
-    new Set()
-  );
-  const [lastClickedPersonId, setLastClickedPersonId] = useState<string | null>(
-    null
-  );
+  const handlePersonClick = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  // Derive who is Unpaired
-  const allAssignedIds = new Set(
-    boards.flatMap((b) => b.assignedPersonIds || [])
-  );
-  const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
-
-  const getDisplayedPeopleIds = () => {
-    const ids: string[] = [];
-    boards.forEach((b) => {
-      const assigned = people.filter((p) =>
-        (b.assignedPersonIds || []).includes(p.id)
-      );
-      assigned.forEach((p) => ids.push(p.id));
-    });
-    unpairedPeople.forEach((p) => ids.push(p.id));
-    return ids;
-  };
-
-  const handlePersonClick = (personId: string, e: React.MouseEvent) => {
     setSelectedPersonIds((prev) => {
       const next = new Set(prev);
-
-      if (e.shiftKey && lastClickedPersonId) {
-        // Range selection
-        const displayedIds = getDisplayedPeopleIds();
-        const startIdx = displayedIds.indexOf(lastClickedPersonId);
-        const endIdx = displayedIds.indexOf(personId);
-
-        if (startIdx !== -1 && endIdx !== -1) {
-          const min = Math.min(startIdx, endIdx);
-          const max = Math.max(startIdx, endIdx);
-          for (let i = min; i <= max; i++) {
-            next.add(displayedIds[i]);
-          }
-        } else {
-          // fallback if something went wrong
-          next.add(personId);
-        }
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        // Standard toggle behavior
-        if (next.has(personId)) {
-          next.delete(personId);
-        } else {
-          next.add(personId);
-        }
+        next.add(id);
       }
-
       return next;
     });
-
-    setLastClickedPersonId(personId);
   };
 
   const handleBulkMove = (targetBoardId: string) => {
     if (selectedPersonIds.size === 0) return;
 
-    setBoards((prevBoards) => {
+    setBoards((prevBoards: PairingBoard[]) => {
       return prevBoards.map((board) => {
         // Remove selected people from their current boards
         const newAssigned = (board.assignedPersonIds || []).filter(
@@ -161,7 +95,7 @@ export function PairingWorkspace() {
         return {
           ...board,
           assignedPersonIds: newAssigned,
-        };
+        } as PairingBoard;
       });
     });
 
@@ -169,7 +103,6 @@ export function PairingWorkspace() {
     setSelectedPersonIds(new Set());
   };
 
-  // Handlers
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     if (active.data.current?.type === 'PERSON') {
@@ -178,54 +111,39 @@ export function PairingWorkspace() {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+    const { over, active } = event;
     setActiveDragItem(null);
 
-    // If dropped nowhere, or didn't drop a person
-    if (!over || active.data.current?.type !== 'PERSON') {
-      if (selectedPersonIds.size > 0) {
-        setSelectedPersonIds(new Set());
-      }
+    if (!over) return;
+
+    const dragItem = active.data.current as DragItem;
+    const targetBoardId = over.id as string;
+
+    // If we're dragging one of the selected people, move the whole selection
+    if (selectedPersonIds.has(dragItem.person.id)) {
+      handleBulkMove(targetBoardId);
       return;
     }
 
-    const personId = active.id as string;
-    const sourceId = (active.data.current as DragItem).sourceId;
-    const targetBoardId = over.id as string;
-
-    const isMultiDrag =
-      selectedPersonIds.has(personId) && selectedPersonIds.size > 1;
-    const payloadIds = isMultiDrag ? Array.from(selectedPersonIds) : [personId];
-
-    // Clear selection smoothly
-    if (selectedPersonIds.size > 0) {
-      setSelectedPersonIds(new Set());
-    }
-
-    // No change if dropped back where they started (for single item drag scenarios)
-    if (!isMultiDrag && sourceId === targetBoardId) return;
-
-    setBoards((prevBoards) => {
+    // Standard single-person move
+    setBoards((prevBoards: PairingBoard[]) => {
       return prevBoards.map((board) => {
-        // Remove everyone in payload from their current board
-        const newAssigned = (board.assignedPersonIds || []).filter(
-          (id) => !payloadIds.includes(id)
-        );
+        const isSource = board.id === dragItem.sourceId;
+        const isTarget = board.id === targetBoardId;
 
-        // Add payload to new board (unless it is the 'unpaired' pool we dropped on)
-        if (board.id === targetBoardId && targetBoardId !== 'unpaired') {
-          return {
-            ...board,
-            assignedPersonIds: Array.from(
-              new Set([...newAssigned, ...payloadIds])
-            ),
-          };
+        let nextAssigned = [...(board.assignedPersonIds || [])];
+
+        if (isSource) {
+          nextAssigned = nextAssigned.filter((id) => id !== dragItem.person.id);
         }
 
-        return {
-          ...board,
-          assignedPersonIds: newAssigned,
-        };
+        if (isTarget && targetBoardId !== 'unpaired') {
+          if (!nextAssigned.includes(dragItem.person.id)) {
+            nextAssigned.push(dragItem.person.id);
+          }
+        }
+
+        return { ...board, assignedPersonIds: nextAssigned } as PairingBoard;
       });
     });
   };
@@ -233,6 +151,21 @@ export function PairingWorkspace() {
   const handleDragCancel = () => {
     setActiveDragItem(null);
   };
+
+  const handleAddBoard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBoardName.trim()) return;
+
+    await addBoard(newBoardName.trim(), newBoardIsExempt);
+    setNewBoardName('');
+    setNewBoardIsExempt(false);
+    setIsAddingBoard(false);
+  };
+
+  const allAssignedIds = new Set(
+    boards.flatMap((b) => b.assignedPersonIds || [])
+  );
+  const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
 
   return (
     <DndContext
@@ -281,9 +214,10 @@ export function PairingWorkspace() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {boards.map((board) => {
-              const assignedPeople = people.filter((p) =>
-                (board.assignedPersonIds || []).includes(p.id)
-              );
+              const assignedPeople = (board.assignedPersonIds || [])
+                .map((id) => people.find((p) => p.id === id))
+                .filter((p): p is Person => !!p);
+
               return (
                 <DroppableBoard
                   key={board.id}
@@ -295,65 +229,74 @@ export function PairingWorkspace() {
               );
             })}
 
-            {/* Add Board card */}
-            {isAddingBoard ? (
-              <div className="flex min-h-[160px] flex-col justify-center gap-3 rounded-2xl border-2 border-dashed border-indigo-400 bg-indigo-50/50 p-5 dark:border-indigo-600 dark:bg-indigo-950/20">
+            {/* Add Board Trigger */}
+            {!isAddingBoard ? (
+              <button
+                onClick={() => setIsAddingBoard(true)}
+                className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-indigo-400 hover:bg-indigo-50/30 dark:border-neutral-800 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-950/10"
+              >
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-500 dark:bg-neutral-800 dark:group-hover:bg-indigo-900/40">
+                  <Plus className="h-6 w-6" />
+                </div>
+                <span className="text-sm font-semibold text-neutral-500 group-hover:text-indigo-600 dark:text-neutral-400 dark:group-hover:text-indigo-400">
+                  Add Board
+                </span>
+              </button>
+            ) : (
+              <form
+                onSubmit={handleAddBoard}
+                className="flex min-h-[160px] flex-col rounded-2xl border-2 border-indigo-400 bg-white p-5 shadow-lg ring-4 ring-indigo-500/10 animate-in zoom-in-95 duration-200 dark:bg-neutral-900 dark:border-indigo-500/50"
+              >
                 <input
-                  ref={addBoardInputRef}
                   autoFocus
+                  placeholder="Board name..."
                   value={newBoardName}
                   onChange={(e) => setNewBoardName(e.target.value)}
-                  onKeyDown={handleAddBoardKey}
-                  placeholder="Board name…"
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ring-2 ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-900"
+                  className="mb-4 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
                 />
-                {/* Exempt toggle */}
-                <button
-                  onClick={() => setNewBoardIsExempt((v) => !v)}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                    newBoardIsExempt
-                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                      : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400'
-                  }`}
-                >
-                  <ShieldX className="h-3.5 w-3.5" />
-                  {newBoardIsExempt
-                    ? 'Exempt (e.g. Out of Office)'
-                    : 'Mark as Exempt'}
-                </button>
-                <div className="flex gap-2">
+
+                <label className="flex items-center gap-2 mb-4 cursor-pointer group">
+                  <div
+                    onClick={() => setNewBoardIsExempt(!newBoardIsExempt)}
+                    className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+                      newBoardIsExempt
+                        ? 'bg-amber-500 border-amber-500 text-white'
+                        : 'border-neutral-300 dark:border-neutral-600'
+                    }`}
+                  >
+                    {newBoardIsExempt && <ShieldX className="h-3 w-3" />}
+                  </div>
+                  <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                    Mark as Exempt (OOO)
+                  </span>
+                </label>
+
+                <div className="mt-auto flex gap-2">
                   <button
-                    onClick={handleAddBoard}
-                    className="rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-600"
+                    type="submit"
+                    className="flex-1 rounded-lg bg-indigo-500 py-2 text-xs font-bold text-white transition-colors hover:bg-indigo-600"
                   >
                     Add
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
+                      setIsAddingBoard(false);
                       setNewBoardName('');
                       setNewBoardIsExempt(false);
-                      setIsAddingBoard(false);
                     }}
-                    className="rounded-lg bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300"
+                    className="rounded-lg bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-600 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
                   >
-                    Cancel
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsAddingBoard(true)}
-                className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-200 bg-transparent p-5 text-neutral-400 transition-colors hover:border-indigo-400 hover:text-indigo-500 dark:border-neutral-800 dark:hover:border-indigo-600"
-              >
-                <Plus className="h-6 w-6" />
-                <span className="text-sm font-medium">Add Board</span>
-              </button>
+              </form>
             )}
           </div>
         </div>
 
-        {/* Sidebar / Pool */}
-        <div className="w-full shrink-0 xl:w-[350px]">
+        {/* Sidebar Pool Column */}
+        <div className="xl:w-80">
           <DroppableUnpairedPool
             people={unpairedPeople}
             selectedPersonIds={selectedPersonIds}
@@ -460,21 +403,23 @@ function DroppableUnpairedPool({
       </div>
 
       <div className="flex flex-wrap content-start gap-3 flex-1">
-        {people.length === 0 ? (
-          <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-500">
-            {isOver ? 'Drop to unpair' : 'Everyone is paired!'}
-          </span>
-        ) : (
-          people.map((person) => (
-            <DraggablePerson
-              key={person.id}
-              person={person}
-              sourceId="unpaired"
-              isSelected={selectedPersonIds?.has(person.id)}
-              onClick={(e) => onPersonClick?.(person.id, e)}
-            />
-          ))
-        )}
+        <AnimatePresence>
+          {people.length === 0 ? (
+            <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-500">
+              {isOver ? 'Drop to unpair' : 'Everyone is paired!'}
+            </span>
+          ) : (
+            people.map((person) => (
+              <DraggablePerson
+                key={person.id}
+                person={person}
+                sourceId="unpaired"
+                isSelected={selectedPersonIds?.has(person.id)}
+                onClick={(e) => onPersonClick?.(person.id, e)}
+              />
+            ))
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

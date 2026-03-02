@@ -73,6 +73,18 @@ export default function AppLayout() {
                 Team
               </NavLink>
               <NavLink
+                to="/history"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
+                    isActive
+                      ? 'bg-neutral-100 text-indigo-600 dark:bg-neutral-800 dark:text-indigo-400'
+                      : 'text-neutral-600 dark:text-neutral-400'
+                  }`
+                }
+              >
+                History
+              </NavLink>
+              <NavLink
                 to="/settings"
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
