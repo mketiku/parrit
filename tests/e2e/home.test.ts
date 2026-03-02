@@ -7,9 +7,9 @@ test('has title', async ({ page }) => {
     await expect(page).toHaveTitle(/Parrit/);
 });
 
-test('get started button is visible', async ({ page }) => {
+test('logo is visible', async ({ page }) => {
     await page.goto('/');
 
-    // Click the get started link.
-    await expect(page.getByRole('button', { name: /Get Started/i })).toBeVisible();
+    // Check that the logo text is shown
+    await expect(page.getByText('Parrit', { exact: true })).toBeVisible();
 });

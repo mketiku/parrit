@@ -3,20 +3,16 @@ import { describe, it, expect } from 'vitest';
 import App from './App';
 import React from 'react';
 
-describe('App', () => {
-    it('renders the title', () => {
+describe('App Root Component', () => {
+    it('renders the layout and default dashboard view', () => {
         render(<App />);
-        expect(screen.getByText(/Parrit/i)).toBeInTheDocument();
-    });
 
-    it('renders the description', () => {
-        render(<App />);
-        expect(screen.getByText(/A modern, premium pairing tool/i)).toBeInTheDocument();
-    });
+        // Header Logo should exist
+        expect(screen.getByText('Parrit')).toBeInTheDocument();
 
-    it('renders segments with proper color', () => {
-        render(<App />);
-        const parrot = screen.getByText('🦜');
-        expect(parrot).toBeInTheDocument();
+        // Default route placeholder text should exist
+        expect(
+            screen.getByText('Current Pairing Workspace: Phoenix')
+        ).toBeInTheDocument();
     });
 });
