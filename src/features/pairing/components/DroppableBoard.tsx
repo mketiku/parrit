@@ -13,8 +13,10 @@ import {
   Plus,
   Link as LinkIcon,
   Target,
+  MoreHorizontal,
   ChevronUp,
   ChevronDown,
+  RefreshCcw,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useStalePairsDetector } from './useStaleParisDetector';
@@ -39,7 +41,7 @@ export function DroppableBoard({
     data: { type: 'BOARD' },
   });
 
-  const { updateBoard, removeBoard } = usePairingStore();
+  const { removeBoard, updateBoard, rotateBoardPair } = usePairingStore();
   const { stalePairHighlightingEnabled } = useWorkspacePrefsStore();
   const { isRecentPair } = useStalePairsDetector(3);
 
@@ -213,6 +215,14 @@ export function DroppableBoard({
 
             {/* Board actions — visible on hover */}
             <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => rotateBoardPair(board.id)}
+                disabled={people.length === 0}
+                className="rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-brand-500 dark:hover:bg-neutral-800 dark:hover:text-brand-400 disabled:opacity-30"
+                title="Rotate pair (Swap one person randomly)"
+              >
+                <RefreshCcw className="h-3.5 w-3.5" />
+              </button>
               <button
                 onClick={() => setIsEditing(true)}
                 className="rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"

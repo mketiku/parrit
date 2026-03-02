@@ -36,10 +36,13 @@ export function BoardExportView({
     <div
       ref={exportRef}
       style={{
-        position: 'fixed',
-        top: '-9999px',
-        left: '-9999px',
+        position: 'absolute',
+        top: 0,
+        left: 0,
         width: '1200px',
+        opacity: 0,
+        pointerEvents: 'none',
+        zIndex: -50,
         fontFamily: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
         backgroundColor: '#f9fafb',
         padding: '48px',

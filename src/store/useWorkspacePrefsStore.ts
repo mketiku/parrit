@@ -10,6 +10,8 @@ interface WorkspacePrefsState {
   setStalePairHighlighting: (enabled: boolean) => void;
   showFullName: boolean;
   setShowFullName: (enabled: boolean) => void;
+  publicViewEnabled: boolean;
+  setPublicViewEnabled: (enabled: boolean) => void;
 }
 
 export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
@@ -20,6 +22,8 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
         set({ stalePairHighlightingEnabled: enabled }),
       showFullName: true,
       setShowFullName: (enabled) => set({ showFullName: enabled }),
+      publicViewEnabled: false,
+      setPublicViewEnabled: (enabled) => set({ publicViewEnabled: enabled }),
     }),
     {
       name: 'parrit-workspace-prefs',

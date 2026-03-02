@@ -13,7 +13,8 @@ import { PairingWorkspace } from './features/pairing/components/PairingWorkspace
 import { HistoryScreen } from './features/pairing/components/HistoryScreen';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
 import { useThemeStore } from './store/useThemeStore';
-import { Analytics } from '@vercel/analytics/react'; // TODO: Remove this analytics component later as requested
+import { PublicView } from './features/pairing/components/PublicView';
+import { Analytics } from '@vercel/analytics/react';
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -86,6 +87,7 @@ function App() {
               element={user ? <Navigate to="/app" replace /> : <LandingPage />}
             />
             <Route path="/about" element={<AboutScreen />} />
+            <Route path="/view/:userId" element={<PublicView />} />
             <Route
               path="/login"
               element={user ? <Navigate to="/app" replace /> : <AuthScreen />}

@@ -181,6 +181,13 @@ create table if not exists public.pairing_templates (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 6. Create the `workspace_settings` table (For public view-only access)
+create table if not exists public.workspace_settings (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  public_view_enabled boolean not null default false,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- RLS for templates
 alter table public.pairing_templates enable row level security;
 
@@ -199,3 +206,18 @@ create policy "templates_update_own"
 create policy "templates_delete_own"
   on public.pairing_templates for delete
   using (auth.uid() = public.pairing_templates.user_id);
+
+-- RLS for settings
+alter table public.workspace_settings enable row level security;
+
+create policy "settings_select_own" on public.workspace_settings for select using (auth.uid() = user_id);
+create policy "settings_upsert_own" on public.workspace_settings for insert with check (auth.uid() = user_id);
+create policy "settings_update_own" on public.workspace_settings for update using (auth.uid() = user_id);
+create policy "settings_public_read" on public.workspace_settings for select using (true);
+
+-- Update boards/people for public view
+create policy "boards_public_select" on public.pairing_boards for select
+using (exists (select 1 from public.workspace_settings s where s.user_id = public.pairing_boards.user_id and s.public_view_enabled = true));
+
+create policy "people_public_select" on public.people for select
+using (exists (select 1 from public.workspace_settings s where s.user_id = public.people.user_id and s.public_view_enabled = true));

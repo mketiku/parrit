@@ -17,6 +17,7 @@ import {
   Package,
   Clock,
   Tag,
+  Share2,
 } from 'lucide-react';
 
 const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
@@ -43,6 +44,8 @@ export function SettingsScreen() {
     setStalePairHighlighting,
     showFullName,
     setShowFullName,
+    publicViewEnabled,
+    setPublicViewEnabled,
   } = useWorkspacePrefsStore();
   const {
     exportWorkspace,
@@ -279,6 +282,45 @@ export function SettingsScreen() {
                   stalePairHighlightingEnabled
                     ? 'translate-x-5'
                     : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="mx-6 mb-6 flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+            <div className="flex items-start gap-3">
+              <Share2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
+              <div>
+                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
+                  Public View-Only Access
+                </p>
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                  Allow anyone with the link to see your current boards
+                  (read-only).
+                </p>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={publicViewEnabled}
+              onClick={async () => {
+                const nextVal = !publicViewEnabled;
+                setPublicViewEnabled(nextVal);
+                if (user) {
+                  await supabase
+                    .from('workspace_settings')
+                    .upsert({ user_id: user.id, public_view_enabled: nextVal });
+                }
+              }}
+              className={`relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
+                publicViewEnabled
+                  ? 'bg-brand-500'
+                  : 'bg-neutral-200 dark:bg-neutral-700'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
+                  publicViewEnabled ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
