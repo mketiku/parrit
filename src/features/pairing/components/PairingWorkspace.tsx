@@ -159,7 +159,7 @@ export function PairingWorkspace() {
         </div>
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeDragItem ? (
           <DraggablePerson
             person={activeDragItem.person}
