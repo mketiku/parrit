@@ -13,7 +13,6 @@ import {
   Plus,
   Link as LinkIcon,
   Target,
-  MoreHorizontal,
   ChevronUp,
   ChevronDown,
   RefreshCcw,
