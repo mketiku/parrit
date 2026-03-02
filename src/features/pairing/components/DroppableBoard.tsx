@@ -127,6 +127,23 @@ export function DroppableBoard({
                 <Pencil className="h-3.5 w-3.5" />
               </button>
               <button
+                onClick={() =>
+                  updateBoard(board.id, { isExempt: !board.isExempt })
+                }
+                className={`rounded-md p-1 transition-colors ${
+                  board.isExempt
+                    ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
+                    : 'text-neutral-400 hover:bg-neutral-100 hover:text-amber-500 dark:hover:bg-neutral-800'
+                }`}
+                title={
+                  board.isExempt
+                    ? 'Remove Exempt status'
+                    : 'Mark as Exempt (Out of Office)'
+                }
+              >
+                <ShieldX className="h-3.5 w-3.5" />
+              </button>
+              <button
                 onClick={() => removeBoard(board.id)}
                 className="rounded-md p-1 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 title="Delete board"

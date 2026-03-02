@@ -16,22 +16,25 @@ import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import type { PairingBoard, Person, DragItem } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
-import { Users, X, Plus } from 'lucide-react';
+import { Users, X, Plus, ShieldX } from 'lucide-react';
 
 export function PairingWorkspace() {
   const { people, boards, setBoards, addBoard } = usePairingStore();
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
+  const [newBoardIsExempt, setNewBoardIsExempt] = useState(false);
   const addBoardInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddBoard = async () => {
     const name = newBoardName.trim();
     if (!name) {
       setIsAddingBoard(false);
+      setNewBoardIsExempt(false);
       return;
     }
-    await addBoard(name);
+    await addBoard(name, newBoardIsExempt);
     setNewBoardName('');
+    setNewBoardIsExempt(false);
     setIsAddingBoard(false);
   };
 
@@ -39,6 +42,7 @@ export function PairingWorkspace() {
     if (e.key === 'Enter') handleAddBoard();
     if (e.key === 'Escape') {
       setNewBoardName('');
+      setNewBoardIsExempt(false);
       setIsAddingBoard(false);
     }
   };
@@ -246,17 +250,30 @@ export function PairingWorkspace() {
 
             {/* Add Board card */}
             {isAddingBoard ? (
-              <div className="flex min-h-[160px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-indigo-400 bg-indigo-50/50 p-5 dark:border-indigo-600 dark:bg-indigo-950/20">
+              <div className="flex min-h-[160px] flex-col justify-center gap-3 rounded-2xl border-2 border-dashed border-indigo-400 bg-indigo-50/50 p-5 dark:border-indigo-600 dark:bg-indigo-950/20">
                 <input
                   ref={addBoardInputRef}
                   autoFocus
                   value={newBoardName}
                   onChange={(e) => setNewBoardName(e.target.value)}
                   onKeyDown={handleAddBoardKey}
-                  onBlur={handleAddBoard}
                   placeholder="Board name…"
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ring-2 ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-900"
                 />
+                {/* Exempt toggle */}
+                <button
+                  onClick={() => setNewBoardIsExempt((v) => !v)}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    newBoardIsExempt
+                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                      : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400'
+                  }`}
+                >
+                  <ShieldX className="h-3.5 w-3.5" />
+                  {newBoardIsExempt
+                    ? 'Exempt (e.g. Out of Office)'
+                    : 'Mark as Exempt'}
+                </button>
                 <div className="flex gap-2">
                   <button
                     onClick={handleAddBoard}
@@ -267,6 +284,7 @@ export function PairingWorkspace() {
                   <button
                     onClick={() => {
                       setNewBoardName('');
+                      setNewBoardIsExempt(false);
                       setIsAddingBoard(false);
                     }}
                     className="rounded-lg bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300"
