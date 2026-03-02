@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
+import { AuthScreen } from './features/auth/components/AuthScreen';
+import { useAuthStore } from './features/auth/store/useAuthStore';
+import { Loader2 } from 'lucide-react';
 
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
 
@@ -33,6 +36,24 @@ function SettingsView() {
 }
 
 function App() {
+  const { user, isLoading, initialize } = useAuthStore();
+
+  React.useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen />;
+  }
+
   return (
     <BrowserRouter>
       <Routes>

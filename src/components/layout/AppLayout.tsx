@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Bird, Moon, Sun } from 'lucide-react';
+import { Bird, Moon, Sun, LogOut } from 'lucide-react';
+import { useAuthStore } from '../../features/auth/store/useAuthStore';
 
 export default function AppLayout() {
+  const { signOut } = useAuthStore();
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return (
@@ -92,9 +94,14 @@ export default function AppLayout() {
                 <Moon className="h-4 w-4" />
               )}
             </button>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 dark:bg-neutral-800 text-xs font-semibold text-neutral-600 dark:text-neutral-400 ring-1 ring-neutral-300 dark:ring-neutral-700">
-              MK
-            </div>
+            <button
+              onClick={() => signOut()}
+              className="group flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-600 ring-1 ring-neutral-300 transition-all hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:ring-neutral-700 dark:hover:bg-neutral-700"
+              title="Sign Out"
+            >
+              <span className="group-hover:hidden">MK</span>
+              <LogOut className="hidden h-3.5 w-3.5 group-hover:block" />
+            </button>
           </div>
         </div>
       </header>
