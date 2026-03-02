@@ -22,6 +22,7 @@ import { BoardExportView } from './BoardExportView';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
+import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import {
   Users,
   X,
@@ -44,6 +45,7 @@ export function PairingWorkspace() {
     isLoading: isStoreLoading,
   } = usePairingStore();
   const { workspaceName } = useAuthStore();
+  const { showFullName } = useWorkspacePrefsStore();
 
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -416,6 +418,7 @@ export function PairingWorkspace() {
         people={people}
         workspaceName={workspaceName ?? 'Parrit'}
         exportRef={exportViewRef}
+        showFullName={showFullName}
       />
     </>
   );

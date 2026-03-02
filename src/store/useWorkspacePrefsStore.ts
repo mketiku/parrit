@@ -18,7 +18,7 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
       stalePairHighlightingEnabled: false,
       setStalePairHighlighting: (enabled) =>
         set({ stalePairHighlightingEnabled: enabled }),
-      showFullName: false,
+      showFullName: true,
       setShowFullName: (enabled) => set({ showFullName: enabled }),
     }),
     {

@@ -6,6 +6,7 @@ interface BoardExportViewProps {
   people: Person[];
   workspaceName: string;
   exportRef: React.RefObject<HTMLDivElement | null>;
+  showFullName: boolean;
 }
 
 /**
@@ -17,6 +18,7 @@ export function BoardExportView({
   people,
   workspaceName,
   exportRef,
+  showFullName,
 }: BoardExportViewProps) {
   const getAssignedPeople = (board: PairingBoard): Person[] =>
     (board.assignedPersonIds ?? [])
@@ -239,36 +241,40 @@ export function BoardExportView({
                       >
                         <div
                           style={{
-                            width: '40px',
                             height: '40px',
-                            borderRadius: '50%',
+                            minWidth: showFullName ? 'auto' : '40px',
+                            padding: showFullName ? '0 12px' : '0',
+                            borderRadius: showFullName ? '999px' : '50%',
                             backgroundColor: p.avatarColorHex,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: 'white',
-                            fontSize: '13px',
+                            fontSize: showFullName ? '12px' : '13px',
                             fontWeight: 700,
                             boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                          }}
-                        >
-                          {initials}
-                        </div>
-                        <span
-                          style={{
-                            fontSize: '10px',
-                            color: '#6b7280',
-                            fontWeight: 600,
-                            maxWidth: '48px',
-                            textAlign: 'center',
-                            lineHeight: 1.2,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {p.name.split(' ')[0]}
-                        </span>
+                          {showFullName ? p.name.split(' ')[0] : initials}
+                        </div>
+                        {!showFullName && (
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              color: '#6b7280',
+                              fontWeight: 600,
+                              maxWidth: '48px',
+                              textAlign: 'center',
+                              lineHeight: 1.2,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {p.name.split(' ')[0]}
+                          </span>
+                        )}
                       </div>
                     );
                   })
