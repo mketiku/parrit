@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Bird, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 
@@ -76,7 +77,7 @@ export default function AppLayout() {
               <NavLink
                 to="/app"
                 end
-                className={({ isActive }) =>
+                className={({ isActive }: { isActive: boolean }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
                       ? 'bg-neutral-100 text-brand-600 dark:bg-neutral-800 dark:text-brand-400'
@@ -149,88 +150,90 @@ export default function AppLayout() {
           </div>
         </div>
 
-        {/* Mobile Sidebar/Menu overlay */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 top-[65px] z-[60] sm:hidden">
-            <div
-              className="absolute inset-0 bg-neutral-900/20 backdrop-blur-sm dark:bg-black/40"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <div className="absolute left-0 h-full w-[280px] border-r border-neutral-200 bg-white p-6 shadow-2xl animate-in slide-in-from-left duration-300 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="flex flex-col gap-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2">
-                  Navigation
-                </p>
-                <NavLink
-                  to="/app"
-                  end
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
-                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
-                    }`
-                  }
-                >
-                  Dashboard
-                </NavLink>
-                <NavLink
-                  to="/app/team"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
-                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
-                    }`
-                  }
-                >
-                  Team
-                </NavLink>
-                <NavLink
-                  to="/app/history"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
-                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
-                    }`
-                  }
-                >
-                  History
-                </NavLink>
-                <NavLink
-                  to="/app/settings"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
-                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
-                    }`
-                  }
-                >
-                  Settings
-                </NavLink>
+        {/* Mobile Menu Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileMenuOpen(false)}
+                className="fixed inset-0 z-[60] bg-neutral-900/20 backdrop-blur-sm dark:bg-black/40 sm:hidden"
+              />
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed inset-y-0 left-0 z-[70] w-full max-w-[300px] bg-white shadow-2xl dark:bg-neutral-900 sm:hidden"
+              >
+                <div className="flex h-full flex-col">
+                  {/* Drawer Header */}
+                  <div className="flex h-16 items-center justify-between border-b border-neutral-100 px-6 dark:border-neutral-800">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white">
+                        <Bird className="h-5 w-5" />
+                      </div>
+                      <span className="font-bold">Parrit</span>
+                    </div>
+                    <button
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
 
-                <div className="mt-6 border-t border-neutral-100 pt-6 dark:border-neutral-800">
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      signOut();
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-all active:scale-95 dark:bg-red-500/10 dark:text-red-400"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </button>
+                  {/* Drawer Content */}
+                  <div className="flex-1 overflow-y-auto px-4 py-6">
+                    <p className="mb-4 px-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                      Menu
+                    </p>
+                    <div className="space-y-1">
+                      {[
+                        { to: '/app', label: 'Dashboard', end: true },
+                        { to: '/app/team', label: 'Team' },
+                        { to: '/app/history', label: 'History' },
+                        { to: '/app/settings', label: 'Settings' },
+                      ].map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          end={item.end}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={({ isActive }: { isActive: boolean }) =>
+                            `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                              isActive
+                                ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 text-base'
+                                : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                            }`
+                          }
+                        >
+                          {item.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Drawer Footer */}
+                  <div className="border-t border-neutral-100 p-6 dark:border-neutral-800">
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        signOut();
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 py-3 text-sm font-bold text-red-600 transition-all active:scale-95 dark:bg-red-500/10 dark:text-red-400"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Offline Banner */}
