@@ -357,15 +357,26 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   },
 
   persistBoardAssignments: async (boards) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
     const updates = boards.map((b) => ({
       id: b.id,
+      user_id: user.id, // Include user_id to satisfy RLS and NOT NULL constraint on potential inserts
       assigned_person_ids: b.assignedPersonIds ?? [],
     }));
+
     const { error } = await supabase
       .from('pairing_boards')
       .upsert(updates, { onConflict: 'id' });
     if (error) {
-      toast().addToast('Could not save board changes.', 'error');
+      console.error('Board persistence error:', error);
+      toast().addToast(
+        `Could not save board changes: ${error.message}`,
+        'error'
+      );
     }
   },
 
@@ -389,7 +400,10 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .single();
 
     if (error || !data) {
-      toast().addToast(`Failed to create board "${name}".`, 'error');
+      toast().addToast(
+        `Failed to create board "${name}": ${error?.message || 'Unknown error'}`,
+        'error'
+      );
       return;
     }
     set((state) => ({
@@ -418,7 +432,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .eq('id', id);
     if (error) {
       set({ boards: prev }); // rollback
-      toast().addToast('Failed to update board.', 'error');
+      toast().addToast(`Failed to update board: ${error.message}`, 'error');
     }
   },
 
