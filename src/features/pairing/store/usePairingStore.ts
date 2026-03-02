@@ -298,6 +298,12 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   },
 
   updatePerson: async (id, updates) => {
+    // Optimistic update
+    const prev = get().people;
+    set((state) => ({
+      people: state.people.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+    }));
+
     const dbUpdates: Partial<PersonRow> = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
     if (updates.avatarColorHex !== undefined)
@@ -308,36 +314,38 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .update(dbUpdates)
       .eq('id', id);
     if (error) {
+      set({ people: prev }); // rollback
       toast().addToast('Failed to update team member.', 'error');
-      return;
     }
-    set((state) => ({
-      people: state.people.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-    }));
   },
 
   removePerson: async (id) => {
     const person = get().people.find((p) => p.id === id);
-    const { error } = await supabase.from('people').delete().eq('id', id);
-    if (error) {
-      toast().addToast('Failed to remove team member.', 'error');
-      return;
-    }
+    const prevPeople = get().people;
+    const prevBoards = get().boards;
 
+    // Optimistic update
     const updatedBoards = get().boards.map((b) => ({
       ...b,
       assignedPersonIds: (b.assignedPersonIds ?? []).filter(
         (pid) => pid !== id
       ),
     }));
-    await get().persistBoardAssignments(updatedBoards);
-
-    set((state) => ({
-      people: state.people.filter((p) => p.id !== id),
+    set({
+      people: prevPeople.filter((p) => p.id !== id),
       boards: updatedBoards,
-    }));
+    });
     if (person)
       toast().addToast(`${person.name} removed from the team.`, 'success');
+
+    const { error } = await supabase.from('people').delete().eq('id', id);
+    if (error) {
+      set({ people: prevPeople, boards: prevBoards }); // rollback
+      toast().addToast('Failed to remove team member.', 'error');
+      return;
+    }
+    // Persist board cleanup in background
+    get().persistBoardAssignments(updatedBoards);
   },
 
   setBoards: (boards) => {
@@ -391,6 +399,12 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   },
 
   updateBoard: async (id, updates) => {
+    // Optimistic update
+    const prev = get().boards;
+    set((state) => ({
+      boards: state.boards.map((b) => (b.id === id ? { ...b, ...updates } : b)),
+    }));
+
     const dbUpdates: Record<string, unknown> = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
     if (updates.goalText !== undefined) dbUpdates.goal_text = updates.goalText;
@@ -403,25 +417,26 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .update(dbUpdates)
       .eq('id', id);
     if (error) {
+      set({ boards: prev }); // rollback
       toast().addToast('Failed to update board.', 'error');
-      return;
     }
-    set((state) => ({
-      boards: state.boards.map((b) => (b.id === id ? { ...b, ...updates } : b)),
-    }));
   },
 
   removeBoard: async (id) => {
     const board = get().boards.find((b) => b.id === id);
+    const prev = get().boards;
+
+    // Optimistic update — remove instantly
+    set((state) => ({ boards: state.boards.filter((b) => b.id !== id) }));
+    if (board) toast().addToast(`"${board.name}" board deleted.`, 'success');
+
     const { error } = await supabase
       .from('pairing_boards')
       .delete()
       .eq('id', id);
     if (error) {
+      set({ boards: prev }); // rollback
       toast().addToast('Failed to delete board.', 'error');
-      return;
     }
-    set((state) => ({ boards: state.boards.filter((b) => b.id !== id) }));
-    if (board) toast().addToast(`"${board.name}" board deleted.`, 'success');
   },
 }));
