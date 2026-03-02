@@ -168,42 +168,51 @@ export function PairingWorkspace() {
     const { active, over } = event;
     setActiveDragItem(null);
 
-    // If dragged while selected, we optionally can clear selection, let's just clear it.
-    if (selectedPersonIds.size > 0) {
-      setSelectedPersonIds(new Set());
-    }
-
     // If dropped nowhere, or didn't drop a person
-    if (!over || active.data.current?.type !== 'PERSON') return;
+    if (!over || active.data.current?.type !== 'PERSON') {
+      if (selectedPersonIds.size > 0) {
+        setSelectedPersonIds(new Set());
+      }
+      return;
+    }
 
     const personId = active.id as string;
     const sourceId = (active.data.current as DragItem).sourceId;
     const targetBoardId = over.id as string;
 
-    // No change if dropped back where they started
-    if (sourceId === targetBoardId) return;
+    const isMultiDrag =
+      selectedPersonIds.has(personId) && selectedPersonIds.size > 1;
+    const payloadIds = isMultiDrag ? Array.from(selectedPersonIds) : [personId];
+
+    // Clear selection smoothly
+    if (selectedPersonIds.size > 0) {
+      setSelectedPersonIds(new Set());
+    }
+
+    // No change if dropped back where they started (for single item drag scenarios)
+    if (!isMultiDrag && sourceId === targetBoardId) return;
 
     setBoards((prevBoards) => {
       return prevBoards.map((board) => {
-        // Remove from old board if they were on one
-        if (board.id === sourceId) {
+        // Remove everyone in payload from their current board
+        const newAssigned = (board.assignedPersonIds || []).filter(
+          (id) => !payloadIds.includes(id)
+        );
+
+        // Add payload to new board (unless it is the 'unpaired' pool we dropped on)
+        if (board.id === targetBoardId && targetBoardId !== 'unpaired') {
           return {
             ...board,
-            assignedPersonIds: (board.assignedPersonIds || []).filter(
-              (id) => id !== personId
+            assignedPersonIds: Array.from(
+              new Set([...newAssigned, ...payloadIds])
             ),
           };
         }
 
-        // Add to new board (unless it is the 'unpaired' pool we dropped on)
-        if (board.id === targetBoardId && targetBoardId !== 'unpaired') {
-          return {
-            ...board,
-            assignedPersonIds: [...(board.assignedPersonIds || []), personId],
-          };
-        }
-
-        return board;
+        return {
+          ...board,
+          assignedPersonIds: newAssigned,
+        };
       });
     });
   };
@@ -257,11 +266,19 @@ export function PairingWorkspace() {
 
       <DragOverlay dropAnimation={null}>
         {activeDragItem ? (
-          <DraggablePerson
-            person={activeDragItem.person}
-            sourceId={activeDragItem.sourceId}
-            isOverlay
-          />
+          <div className="relative">
+            <DraggablePerson
+              person={activeDragItem.person}
+              sourceId={activeDragItem.sourceId}
+              isOverlay
+            />
+            {selectedPersonIds.has(activeDragItem.person.id) &&
+              selectedPersonIds.size > 1 && (
+                <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-neutral-900">
+                  {selectedPersonIds.size}
+                </div>
+              )}
+          </div>
         ) : null}
       </DragOverlay>
 
