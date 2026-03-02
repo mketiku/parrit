@@ -74,6 +74,16 @@ interface PairingStore {
     boards: PairingBoard[] | ((prev: PairingBoard[]) => PairingBoard[])
   ) => void;
   persistBoardAssignments: (boards: PairingBoard[]) => Promise<void>;
+
+  // Board management actions
+  addBoard: (name: string, isExempt?: boolean) => Promise<void>;
+  updateBoard: (
+    id: string,
+    updates: Partial<
+      Pick<PairingBoard, 'name' | 'goalText' | 'meetingLink' | 'isExempt'>
+    >
+  ) => Promise<void>;
+  removeBoard: (id: string) => Promise<void>;
 }
 
 export const usePairingStore = create<PairingStore>((set, get) => ({
@@ -118,7 +128,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     const people = (peopleRes.data as PersonRow[]).map(rowToPerson);
     const boards = (boardsRes.data as BoardRow[]).map(rowToBoard);
 
-    // Seed default boards for brand new workspaces
+    // Seed default boards AND people for brand new workspaces
     if (boards.length === 0) {
       const defaultBoards = [
         {
@@ -140,18 +150,35 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           assigned_person_ids: [],
         },
       ];
-      const { data: seeded, error: seedErr } = await supabase
-        .from('pairing_boards')
-        .insert(defaultBoards.map((b) => ({ ...b, user_id: user.id })))
-        .select();
-      if (!seedErr && seeded) {
-        set({
-          people,
-          boards: (seeded as BoardRow[]).map(rowToBoard),
-          isLoading: false,
-        });
-        return;
-      }
+      const defaultPeople = [
+        { name: 'Alice Anderson', avatar_color_hex: AVATAR_COLORS[0] },
+        { name: 'Bob Brooks', avatar_color_hex: AVATAR_COLORS[1] },
+        { name: 'Charles Carter', avatar_color_hex: AVATAR_COLORS[2] },
+      ];
+
+      const [boardRes, peopleRes2] = await Promise.all([
+        supabase
+          .from('pairing_boards')
+          .insert(defaultBoards.map((b) => ({ ...b, user_id: user.id })))
+          .select(),
+        people.length === 0
+          ? supabase
+              .from('people')
+              .insert(defaultPeople.map((p) => ({ ...p, user_id: user.id })))
+              .select()
+          : Promise.resolve({ data: null, error: null }),
+      ]);
+
+      set({
+        boards: boardRes.data
+          ? (boardRes.data as BoardRow[]).map(rowToBoard)
+          : [],
+        people: peopleRes2.data
+          ? (peopleRes2.data as PersonRow[]).map(rowToPerson)
+          : people,
+        isLoading: false,
+      });
+      return;
     }
 
     set({ people, boards, isLoading: false });
@@ -230,18 +257,66 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   },
 
   persistBoardAssignments: async (boards) => {
-    // Upsert each board's assigned_person_ids back to Supabase
     const updates = boards.map((b) => ({
       id: b.id,
       assigned_person_ids: b.assignedPersonIds ?? [],
     }));
-
-    const { error } = await supabase.from('pairing_boards').upsert(updates, {
-      onConflict: 'id',
-    });
-
-    if (error) {
+    const { error } = await supabase
+      .from('pairing_boards')
+      .upsert(updates, { onConflict: 'id' });
+    if (error)
       console.error('Failed to persist board assignments:', error.message);
-    }
+  },
+
+  addBoard: async (name, isExempt = false) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const sortOrder = get().boards.length;
+    const { data, error } = await supabase
+      .from('pairing_boards')
+      .insert({
+        name: name.trim(),
+        is_exempt: isExempt,
+        sort_order: sortOrder,
+        assigned_person_ids: [],
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error || !data) return;
+    set((state) => ({
+      boards: [...state.boards, rowToBoard(data as BoardRow)],
+    }));
+  },
+
+  updateBoard: async (id, updates) => {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.goalText !== undefined) dbUpdates.goal_text = updates.goalText;
+    if (updates.meetingLink !== undefined)
+      dbUpdates.meeting_link = updates.meetingLink;
+    if (updates.isExempt !== undefined) dbUpdates.is_exempt = updates.isExempt;
+
+    const { error } = await supabase
+      .from('pairing_boards')
+      .update(dbUpdates)
+      .eq('id', id);
+    if (error) return;
+    set((state) => ({
+      boards: state.boards.map((b) => (b.id === id ? { ...b, ...updates } : b)),
+    }));
+  },
+
+  removeBoard: async (id) => {
+    const { error } = await supabase
+      .from('pairing_boards')
+      .delete()
+      .eq('id', id);
+    if (error) return;
+    set((state) => ({ boards: state.boards.filter((b) => b.id !== id) }));
   },
 }));

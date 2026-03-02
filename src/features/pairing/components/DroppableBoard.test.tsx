@@ -1,9 +1,27 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { DndContext } from '@dnd-kit/core';
 import { DroppableBoard } from './DroppableBoard';
 import type { PairingBoard, Person } from '../types';
 import React from 'react';
+import { usePairingStore } from '../store/usePairingStore';
+
+vi.mock('../store/usePairingStore');
+vi.mocked(usePairingStore).mockReturnValue({
+  people: [],
+  boards: [],
+  isLoading: false,
+  error: null,
+  loadWorkspaceData: vi.fn(),
+  addPerson: vi.fn(),
+  updatePerson: vi.fn(),
+  removePerson: vi.fn(),
+  setBoards: vi.fn(),
+  persistBoardAssignments: vi.fn(),
+  addBoard: vi.fn(),
+  updateBoard: vi.fn(),
+  removeBoard: vi.fn(),
+});
 
 const mockBoard: PairingBoard = {
   id: 'board-1',

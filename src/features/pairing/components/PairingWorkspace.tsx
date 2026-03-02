@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -16,10 +16,32 @@ import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import type { PairingBoard, Person, DragItem } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
-import { Users, X } from 'lucide-react';
+import { Users, X, Plus } from 'lucide-react';
 
 export function PairingWorkspace() {
-  const { people, boards, setBoards } = usePairingStore();
+  const { people, boards, setBoards, addBoard } = usePairingStore();
+  const [isAddingBoard, setIsAddingBoard] = useState(false);
+  const [newBoardName, setNewBoardName] = useState('');
+  const addBoardInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddBoard = async () => {
+    const name = newBoardName.trim();
+    if (!name) {
+      setIsAddingBoard(false);
+      return;
+    }
+    await addBoard(name);
+    setNewBoardName('');
+    setIsAddingBoard(false);
+  };
+
+  const handleAddBoardKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleAddBoard();
+    if (e.key === 'Escape') {
+      setNewBoardName('');
+      setIsAddingBoard(false);
+    }
+  };
 
   // Setup Sensors for Dragging
   const sensors = useSensors(
@@ -221,6 +243,47 @@ export function PairingWorkspace() {
                 />
               );
             })}
+
+            {/* Add Board card */}
+            {isAddingBoard ? (
+              <div className="flex min-h-[160px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-indigo-400 bg-indigo-50/50 p-5 dark:border-indigo-600 dark:bg-indigo-950/20">
+                <input
+                  ref={addBoardInputRef}
+                  autoFocus
+                  value={newBoardName}
+                  onChange={(e) => setNewBoardName(e.target.value)}
+                  onKeyDown={handleAddBoardKey}
+                  onBlur={handleAddBoard}
+                  placeholder="Board name…"
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ring-2 ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-900"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddBoard}
+                    className="rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-600"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewBoardName('');
+                      setIsAddingBoard(false);
+                    }}
+                    className="rounded-lg bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAddingBoard(true)}
+                className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-200 bg-transparent p-5 text-neutral-400 transition-colors hover:border-indigo-400 hover:text-indigo-500 dark:border-neutral-800 dark:hover:border-indigo-600"
+              >
+                <Plus className="h-6 w-6" />
+                <span className="text-sm font-medium">Add Board</span>
+              </button>
+            )}
           </div>
         </div>
 

@@ -34,6 +34,9 @@ describe('PairingWorkspace Component', () => {
       removePerson: vi.fn(),
       setBoards: vi.fn(),
       persistBoardAssignments: vi.fn(),
+      addBoard: vi.fn(),
+      updateBoard: vi.fn(),
+      removeBoard: vi.fn(),
     });
 
     render(<PairingWorkspace />);
