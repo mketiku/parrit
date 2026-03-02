@@ -5,7 +5,7 @@ import { Toaster } from '../ui/Toaster';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 
 export default function PublicLayout() {
-  const { session } = useAuthStore();
+  const { user, workspaceName } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -63,13 +63,21 @@ export default function PublicLayout() {
                 <Moon className="h-4 w-4" />
               )}
             </button>
-            {session ? (
-              <Link
-                to="/app"
-                className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600"
-              >
-                Go to Dashboard
-              </Link>
+            {user ? (
+              <div className="flex items-center gap-2 bg-neutral-50 px-3 py-1.5 rounded-xl border border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800">
+                <div className="h-6 w-6 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold text-[10px]">
+                  {workspaceName.substring(0, 1).toUpperCase()}
+                </div>
+                <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 capitalize mr-2">
+                  {workspaceName}
+                </span>
+                <Link
+                  to="/app"
+                  className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-brand-600"
+                >
+                  Dashboard
+                </Link>
+              </div>
             ) : (
               <>
                 <Link
@@ -124,13 +132,13 @@ export default function PublicLayout() {
               About Parrit
             </Link>
             <div className="flex flex-col gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-              {session ? (
+              {user ? (
                 <Link
                   to="/app"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center rounded-xl bg-brand-500 px-4 py-3 text-base font-semibold text-white shadow-sm shadow-brand-500/20 transition-all"
                 >
-                  Go to Dashboard
+                  Enter {workspaceName} Workspace
                 </Link>
               ) : (
                 <>

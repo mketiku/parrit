@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bird, MessageSquare, Linkedin, Github, Heart } from 'lucide-react';
+import { Bird, Linkedin, Github, Heart } from 'lucide-react';
 
 export function AboutScreen() {
   return (

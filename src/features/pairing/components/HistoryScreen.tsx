@@ -306,7 +306,7 @@ export function HistoryScreen() {
                             new Date(session.session_date),
                             'EEEE, MMMM do, yyyy'
                           );
-                        } catch (_) {
+                        } catch {
                           return 'Invalid Date';
                         }
                       })()}

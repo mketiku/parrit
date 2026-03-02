@@ -725,7 +725,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         isLoading: false,
       });
       toast().addToast(`Applied template "${data.name}"`, 'success');
-    } catch (_err) {
+    } catch {
       set({ isLoading: false });
       toast().addToast('Failed to apply template.', 'error');
     }
