@@ -15,44 +15,17 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import type { PairingBoard, Person, DragItem } from '../types';
+import { usePairingStore } from '../store/usePairingStore';
 import { Users, X } from 'lucide-react';
 
-const MOCK_PEOPLE: Person[] = [
-  { id: '1', name: 'Alice Bob', avatarColorHex: '#6366f1' },
-  { id: '2', name: 'Charlie Dave', avatarColorHex: '#ec4899' },
-  { id: '3', name: 'Eve Foster', avatarColorHex: '#14b8a6' },
-  { id: '4', name: 'Greg House', avatarColorHex: '#f59e0b' },
-];
-
-const MOCK_BOARDS: PairingBoard[] = [
-  {
-    id: 'board-1',
-    name: 'Phoenix',
-    isExempt: false,
-    goalText: 'Auth UI',
-    assignedPersonIds: ['1', '2'],
-  },
-  {
-    id: 'board-2',
-    name: 'Macaw',
-    isExempt: false,
-    goalText: 'API Fixes',
-    assignedPersonIds: ['3'],
-  },
-  {
-    id: 'board-ooo',
-    name: 'Out of Office',
-    isExempt: true,
-    assignedPersonIds: [],
-  },
-];
-
 export function PairingWorkspace() {
+  const { people, boards, setBoards } = usePairingStore();
+
   // Setup Sensors for Dragging
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Require 8px of movement before drag activates (helps with buttons vs drags)
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -60,9 +33,6 @@ export function PairingWorkspace() {
     })
   );
 
-  // Local state for demonstration
-  const [people, setPeople] = useState<Person[]>(MOCK_PEOPLE);
-  const [boards, setBoards] = useState<PairingBoard[]>(MOCK_BOARDS);
   const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
   const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
     new Set()
