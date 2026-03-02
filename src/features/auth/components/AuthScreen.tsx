@@ -51,7 +51,7 @@ export function AuthScreen() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-neutral-50 p-4 font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+    <div className="flex min-h-[calc(100vh-8rem)] w-full items-center justify-center p-4 font-sans text-neutral-900 dark:text-neutral-100">
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-neutral-200 bg-white/50 p-8 shadow-2xl backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-sm shadow-indigo-500/20">

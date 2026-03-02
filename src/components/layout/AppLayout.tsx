@@ -37,7 +37,7 @@ export default function AppLayout() {
           <div className="flex items-center gap-6 sm:gap-8">
             {/* Logo */}
             <Link
-              to="/"
+              to="/app"
               className="flex items-center gap-2 transition-opacity hover:opacity-80"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-sm shadow-indigo-500/20">
@@ -49,7 +49,8 @@ export default function AppLayout() {
             {/* Navigation */}
             <nav className="flex items-center gap-1 text-sm font-medium">
               <NavLink
-                to="/"
+                to="/app"
+                end
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
@@ -61,7 +62,7 @@ export default function AppLayout() {
                 Dashboard
               </NavLink>
               <NavLink
-                to="/team"
+                to="/app/team"
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
@@ -73,7 +74,7 @@ export default function AppLayout() {
                 Team
               </NavLink>
               <NavLink
-                to="/history"
+                to="/app/history"
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
@@ -85,7 +86,7 @@ export default function AppLayout() {
                 History
               </NavLink>
               <NavLink
-                to="/settings"
+                to="/app/settings"
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive

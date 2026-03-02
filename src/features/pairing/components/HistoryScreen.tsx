@@ -118,7 +118,7 @@ export function HistoryScreen() {
           <History className="h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 italic">
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
             Pairing History
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">

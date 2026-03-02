@@ -108,6 +108,46 @@ docs/
   context/      # Architecture, requirements, implementation plan
 ```
 
+## Deployment
+
+The app deploys to **Vercel** with automatic CI/CD from GitHub. See [`docs/deployment.md`](docs/deployment.md) for the full guide.
+
+### Quick steps
+
+**1. Push to GitHub**
+
+```bash
+git remote add origin git@github.com:YOUR_USERNAME/parrit.git
+git push -u origin main
+```
+
+**2. Import to Vercel**
+
+Go to [vercel.com/new](https://vercel.com/new), import the GitHub repository.
+
+- Framework: **Vite** (auto-detected)
+- Build command: `npm run build`
+- Output directory: `dist`
+
+**3. Set environment variables**
+
+In **Vercel → Settings → Environment Variables**, add:
+
+| Variable                 | Value                     |
+| ------------------------ | ------------------------- |
+| `VITE_SUPABASE_URL`      | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon key    |
+
+**4. Add redirect URL in Supabase**
+
+In **Supabase → Authentication → URL Configuration → Redirect URLs**, add your Vercel deployment URL (e.g. `https://parrit.vercel.app`).
+
+> ⚠️ Skipping step 4 is the most common cause of login failures after deployment.
+
+After the initial import, every `git push` to `main` triggers an automatic production deploy. Pull requests get isolated preview URLs automatically.
+
+---
+
 ## Architecture Decisions
 
 See `docs/adr/` for documented decisions:
