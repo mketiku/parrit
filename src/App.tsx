@@ -4,6 +4,7 @@ import AppLayout from './components/layout/AppLayout';
 import { AuthScreen } from './features/auth/components/AuthScreen';
 import { useAuthStore } from './features/auth/store/useAuthStore';
 import { Loader2 } from 'lucide-react';
+import { SettingsScreen } from './features/settings/components/SettingsScreen';
 
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
 
@@ -28,11 +29,19 @@ function DashboardView() {
 }
 
 function TeamView() {
-  return <div>Team Settings Placeholder</div>;
-}
-
-function SettingsView() {
-  return <div>Application Settings Placeholder</div>;
+  return (
+    <div className="mx-auto max-w-3xl space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+          Team Configuration
+        </h1>
+        <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+          Manage team members, roles, and default pairings here. Placeholder for
+          upcoming integration.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 function App() {
@@ -60,7 +69,7 @@ function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardView />} />
           <Route path="/team" element={<TeamView />} />
-          <Route path="/settings" element={<SettingsView />} />
+          <Route path="/settings" element={<SettingsScreen />} />
         </Route>
       </Routes>
     </BrowserRouter>
