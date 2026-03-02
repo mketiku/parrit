@@ -4,11 +4,11 @@ import { Bird } from 'lucide-react';
 
 export default function AppLayout() {
   return (
-    <div className="flex h-screen w-full flex-col bg-neutral-50 dark:bg-neutral-950 font-sans text-neutral-900 dark:text-neutral-100 selection:bg-indigo-500/30">
+    <div className="flex min-h-screen w-full flex-col font-sans selection:bg-indigo-500/30">
       {/* Header */}
-      <header className="sticky top-0 z-10 shrink-0 border-b border-neutral-200 bg-white/50 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/50">
-        <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between px-6 md:px-8">
-          <div className="flex items-center gap-8">
+      <header className="sticky top-0 z-50 shrink-0 border-b border-neutral-200 bg-white/50 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/50">
+        <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
+          <div className="flex items-center gap-6 sm:gap-8">
             {/* Logo */}
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-sm shadow-indigo-500/20">
@@ -68,10 +68,8 @@ export default function AppLayout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto">
-        <div className="mx-auto w-full max-w-[1600px] p-6 md:p-8">
-          <Outlet />
-        </div>
+      <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 py-6 md:py-8">
+        <Outlet />
       </main>
     </div>
   );
