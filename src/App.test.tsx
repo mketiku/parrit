@@ -3,8 +3,23 @@ import { describe, it, expect, vi } from 'vitest';
 import App from './App';
 import React from 'react';
 import { useAuthStore } from './features/auth/store/useAuthStore';
+import { usePairingStore } from './features/pairing/store/usePairingStore';
 
 vi.mock('./features/auth/store/useAuthStore');
+vi.mock('./features/pairing/store/usePairingStore');
+
+vi.mocked(usePairingStore).mockReturnValue({
+  people: [],
+  boards: [],
+  isLoading: false,
+  error: null,
+  loadWorkspaceData: vi.fn(),
+  addPerson: vi.fn(),
+  updatePerson: vi.fn(),
+  removePerson: vi.fn(),
+  setBoards: vi.fn(),
+  persistBoardAssignments: vi.fn(),
+});
 
 describe('App Root Component', () => {
   it('renders the layout and default dashboard view', () => {

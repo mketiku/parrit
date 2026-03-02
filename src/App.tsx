@@ -8,13 +8,23 @@ import { SettingsScreen } from './features/settings/components/SettingsScreen';
 import { TeamScreen } from './features/team/components/TeamScreen';
 import { AboutScreen } from './features/static/components/AboutScreen';
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
+import { usePairingStore } from './features/pairing/store/usePairingStore';
 
 // Placeholder views
 function DashboardView() {
   const { workspaceName } = useAuthStore();
+  const { isLoading: dataLoading } = usePairingStore();
   const displayName = workspaceName
     ? workspaceName.charAt(0).toUpperCase() + workspaceName.slice(1)
     : 'Workspace';
+
+  if (dataLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -36,10 +46,18 @@ function DashboardView() {
 
 function App() {
   const { user, isLoading, initialize } = useAuthStore();
+  const { loadWorkspaceData } = usePairingStore();
 
   React.useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Load workspace data whenever a user session is established
+  React.useEffect(() => {
+    if (user) {
+      loadWorkspaceData();
+    }
+  }, [user, loadWorkspaceData]);
 
   if (isLoading) {
     return (

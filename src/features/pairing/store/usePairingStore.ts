@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import type { Person, PairingBoard } from '../types';
+import { supabase } from '../../../lib/supabase';
 
-const AVATAR_COLORS = [
+export const AVATAR_COLORS = [
   '#6366f1',
   '#ec4899',
   '#14b8a6',
@@ -14,92 +15,233 @@ const AVATAR_COLORS = [
   '#06b6d4',
 ];
 
-const INITIAL_PEOPLE: Person[] = [
-  { id: '1', name: 'Alice Bob', avatarColorHex: '#6366f1' },
-  { id: '2', name: 'Charlie Dave', avatarColorHex: '#ec4899' },
-  { id: '3', name: 'Eve Foster', avatarColorHex: '#14b8a6' },
-  { id: '4', name: 'Greg House', avatarColorHex: '#f59e0b' },
-];
+// ---- DB row types ----
+interface PersonRow {
+  id: string;
+  name: string;
+  avatar_color_hex: string;
+}
 
-const INITIAL_BOARDS: PairingBoard[] = [
-  {
-    id: 'board-1',
-    name: 'Phoenix',
-    isExempt: false,
-    goalText: 'Auth UI',
-    assignedPersonIds: ['1', '2'],
-  },
-  {
-    id: 'board-2',
-    name: 'Macaw',
-    isExempt: false,
-    goalText: 'API Fixes',
-    assignedPersonIds: ['3'],
-  },
-  {
-    id: 'board-ooo',
-    name: 'Out of Office',
-    isExempt: true,
-    assignedPersonIds: [],
-  },
-];
+interface BoardRow {
+  id: string;
+  name: string;
+  is_exempt: boolean;
+  goal_text: string | null;
+  meeting_link: string | null;
+  sort_order: number;
+  assigned_person_ids: string[];
+}
 
+function rowToPerson(row: PersonRow): Person {
+  return {
+    id: row.id,
+    name: row.name,
+    avatarColorHex: row.avatar_color_hex,
+  };
+}
+
+function rowToBoard(row: BoardRow): PairingBoard {
+  return {
+    id: row.id,
+    name: row.name,
+    isExempt: row.is_exempt,
+    goalText: row.goal_text ?? undefined,
+    meetingLink: row.meeting_link ?? undefined,
+    assignedPersonIds: row.assigned_person_ids ?? [],
+  };
+}
+
+// ---- Store interface ----
 interface PairingStore {
   people: Person[];
   boards: PairingBoard[];
+  isLoading: boolean;
+  error: string | null;
+
+  // Lifecycle
+  loadWorkspaceData: () => Promise<void>;
 
   // People actions
-  addPerson: (name: string) => void;
+  addPerson: (name: string) => Promise<void>;
   updatePerson: (
     id: string,
     updates: Partial<Pick<Person, 'name' | 'avatarColorHex'>>
-  ) => void;
-  removePerson: (id: string) => void;
+  ) => Promise<void>;
+  removePerson: (id: string) => Promise<void>;
 
   // Board actions
   setBoards: (
     boards: PairingBoard[] | ((prev: PairingBoard[]) => PairingBoard[])
   ) => void;
+  persistBoardAssignments: (boards: PairingBoard[]) => Promise<void>;
 }
 
-let nextColorIndex = INITIAL_PEOPLE.length % AVATAR_COLORS.length;
+export const usePairingStore = create<PairingStore>((set, get) => ({
+  people: [],
+  boards: [],
+  isLoading: false,
+  error: null,
 
-export const usePairingStore = create<PairingStore>((set) => ({
-  people: INITIAL_PEOPLE,
-  boards: INITIAL_BOARDS,
+  loadWorkspaceData: async () => {
+    set({ isLoading: true, error: null });
 
-  addPerson: (name: string) => {
-    const newPerson: Person = {
-      id: `person-${Date.now()}`,
-      name,
-      avatarColorHex: AVATAR_COLORS[nextColorIndex % AVATAR_COLORS.length],
-    };
-    nextColorIndex++;
-    set((state) => ({ people: [...state.people, newPerson] }));
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      set({ isLoading: false });
+      return;
+    }
+
+    const [peopleRes, boardsRes] = await Promise.all([
+      supabase
+        .from('people')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('pairing_boards')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('sort_order', { ascending: true }),
+    ]);
+
+    if (peopleRes.error) {
+      set({ isLoading: false, error: peopleRes.error.message });
+      return;
+    }
+    if (boardsRes.error) {
+      set({ isLoading: false, error: boardsRes.error.message });
+      return;
+    }
+
+    const people = (peopleRes.data as PersonRow[]).map(rowToPerson);
+    const boards = (boardsRes.data as BoardRow[]).map(rowToBoard);
+
+    // Seed default boards for brand new workspaces
+    if (boards.length === 0) {
+      const defaultBoards = [
+        {
+          name: 'Board 1',
+          is_exempt: false,
+          sort_order: 0,
+          assigned_person_ids: [],
+        },
+        {
+          name: 'Board 2',
+          is_exempt: false,
+          sort_order: 1,
+          assigned_person_ids: [],
+        },
+        {
+          name: 'Out of Office',
+          is_exempt: true,
+          sort_order: 2,
+          assigned_person_ids: [],
+        },
+      ];
+      const { data: seeded, error: seedErr } = await supabase
+        .from('pairing_boards')
+        .insert(defaultBoards.map((b) => ({ ...b, user_id: user.id })))
+        .select();
+      if (!seedErr && seeded) {
+        set({
+          people,
+          boards: (seeded as BoardRow[]).map(rowToBoard),
+          isLoading: false,
+        });
+        return;
+      }
+    }
+
+    set({ people, boards, isLoading: false });
   },
 
-  updatePerson: (id, updates) => {
+  addPerson: async (name: string) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const usedColors = get().people.map((p) => p.avatarColorHex);
+    const nextColor =
+      AVATAR_COLORS.find((c) => !usedColors.includes(c)) ??
+      AVATAR_COLORS[get().people.length % AVATAR_COLORS.length];
+
+    const { data, error } = await supabase
+      .from('people')
+      .insert({
+        name: name.trim(),
+        avatar_color_hex: nextColor,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error || !data) return;
+    set((state) => ({
+      people: [...state.people, rowToPerson(data as PersonRow)],
+    }));
+  },
+
+  updatePerson: async (id, updates) => {
+    const dbUpdates: Partial<PersonRow> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.avatarColorHex !== undefined)
+      dbUpdates.avatar_color_hex = updates.avatarColorHex;
+
+    const { error } = await supabase
+      .from('people')
+      .update(dbUpdates)
+      .eq('id', id);
+    if (error) return;
     set((state) => ({
       people: state.people.map((p) => (p.id === id ? { ...p, ...updates } : p)),
     }));
   },
 
-  removePerson: (id) => {
+  removePerson: async (id) => {
+    const { error } = await supabase.from('people').delete().eq('id', id);
+    if (error) return;
+
+    const updatedBoards = get().boards.map((b) => ({
+      ...b,
+      assignedPersonIds: (b.assignedPersonIds ?? []).filter(
+        (pid) => pid !== id
+      ),
+    }));
+
+    // Persist updated assignments after removal
+    await get().persistBoardAssignments(updatedBoards);
+
     set((state) => ({
       people: state.people.filter((p) => p.id !== id),
-      // Also remove from all boards
-      boards: state.boards.map((b) => ({
-        ...b,
-        assignedPersonIds: (b.assignedPersonIds || []).filter(
-          (pid) => pid !== id
-        ),
-      })),
+      boards: updatedBoards,
     }));
   },
 
   setBoards: (boards) => {
-    set((state) => ({
-      boards: typeof boards === 'function' ? boards(state.boards) : boards,
+    set((state) => {
+      const next = typeof boards === 'function' ? boards(state.boards) : boards;
+      // Fire-and-forget persist whenever assignments change via drag
+      get().persistBoardAssignments(next);
+      return { boards: next };
+    });
+  },
+
+  persistBoardAssignments: async (boards) => {
+    // Upsert each board's assigned_person_ids back to Supabase
+    const updates = boards.map((b) => ({
+      id: b.id,
+      assigned_person_ids: b.assignedPersonIds ?? [],
     }));
+
+    const { error } = await supabase.from('pairing_boards').upsert(updates, {
+      onConflict: 'id',
+    });
+
+    if (error) {
+      console.error('Failed to persist board assignments:', error.message);
+    }
   },
 }));
