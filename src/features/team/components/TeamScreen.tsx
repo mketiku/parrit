@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { usePairingStore } from '../../pairing/store/usePairingStore';
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, Users } from 'lucide-react';
+
+const MAX_PEOPLE = 16;
 
 const PRESET_COLORS = [
   '#6366f1',
@@ -26,6 +28,7 @@ function getInitials(name: string) {
 
 export function TeamScreen() {
   const { people, addPerson, updatePerson, removePerson } = usePairingStore();
+  const atLimit = people.length >= MAX_PEOPLE;
 
   // "Add" form state
   const [newName, setNewName] = useState('');
@@ -38,7 +41,7 @@ export function TeamScreen() {
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName.trim()) return;
+    if (!newName.trim() || atLimit) return;
     addPerson(newName.trim());
     setNewName('');
     setIsAdding(false);
@@ -73,16 +76,35 @@ export function TeamScreen() {
           </p>
         </div>
         <button
-          onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-500/20 transition-all hover:bg-indigo-500 active:scale-[0.98] dark:bg-indigo-500 dark:hover:bg-indigo-400"
+          onClick={() => !atLimit && setIsAdding(true)}
+          disabled={atLimit}
+          title={atLimit ? `Team limit of ${MAX_PEOPLE} reached` : undefined}
+          className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-500/20 transition-all hover:bg-indigo-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-indigo-500 dark:hover:bg-indigo-400"
         >
           <Plus className="h-4 w-4" />
           Add Person
         </button>
       </div>
 
+      {/* At-limit nudge banner */}
+      {atLimit && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/50 dark:bg-amber-500/10">
+          <Users className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+          <div>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+              Team limit of {MAX_PEOPLE} reached
+            </p>
+            <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-500">
+              Research shows the most effective engineering teams pair best with
+              8–12 people. Consider removing inactive members before adding new
+              ones.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Add Person Form */}
-      {isAdding && (
+      {isAdding && !atLimit && (
         <form
           onSubmit={handleAdd}
           className="flex items-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-900 dark:bg-indigo-500/10"
