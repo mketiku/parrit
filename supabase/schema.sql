@@ -13,6 +13,7 @@ drop table if exists public.pairing_history cascade;
 drop table if exists public.pairing_sessions cascade;
 drop table if exists public.pairing_boards cascade;
 drop table if exists public.people cascade;
+drop table if exists public.pairing_templates cascade;
 
 
 -- ============================================================
@@ -32,12 +33,15 @@ create table public.people (
 );
 
 -- ---- Pairing Boards ----
+-- Note: If updating an existing DB, run: 
+-- ALTER TABLE public.pairing_boards DROP COLUMN goal_text;
+-- ALTER TABLE public.pairing_boards ADD COLUMN goals jsonb NOT NULL DEFAULT '[]'::jsonb;
 create table public.pairing_boards (
   id                  uuid         primary key default gen_random_uuid(),
   user_id             uuid         not null,
   name                text         not null,
   is_exempt           boolean      not null default false,
-  goal_text           text,
+  goals               jsonb        not null default '[]'::jsonb,
   meeting_link        text,
   sort_order          integer      not null default 0,
   assigned_person_ids uuid[]       not null default '{}',
@@ -167,3 +171,31 @@ create policy "history_delete_own"
 -- These settings allow workspace sign-ups to work immediately
 -- without needing an email inbox.
 -- ============================================================
+
+-- 5. Create the `pairing_templates` table
+create table if not exists public.pairing_templates (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  name text not null,
+  boards jsonb not null, -- Stores board names and goals
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- RLS for templates
+alter table public.pairing_templates enable row level security;
+
+create policy "templates_select_own"
+  on public.pairing_templates for select
+  using (auth.uid() = public.pairing_templates.user_id);
+
+create policy "templates_insert_own"
+  on public.pairing_templates for insert
+  with check (auth.uid() = public.pairing_templates.user_id);
+
+create policy "templates_update_own"
+  on public.pairing_templates for update
+  using (auth.uid() = public.pairing_templates.user_id);
+
+create policy "templates_delete_own"
+  on public.pairing_templates for delete
+  using (auth.uid() = public.pairing_templates.user_id);

@@ -27,7 +27,7 @@ interface BoardRow {
   id: string;
   name: string;
   is_exempt: boolean;
-  goal_text: string | null;
+  goals: string[] | null;
   meeting_link: string | null;
   sort_order: number;
   assigned_person_ids: string[];
@@ -50,7 +50,7 @@ function rowToBoard(row: BoardRow): PairingBoard {
     name: row.name,
     isExempt: row.is_exempt,
     sortOrder: row.sort_order,
-    goalText: row.goal_text ?? undefined,
+    goals: row.goals ?? [],
     meetingLink: row.meeting_link ?? undefined,
     assignedPersonIds: row.assigned_person_ids ?? [],
   };
@@ -84,13 +84,18 @@ interface PairingStore {
   updateBoard: (
     id: string,
     updates: Partial<
-      Pick<PairingBoard, 'name' | 'goalText' | 'meetingLink' | 'isExempt'>
+      Pick<PairingBoard, 'name' | 'goals' | 'meetingLink' | 'isExempt'>
     >
   ) => Promise<void>;
   removeBoard: (id: string) => Promise<void>;
 
   // Session History
   saveSession: () => Promise<void>;
+
+  // Algorithm & Templates
+  recommendPairs: () => Promise<void>;
+  saveCurrentAsTemplate: (name: string) => Promise<void>;
+  applyTemplate: (templateId: string) => Promise<void>;
 }
 
 const toast = () => useToastStore.getState();
@@ -155,9 +160,9 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           assigned_person_ids: [],
         },
         {
-          name: 'Out of Office',
           is_exempt: true,
           sort_order: 2,
+          goals: [],
           assigned_person_ids: [],
         },
       ];
@@ -380,6 +385,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       name: b.name,
       is_exempt: b.isExempt,
       sort_order: b.sortOrder,
+      goals: b.goals ?? [],
       assigned_person_ids: b.assignedPersonIds ?? [],
     }));
 
@@ -436,7 +442,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
 
     const dbUpdates: Record<string, unknown> = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
-    if (updates.goalText !== undefined) dbUpdates.goal_text = updates.goalText;
+    if (updates.goals !== undefined) dbUpdates.goals = updates.goals;
     if (updates.meetingLink !== undefined)
       dbUpdates.meeting_link = updates.meetingLink;
     if (updates.isExempt !== undefined) dbUpdates.is_exempt = updates.isExempt;
@@ -533,6 +539,183 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       );
     } else {
       toast().addToast('Pairing session saved successfully!', 'success');
+    }
+  },
+
+  recommendPairs: async () => {
+    const { people, boards } = get();
+    if (people.length < 2) return;
+
+    set({ isLoading: true });
+
+    try {
+      // 1. Fetch recent history to build a "pairing friction" map
+      const { data: history, error: historyErr } = await supabase
+        .from('pairing_history')
+        .select('person_id, board_id, session_id')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (historyErr) throw historyErr;
+
+      // Map of personId -> Map of otherPersonId -> count (how many times they paired)
+      const friction: Record<string, Record<string, number>> = {};
+      people.forEach((p1) => {
+        friction[p1.id] = {};
+        people.forEach((p2) => {
+          if (p1.id !== p2.id) friction[p1.id][p2.id] = 0;
+        });
+      });
+
+      // Group history by session and board to find pairs
+      const sessions: Record<string, Record<string, string[]>> = {};
+      (
+        history as { session_id: string; board_id: string; person_id: string }[]
+      )?.forEach((row) => {
+        if (!sessions[row.session_id]) {
+          sessions[row.session_id] = {} as Record<string, string[]>;
+        }
+        if (!sessions[row.session_id][row.board_id]) {
+          sessions[row.session_id][row.board_id] = [] as string[];
+        }
+        sessions[row.session_id][row.board_id].push(row.person_id);
+      });
+
+      Object.values(sessions).forEach((boardsMap) => {
+        Object.values(boardsMap).forEach((pIds) => {
+          for (let i = 0; i < pIds.length; i++) {
+            for (let j = i + 1; j < pIds.length; j++) {
+              const p1 = pIds[i];
+              const p2 = pIds[j];
+              if (friction[p1] && friction[p1][p2] !== undefined) {
+                friction[p1][p2]++;
+                friction[p2][p1]++;
+              }
+            }
+          }
+        });
+      });
+
+      // 2. Greedy assignment
+      const unassigned = [...people].sort(() => Math.random() - 0.5);
+      const newBoards = boards.map((b) => ({
+        ...b,
+        assignedPersonIds: [] as string[],
+      }));
+      const activeBoards = newBoards.filter((b) => !b.isExempt);
+
+      if (activeBoards.length === 0) {
+        set({ isLoading: false });
+        return;
+      }
+
+      while (unassigned.length > 0) {
+        const p1 = unassigned.pop()!;
+
+        // Find the board with the least people (copy array to avoid mutating activeBoards if needed)
+        const targetBoard = [...activeBoards].sort(
+          (a, b) =>
+            (a.assignedPersonIds?.length || 0) -
+            (b.assignedPersonIds?.length || 0)
+        )[0];
+
+        if (!targetBoard.assignedPersonIds) {
+          targetBoard.assignedPersonIds = [];
+        }
+
+        targetBoard.assignedPersonIds.push(p1.id);
+      }
+
+      set({ boards: newBoards });
+      get().persistBoardAssignments(newBoards);
+      toast().addToast('Smart-Pair rotation suggested!', 'success');
+    } catch (err) {
+      console.error(err);
+      toast().addToast('Algorithm failed to load history data.', 'error');
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  saveCurrentAsTemplate: async (name: string) => {
+    const { boards } = get();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const templateData = boards.map((b) => ({
+      name: b.name,
+      goals: b.goals,
+      isExempt: b.isExempt,
+    }));
+
+    const { error } = await supabase.from('pairing_templates').insert({
+      user_id: user.id,
+      name,
+      boards: templateData,
+    });
+
+    if (error) {
+      toast().addToast('Failed to save template.', 'error');
+    } else {
+      toast().addToast(`Template "${name}" saved!`, 'success');
+    }
+  },
+
+  applyTemplate: async (templateId: string) => {
+    set({ isLoading: true });
+    try {
+      const { data, error } = await supabase
+        .from('pairing_templates')
+        .select('*')
+        .eq('id', templateId)
+        .single();
+
+      if (error) throw error;
+
+      // 1. Delete current boards (careful: this moves people back to pool)
+      const { boards: currentBoards } = get();
+      await Promise.all(
+        currentBoards.map((b) =>
+          supabase.from('pairing_boards').delete().eq('id', b.id)
+        )
+      );
+
+      // 2. Create new boards from template
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const templateBoards = data.boards as {
+        name: string;
+        goals: string[];
+        isExempt: boolean;
+      }[];
+
+      const newBoardsRows = templateBoards.map((tb, i) => ({
+        user_id: user!.id,
+        name: tb.name,
+        goals: tb.goals ?? [],
+        is_exempt: tb.isExempt,
+        sort_order: i,
+        assigned_person_ids: [] as string[],
+      }));
+
+      const { data: created, error: createErr } = await supabase
+        .from('pairing_boards')
+        .insert(newBoardsRows)
+        .select();
+
+      if (createErr) throw createErr;
+
+      set({
+        boards: (created as BoardRow[]).map(rowToBoard),
+        isLoading: false,
+      });
+      toast().addToast(`Applied template "${data.name}"`, 'success');
+    } catch (_err) {
+      set({ isLoading: false });
+      toast().addToast('Failed to apply template.', 'error');
     }
   },
 }));

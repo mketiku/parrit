@@ -26,7 +26,6 @@ import {
   History,
   Loader2,
 } from 'lucide-react';
-import { useToastStore } from '../../../store/useToastStore';
 
 export function PairingWorkspace() {
   const {
@@ -35,10 +34,10 @@ export function PairingWorkspace() {
     setBoards,
     addBoard,
     saveSession,
+    recommendPairs,
     isLoading: isStoreLoading,
   } = usePairingStore();
 
-  const { addToast } = useToastStore();
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newBoardIsExempt, setNewBoardIsExempt] = useState(false);
@@ -185,15 +184,15 @@ export function PairingWorkspace() {
 
             <div className="flex flex-wrap items-center gap-2">
               <button
-                onClick={() =>
-                  addToast(
-                    'Rotation engine coming in the next update! It will use your saved history to suggest best pairs.',
-                    'info'
-                  )
-                }
-                className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                onClick={() => recommendPairs()}
+                disabled={isStoreLoading}
+                className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
               >
-                <Sparkles className="h-4 w-4 text-amber-500" />
+                {isStoreLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                ) : (
+                  <Sparkles className="h-4 w-4 text-amber-500" />
+                )}
                 Recommend Pairs
               </button>
 

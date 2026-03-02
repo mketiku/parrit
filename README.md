@@ -11,11 +11,14 @@ Parrit provides a fast, beautiful, and maintenance-free home for engineering tea
 ## Features
 
 - **Workspace-based Auth**: Sign up with a workspace name only — no emails, no PII required.
+- **Smart-Pair Algorithm**: A rotation engine that uses historical data to suggest optimal pairs, with randomization fallback.
+- **Per-Board Goals & Links**: Each board supports multiple daily goals and a clickable meeting (Zoom) link.
+- **Dynamic Themes**: Tropical-inspired themes ("Macaw Elite", "Night Parrot") with consistent brand/accent tokens.
 - **Persistent Pairing Boards**: Create, rename, and delete boards. Drag-and-drop saves automatically.
 - **Real-time Sync**: Changes appear live across all open tabs and teammates in the same workspace.
 - **Team Management**: Add, edit, and remove team members with custom avatar colours.
 - **Advanced Drag & Drop**: Multi-select (Shift+Click) and bulk drag to move people between boards.
-- **Toast Notifications**: Every action surfaces success and error feedback.
+- **Session History**: Save daily snapshots of your pairing configuration and delete old ones.
 - **Premium UI/UX**: Light/dark mode, hover tooltips, smooth animations.
 - **Architecture Records**: Key decisions documented as ADRs in `docs/adr/`.
 
@@ -66,6 +69,29 @@ supabase/schema.sql
 
 This creates both tables, indexes, and row-level security policies. It is safe to re-run — it drops and recreates from scratch.
 
+### 🧩 Database Migration (Existing Users)
+
+If you are updating an existing database and don't want to wipe your data, run these SQL commands in your Supabase SQL Editor:
+
+```sql
+-- Step 1: Update boards for multiple goals
+ALTER TABLE public.pairing_boards DROP COLUMN IF EXISTS goal_text;
+ALTER TABLE public.pairing_boards ADD COLUMN IF NOT EXISTS goals jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+-- Step 2: Create templates table
+CREATE TABLE IF NOT EXISTS public.pairing_templates (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  name text NOT NULL,
+  boards jsonb NOT NULL,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Step 3: Enable RLS for templates
+ALTER TABLE public.pairing_templates ENABLE ROW LEVEL SECURITY;
+-- (Add policies manually or re-run schema.sql)
+```
+
 Then in **Supabase → Authentication → Providers → Email**, disable:
 
 - ✅ Confirm email
@@ -81,7 +107,7 @@ npm run dev
 
 ```bash
 npm run test        # unit tests (Vitest)
-npx playwright test # E2E tests (Playwright)
+# npx playwright test # E2E tests (Playwright)
 ```
 
 ## Project Structure
