@@ -15,6 +15,8 @@ import {
   Target,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
+import { useStalePairsDetector } from './useStaleParisDetector';
+import { AlertTriangle } from 'lucide-react';
 
 interface DroppableBoardProps {
   board: PairingBoard;
@@ -35,6 +37,15 @@ export function DroppableBoard({
   });
 
   const { updateBoard, removeBoard } = usePairingStore();
+  const { isRecentPair } = useStalePairsDetector(3); // flag pairs seen in last 3 sessions
+
+  // Check if any two people on this board have been paired recently
+  const hasStalePairs =
+    !board.isExempt &&
+    people.length >= 2 &&
+    people.some((p1, i) =>
+      people.slice(i + 1).some((p2) => isRecentPair(p1.id, p2.id))
+    );
 
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingExtra, setIsEditingExtra] = useState(false);
@@ -101,10 +112,21 @@ export function DroppableBoard({
         ${
           isOver
             ? 'border-brand-400 bg-brand-50/50 dark:border-brand-500/50 dark:bg-brand-950/20'
-            : 'border-neutral-200 dark:border-neutral-800'
+            : hasStalePairs
+              ? 'border-amber-300 dark:border-amber-700/60'
+              : 'border-neutral-200 dark:border-neutral-800'
         }
       `}
     >
+      {/* Stale Pair Banner */}
+      {hasStalePairs && !isOver && (
+        <div className="mb-3 flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 dark:bg-amber-900/20">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            Stale pair — consider rotating
+          </span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center gap-2 mb-3 sm:mb-4">
         {board.isExempt ? (

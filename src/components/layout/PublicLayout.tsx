@@ -45,7 +45,7 @@ export default function PublicLayout() {
           </Link>
 
           {/* Right side Desktop */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <Link
               to="/about"
               className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
@@ -97,7 +97,7 @@ export default function PublicLayout() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex sm:hidden items-center gap-2">
+          <div className="flex md:hidden items-center gap-2">
             <button
               onClick={() => setIsDark(!isDark)}
               className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
@@ -123,7 +123,7 @@ export default function PublicLayout() {
 
         {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="sm:hidden border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-4 shadow-lg flex flex-col gap-4">
+          <div className="md:hidden border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-4 shadow-lg flex flex-col gap-4">
             <Link
               to="/about"
               onClick={() => setMobileMenuOpen(false)}

@@ -7,7 +7,7 @@ This document outlines the core features for the modern, from-scratch version of
 - ✅ **Workspace-based Auth**: (Modified) Users sign up with Workspace Name instead of personal email.
 - ✅ **Data Persistence**: All people, boards, and history are saved to the project.
 - ✅ **Session Links**: Ability to add/edit a Zoom link to a pairing board for easy joining.
-- ⏳ **Project Export/Import**: (Planned) JSON export/import.
+- ✅ **Project Export/Import**: JSON export/import (people, boards, goals, assignments). Available in Settings.
 - ⏳ **Stakeholder View-Only Links**: (Planned).
 
 ## 2. Pairing Board Workspace
@@ -17,7 +17,7 @@ This document outlines the core features for the modern, from-scratch version of
 - ✅ **Per-Board Goals**: (Enhanced) Support for multiple daily goals per board.
 - ✅ **Drag & Drop**: Seamlessly move people between boards.
 - ✅ **Multi-Select**: Bulk move people using Shift+Click.
-- ⏳ **Board Templates**: (Implemented in store, UI pending).
+- ✅ **Board Templates**: Save current board layout as a named template. Apply templates from the dashboard.
 - ⏳ **Role Management**: (Planned).
 
 ## 3. Team Member Management
@@ -25,7 +25,7 @@ This document outlines the core features for the modern, from-scratch version of
 - ✅ **Person CRUD**: Add/edit/delete team members.
 - ✅ **Initial-based Avatars**: Colors + initials based on name.
 - ✅ **Unpaired List**: Central pool for unassigned people.
-- ⏳ **Stale Pair Highlighting**: (Planned).
+- ✅ **Stale Pair Highlighting**: Boards with pairs that have worked together in the last 3 sessions show an amber warning badge.
 
 ## 4. Recommendation Engine
 

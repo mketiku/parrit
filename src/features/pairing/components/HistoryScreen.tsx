@@ -16,6 +16,22 @@ import { useToastStore } from '../../../store/useToastStore';
 import { usePairingStore } from '../store/usePairingStore';
 import type { PairingBoard, Person } from '../types';
 
+/**
+ * Robust date parsing that treats YYYY-MM-DD as LOCAL time, avoiding the UTC offset
+ * that causes "Sunday" to appear instead of "Monday" in many timezones.
+ */
+function parseInputDate(dateStr: string | null) {
+  if (!dateStr) return new Date();
+  // Handle ISO timestamp or just YYYY-MM-DD
+  const cleanDate = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+  const parts = cleanDate.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts.map(Number);
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateStr);
+}
+
 interface HistorySession {
   id: string;
   session_date: string;
@@ -248,7 +264,7 @@ export function HistoryScreen() {
                         className={`font-semibold ${selectedSessionId === session.id ? 'text-brand-900 dark:text-brand-100' : 'text-neutral-900 dark:text-neutral-100'}`}
                       >
                         {format(
-                          new Date(session.session_date),
+                          parseInputDate(session.session_date),
                           'MMMM do, yyyy'
                         )}
                       </p>
@@ -303,7 +319,7 @@ export function HistoryScreen() {
                         if (!session) return 'Unknown Session';
                         try {
                           return format(
-                            new Date(session.session_date),
+                            parseInputDate(session.session_date),
                             'EEEE, MMMM do, yyyy'
                           );
                         } catch {

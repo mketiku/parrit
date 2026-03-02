@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { useThemeStore, type AppTheme } from '../../../store/useThemeStore';
+import { usePairingStore } from '../../pairing/store/usePairingStore';
 import {
   Loader2,
   ShieldCheck,
@@ -9,6 +10,10 @@ import {
   Palette,
   Check,
   Zap,
+  Download,
+  Upload,
+  AlertTriangle,
+  Package,
 } from 'lucide-react';
 
 const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
@@ -30,6 +35,11 @@ const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
 export function SettingsScreen() {
   const { user } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
+  const {
+    exportWorkspace,
+    importWorkspace,
+    isLoading: isImporting,
+  } = usePairingStore();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,9 +47,46 @@ export function SettingsScreen() {
     type: 'error' | 'success';
     text: string;
   } | null>(null);
+  const [importConfirm, setImportConfirm] = useState(false);
+  const [pendingImportJson, setPendingImportJson] = useState<string | null>(
+    null
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Extract the original Workspace Name from the pseudo-email
   const workspaceName = user?.email?.split('@')[0] || 'Unknown Workspace';
+
+  const handleExport = async () => {
+    const json = await exportWorkspace();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `parrit-workspace-${workspaceName}-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      setPendingImportJson(text);
+      setImportConfirm(true);
+    };
+    reader.readAsText(file);
+    // reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  const confirmImport = async () => {
+    if (!pendingImportJson) return;
+    await importWorkspace(pendingImportJson);
+    setPendingImportJson(null);
+    setImportConfirm(false);
+  };
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,6 +207,94 @@ export function SettingsScreen() {
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Export / Import Section */}
+      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex items-center gap-3 border-b border-neutral-100 bg-neutral-50 px-6 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+          <Package className="h-5 w-5 text-brand-500 dark:text-brand-400" />
+          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">
+            Workspace Export / Import
+          </h2>
+        </div>
+        <div className="p-6 space-y-6">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            Export your workspace configuration as JSON — people, boards, goals,
+            and assignments. Import it into any workspace to restore or
+            duplicate.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Export */}
+            <button
+              onClick={handleExport}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <Download className="h-4 w-4 text-brand-500" />
+              Export as JSON
+            </button>
+
+            {/* Import */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600 disabled:opacity-50"
+            >
+              {isImporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              Import from JSON
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+
+          {/* Import confirmation modal */}
+          {importConfirm && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-800/50 dark:bg-amber-900/20">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+                <div className="flex-1">
+                  <p className="font-semibold text-amber-900 dark:text-amber-300">
+                    This will replace your entire workspace
+                  </p>
+                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                    All current people and boards will be deleted and replaced
+                    with the imported data. This cannot be undone.
+                  </p>
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      onClick={confirmImport}
+                      disabled={isImporting}
+                      className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-amber-700 disabled:opacity-50"
+                    >
+                      {isImporting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : null}
+                      Yes, replace workspace
+                    </button>
+                    <button
+                      onClick={() => {
+                        setImportConfirm(false);
+                        setPendingImportJson(null);
+                      }}
+                      className="rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 transition-all hover:bg-amber-100 dark:border-amber-700 dark:text-amber-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

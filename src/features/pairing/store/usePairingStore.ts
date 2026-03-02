@@ -96,6 +96,10 @@ interface PairingStore {
   recommendPairs: () => Promise<void>;
   saveCurrentAsTemplate: (name: string) => Promise<void>;
   applyTemplate: (templateId: string) => Promise<void>;
+
+  // Export / Import
+  exportWorkspace: () => Promise<string>; // returns JSON string
+  importWorkspace: (json: string) => Promise<void>;
 }
 
 const toast = () => useToastStore.getState();
@@ -728,6 +732,115 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     } catch {
       set({ isLoading: false });
       toast().addToast('Failed to apply template.', 'error');
+    }
+  },
+
+  exportWorkspace: async () => {
+    const { people, boards } = get();
+    // Build a portable snapshot — IDs are NOT included (they're workspace-specific).
+    // We store person names + colors so they can be re-created on import.
+    const snapshot = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      people: people.map((p) => ({
+        name: p.name,
+        avatarColorHex: p.avatarColorHex,
+      })),
+      boards: boards.map((b) => ({
+        name: b.name,
+        isExempt: b.isExempt,
+        goals: b.goals,
+        meetingLink: b.meetingLink ?? null,
+        assignedPersonNames: (b.assignedPersonIds ?? [])
+          .map((id) => people.find((p) => p.id === id)?.name ?? null)
+          .filter(Boolean),
+      })),
+    };
+    return JSON.stringify(snapshot, null, 2);
+  },
+
+  importWorkspace: async (json: string) => {
+    set({ isLoading: true });
+    try {
+      const snapshot = JSON.parse(json) as {
+        version: number;
+        people: { name: string; avatarColorHex: string }[];
+        boards: {
+          name: string;
+          isExempt: boolean;
+          goals: string[];
+          meetingLink: string | null;
+          assignedPersonNames: string[];
+        }[];
+      };
+
+      if (
+        !snapshot.version ||
+        !Array.isArray(snapshot.people) ||
+        !Array.isArray(snapshot.boards)
+      ) {
+        throw new Error('Invalid workspace export file.');
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated.');
+
+      // 1. Delete all existing people and boards
+      await Promise.all([
+        supabase.from('people').delete().eq('user_id', user.id),
+        supabase.from('pairing_boards').delete().eq('user_id', user.id),
+      ]);
+
+      // 2. Create new people
+      const peopleRows = snapshot.people.map((p) => ({
+        user_id: user.id,
+        name: p.name,
+        avatar_color_hex: p.avatarColorHex,
+      }));
+
+      const { data: createdPeople, error: peopleErr } = await supabase
+        .from('people')
+        .insert(peopleRows)
+        .select();
+      if (peopleErr) throw peopleErr;
+
+      // Build name → new ID map for wiring up board assignments
+      const nameToId: Record<string, string> = {};
+      (createdPeople as PersonRow[]).forEach((row) => {
+        nameToId[row.name] = row.id;
+      });
+
+      // 3. Create new boards with re-mapped person IDs
+      const boardRows = snapshot.boards.map((b, i) => ({
+        user_id: user.id,
+        name: b.name,
+        is_exempt: b.isExempt,
+        goals: b.goals ?? [],
+        meeting_link: b.meetingLink ?? null,
+        sort_order: i,
+        assigned_person_ids: (b.assignedPersonNames ?? [])
+          .map((name) => nameToId[name])
+          .filter(Boolean),
+      }));
+
+      const { data: createdBoards, error: boardsErr } = await supabase
+        .from('pairing_boards')
+        .insert(boardRows)
+        .select();
+      if (boardsErr) throw boardsErr;
+
+      set({
+        people: (createdPeople as PersonRow[]).map(rowToPerson),
+        boards: (createdBoards as BoardRow[]).map(rowToBoard),
+        isLoading: false,
+      });
+      toast().addToast('Workspace imported successfully! 🎉', 'success');
+    } catch (err: unknown) {
+      set({ isLoading: false });
+      const msg = err instanceof Error ? err.message : 'Import failed.';
+      toast().addToast(msg, 'error');
     }
   },
 }));

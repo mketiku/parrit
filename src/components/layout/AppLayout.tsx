@@ -70,7 +70,7 @@ export default function AppLayout() {
       {/* ── Mobile Drawer — rendered at root, covers EVERYTHING including header ── */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[200] flex sm:hidden"
+          className="fixed inset-0 z-[200] flex md:hidden"
           role="dialog"
           aria-modal="true"
         >
@@ -149,7 +149,7 @@ export default function AppLayout() {
             {/* Hamburger — mobile only */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="flex h-9 w-9 sm:hidden items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800"
+              className="flex h-9 w-9 md:hidden items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
@@ -167,7 +167,7 @@ export default function AppLayout() {
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden sm:flex items-center gap-1 text-sm font-medium">
+            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
               {navLinks.map((item) => (
                 <NavLink
                   key={item.to}
@@ -203,7 +203,7 @@ export default function AppLayout() {
             {/* Desktop sign out only — mobile sign out is in the drawer */}
             <button
               onClick={() => signOut()}
-              className="hidden sm:flex h-9 items-center gap-2 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white transition-all hover:bg-neutral-700 active:scale-95 dark:bg-brand-500 dark:hover:bg-brand-600"
+              className="hidden md:flex h-9 items-center gap-2 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white transition-all hover:bg-neutral-700 active:scale-95 dark:bg-brand-500 dark:hover:bg-brand-600"
               title="Sign Out"
             >
               <LogOut className="h-3.5 w-3.5" />
