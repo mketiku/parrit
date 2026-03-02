@@ -1,61 +1,113 @@
 -- =============================================================
--- Parrit - Complete Supabase Setup
--- Run this entire file in Supabase → SQL Editor → New Query
+-- Parrit — Full Supabase Setup (Idempotent Reset + Build)
+-- Paste this entire file into Supabase → SQL Editor → New Query
+-- It safely tears down any previous state before recreating.
 -- =============================================================
 
--- ---- 1. People Table ----
--- Stores team members per workspace (scoped by auth user)
-create table if not exists public.people (
-  id               uuid primary key default gen_random_uuid(),
-  user_id          uuid not null references auth.users(id) on delete cascade,
-  name             text not null,
-  avatar_color_hex text not null default '#6366f1',
-  created_at       timestamptz default now()
+
+-- ============================================================
+-- STEP 1: TEARDOWN (clear any previous partial state)
+-- ============================================================
+
+drop table if exists public.pairing_boards cascade;
+drop table if exists public.people cascade;
+
+
+-- ============================================================
+-- STEP 2: CREATE TABLES
+-- ============================================================
+
+-- ---- People ----
+create table public.people (
+  id               uuid         primary key default gen_random_uuid(),
+  user_id          uuid         not null,
+  name             text         not null,
+  avatar_color_hex text         not null default '#6366f1',
+  created_at       timestamptz  not null default now(),
+
+  constraint people_user_id_fk
+    foreign key (user_id) references auth.users(id) on delete cascade
 );
 
-alter table public.people enable row level security;
-
--- Only the authenticated workspace owner can read/write their people
-create policy "Workspace members manage their own people"
-  on public.people
-  for all
-  using  (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
--- ---- 2. Pairing Boards Table ----
--- Stores pairing boards and their current person assignments per workspace
-create table if not exists public.pairing_boards (
-  id                  uuid primary key default gen_random_uuid(),
-  user_id             uuid not null references auth.users(id) on delete cascade,
-  name                text not null,
-  is_exempt           boolean not null default false,
+-- ---- Pairing Boards ----
+create table public.pairing_boards (
+  id                  uuid         primary key default gen_random_uuid(),
+  user_id             uuid         not null,
+  name                text         not null,
+  is_exempt           boolean      not null default false,
   goal_text           text,
   meeting_link        text,
-  sort_order          integer not null default 0,
-  -- Stored as array of UUIDs referencing people.id
-  assigned_person_ids uuid[] not null default '{}',
-  created_at          timestamptz default now()
+  sort_order          integer      not null default 0,
+  assigned_person_ids uuid[]       not null default '{}',
+  created_at          timestamptz  not null default now(),
+
+  constraint pairing_boards_user_id_fk
+    foreign key (user_id) references auth.users(id) on delete cascade
 );
 
+
+-- ============================================================
+-- STEP 3: INDEXES
+-- ============================================================
+
+create index people_user_id_idx       on public.people(user_id);
+create index boards_user_id_idx       on public.pairing_boards(user_id);
+create index boards_sort_order_idx    on public.pairing_boards(user_id, sort_order);
+
+
+-- ============================================================
+-- STEP 4: ROW LEVEL SECURITY
+-- ============================================================
+
+alter table public.people         enable row level security;
 alter table public.pairing_boards enable row level security;
 
--- Only the authenticated workspace owner can read/write their boards
-create policy "Workspace members manage their own boards"
-  on public.pairing_boards
-  for all
-  using  (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+-- People policies
+create policy "people_select_own"
+  on public.people for select
+  using (auth.uid() = public.people.user_id);
 
--- ---- 3. Optional: Helpful indexes ----
-create index if not exists people_user_id_idx on public.people(user_id);
-create index if not exists boards_user_id_idx on public.pairing_boards(user_id);
+create policy "people_insert_own"
+  on public.people for insert
+  with check (auth.uid() = public.people.user_id);
 
--- =============================================================
--- Supabase Auth Settings (manual steps — not SQL)
--- =============================================================
--- In Supabase Dashboard → Authentication → Providers → Email:
---   ✅ Disable "Confirm email"      (avoids email-delivery friction)
---   ✅ Disable "Secure email change" (optional, for simplicity)
--- These settings allow workspaces to sign up and log in
--- immediately without requiring email confirmation.
--- =============================================================
+create policy "people_update_own"
+  on public.people for update
+  using (auth.uid() = public.people.user_id);
+
+create policy "people_delete_own"
+  on public.people for delete
+  using (auth.uid() = public.people.user_id);
+
+-- Pairing boards policies
+create policy "boards_select_own"
+  on public.pairing_boards for select
+  using (auth.uid() = public.pairing_boards.user_id);
+
+create policy "boards_insert_own"
+  on public.pairing_boards for insert
+  with check (auth.uid() = public.pairing_boards.user_id);
+
+create policy "boards_update_own"
+  on public.pairing_boards for update
+  using (auth.uid() = public.pairing_boards.user_id);
+
+create policy "boards_delete_own"
+  on public.pairing_boards for delete
+  using (auth.uid() = public.pairing_boards.user_id);
+
+
+-- ============================================================
+-- DONE
+-- Tables: public.people, public.pairing_boards
+-- RLS:    Each workspace (auth user) can only see/edit its own rows.
+-- ============================================================
+--
+-- AUTH SETTINGS (manual — do this in the Supabase Dashboard):
+--   Authentication → Providers → Email:
+--     [ ] Confirm email       ← DISABLE
+--     [ ] Secure email change ← DISABLE (optional)
+--
+-- These settings allow workspace sign-ups to work immediately
+-- without needing an email inbox.
+-- ============================================================
