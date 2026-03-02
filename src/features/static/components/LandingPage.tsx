@@ -61,13 +61,13 @@ export function LandingPage() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10"
         >
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-indigo-500/10 blur-[100px]" />
-          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-violet-500/10 blur-[80px]" />
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-brand-500/10 blur-[100px]" />
+          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-accent-500/10 blur-[80px]" />
         </div>
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 pt-20 pb-24 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-300 mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 mb-8">
             <Zap className="h-3.5 w-3.5" />
             The modern replacement for parrit.io
           </div>
@@ -75,7 +75,7 @@ export function LandingPage() {
           {/* Headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.08]">
             Pairing, finally{' '}
-            <span className="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
               done right.
             </span>
           </h1>
@@ -89,7 +89,7 @@ export function LandingPage() {
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/login"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-indigo-500 px-8 py-4 text-base font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]"
+              className="group inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 text-base font-bold text-white shadow-lg shadow-brand-500/30 transition-all hover:bg-brand-600 hover:shadow-brand-500/40 hover:scale-[1.02] active:scale-[0.98]"
             >
               Create a Workspace
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -125,7 +125,7 @@ export function LandingPage() {
                 <p className="text-sm font-bold text-neutral-700 dark:text-neutral-300">
                   Pairing Boards
                 </p>
-                <div className="h-7 w-28 rounded-xl bg-indigo-500/90 shadow-sm" />
+                <div className="h-7 w-28 rounded-xl bg-brand-500/90 shadow-sm" />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[
@@ -201,9 +201,9 @@ export function LandingPage() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="group rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-200 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500/30"
+              className="group rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition-all hover:border-brand-200 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-brand-500/30"
             >
-              <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-indigo-50 p-2.5 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 transition-colors group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20">
+              <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-brand-50 p-2.5 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 transition-colors group-hover:bg-brand-100 dark:group-hover:bg-brand-500/20">
                 <f.icon className="h-5 w-5" />
               </div>
               <h3 className="mb-2 font-bold text-neutral-900 dark:text-neutral-100">
@@ -219,10 +219,10 @@ export function LandingPage() {
 
       {/* CTA banner */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pb-24">
-        <div className="relative overflow-hidden rounded-3xl bg-indigo-500 p-10 text-center shadow-2xl shadow-indigo-500/30">
+        <div className="relative overflow-hidden rounded-3xl bg-brand-500 p-10 text-center shadow-2xl shadow-brand-500/30">
           {/* Decorative blobs */}
           <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-violet-500/30 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-accent-500/30 blur-3xl pointer-events-none" />
 
           <div className="relative z-10">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
@@ -231,12 +231,12 @@ export function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               Ready to pair up?
             </h2>
-            <p className="mt-3 text-indigo-100 max-w-md mx-auto">
+            <p className="mt-3 text-brand-100 max-w-md mx-auto">
               Set up your workspace in under a minute. Free, forever.
             </p>
             <Link
               to="/login"
-              className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-indigo-600 shadow-lg transition-all hover:bg-indigo-50 hover:scale-[1.02] active:scale-[0.98]"
+              className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-600 shadow-lg transition-all hover:bg-brand-50 hover:scale-[1.02] active:scale-[0.98]"
             >
               Create a Free Workspace
               <ArrowRight className="h-4 w-4" />

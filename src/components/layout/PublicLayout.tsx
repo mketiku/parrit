@@ -24,7 +24,7 @@ export default function PublicLayout() {
   }, [isDark]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col font-sans selection:bg-indigo-500/30 bg-white dark:bg-neutral-950">
+    <div className="flex min-h-screen w-full flex-col font-sans selection:bg-brand-500/30 bg-white dark:bg-neutral-950">
       {/* Header */}
       <header className="sticky top-0 z-50 shrink-0 border-b border-neutral-200/60 bg-white/70 backdrop-blur-md dark:border-neutral-800/60 dark:bg-neutral-950/70">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -33,7 +33,7 @@ export default function PublicLayout() {
             to="/"
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-sm shadow-indigo-500/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm shadow-brand-500/20">
               <Bird className="h-5 w-5" />
             </div>
             <span className="font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -68,7 +68,7 @@ export default function PublicLayout() {
             </Link>
             <Link
               to="/login"
-              className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-indigo-500/20 transition-all hover:bg-indigo-600"
+              className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600"
             >
               Get Started
             </Link>
@@ -85,7 +85,7 @@ export default function PublicLayout() {
       <footer className="shrink-0 border-t border-neutral-200 bg-white/50 py-8 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/50">
         <div className="mx-auto flex flex-col md:flex-row w-full max-w-6xl items-center justify-between px-4 sm:px-6 gap-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500 text-white">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-500 text-white">
               <Bird className="h-3.5 w-3.5" />
             </div>
             <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
@@ -95,13 +95,13 @@ export default function PublicLayout() {
           <div className="flex items-center gap-6">
             <Link
               to="/about"
-              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
               About
             </Link>
             <a
               href="/about#contact"
-              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
               Contact
             </a>
@@ -109,7 +109,7 @@ export default function PublicLayout() {
               href="https://github.com/mketiku/parrit/issues"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
               GitHub
             </a>

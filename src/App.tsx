@@ -12,6 +12,7 @@ import { LandingPage } from './features/static/components/LandingPage';
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
 import { HistoryScreen } from './features/pairing/components/HistoryScreen';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
+import { useThemeStore } from './store/useThemeStore';
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -24,7 +25,7 @@ function DashboardView() {
   if (dataLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
       </div>
     );
   }
@@ -49,10 +50,13 @@ function DashboardView() {
 function App() {
   const { user, isLoading, initialize } = useAuthStore();
   const { loadWorkspaceData, subscribeToRealtime } = usePairingStore();
+  const { theme, setTheme } = useThemeStore();
 
   React.useEffect(() => {
     initialize();
-  }, [initialize]);
+    // Initialize theme on load
+    setTheme(theme);
+  }, [initialize, theme, setTheme]);
 
   // Load workspace data and subscribe to live updates when authenticated
   React.useEffect(() => {
@@ -65,7 +69,7 @@ function App() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-950">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
       </div>
     );
   }

@@ -67,7 +67,7 @@ export function DroppableBoard({
         dark:bg-neutral-900 
         ${
           isOver
-            ? 'border-indigo-400 bg-indigo-50/50 dark:border-indigo-500/50 dark:bg-indigo-950/20'
+            ? 'border-brand-400 bg-brand-50/50 dark:border-brand-500/50 dark:bg-brand-950/20'
             : 'border-neutral-200 dark:border-neutral-800'
         }
       `}
@@ -77,7 +77,7 @@ export function DroppableBoard({
         {board.isExempt ? (
           <ShieldX className="h-5 w-5 shrink-0 text-neutral-400" />
         ) : (
-          <LayoutDashboard className="h-5 w-5 shrink-0 text-indigo-500 dark:text-indigo-400" />
+          <LayoutDashboard className="h-5 w-5 shrink-0 text-brand-500 dark:text-brand-400" />
         )}
 
         {isEditing ? (
@@ -88,11 +88,11 @@ export function DroppableBoard({
               onChange={(e) => setEditedName(e.target.value)}
               onKeyDown={handleRenameKeyDown}
               onBlur={handleRenameCommit}
-              className="min-w-0 flex-1 rounded-md border border-indigo-400 bg-white px-2 py-0.5 text-sm font-semibold text-neutral-900 outline-none ring-2 ring-indigo-500/20 dark:border-indigo-600 dark:bg-neutral-800 dark:text-neutral-100"
+              className="min-w-0 flex-1 rounded-md border border-brand-400 bg-white px-2 py-0.5 text-sm font-semibold text-neutral-900 outline-none ring-2 ring-brand-500/20 dark:border-brand-600 dark:bg-neutral-800 dark:text-neutral-100"
             />
             <button
               onClick={handleRenameCommit}
-              className="shrink-0 text-indigo-500 hover:text-indigo-700"
+              className="shrink-0 text-brand-500 hover:text-brand-700"
             >
               <Check className="h-4 w-4" />
             </button>
@@ -165,7 +165,7 @@ export function DroppableBoard({
               href={board.meetingLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-1 text-indigo-600 hover:underline dark:text-indigo-400"
+              className="inline-block mt-1 text-brand-600 hover:underline dark:text-brand-400"
             >
               Join Meeting
             </a>
@@ -179,7 +179,7 @@ export function DroppableBoard({
           flex flex-1 flex-wrap gap-2 rounded-xl p-3 border-2 border-transparent transition-all
           ${
             isOver
-              ? 'bg-indigo-100/30 border-indigo-300 border-dashed dark:bg-indigo-900/10 dark:border-indigo-700'
+              ? 'bg-brand-100/30 border-brand-300 border-dashed dark:bg-brand-900/10 dark:border-brand-700'
               : 'bg-neutral-50 dark:bg-neutral-950'
           }
           ${

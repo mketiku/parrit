@@ -79,7 +79,7 @@ export function TeamScreen() {
           onClick={() => !atLimit && setIsAdding(true)}
           disabled={atLimit}
           title={atLimit ? `Team limit of ${MAX_PEOPLE} reached` : undefined}
-          className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-500/20 transition-all hover:bg-indigo-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+          className="flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-brand-500 dark:hover:bg-brand-400"
         >
           <Plus className="h-4 w-4" />
           Add Person
@@ -107,7 +107,7 @@ export function TeamScreen() {
       {isAdding && !atLimit && (
         <form
           onSubmit={handleAdd}
-          className="flex items-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-900 dark:bg-indigo-500/10"
+          className="flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-900 dark:bg-brand-500/10"
         >
           <input
             autoFocus
@@ -115,12 +115,12 @@ export function TeamScreen() {
             placeholder="Full name (e.g. Peter Parker)"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="min-w-0 flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-neutral-700 dark:bg-neutral-900"
+            className="min-w-0 flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-neutral-900"
           />
           <button
             type="submit"
             disabled={!newName.trim()}
-            className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-500 disabled:opacity-50 dark:bg-indigo-500"
+            className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-500 disabled:opacity-50 dark:bg-brand-500"
           >
             <Check className="h-4 w-4" />
             Add
@@ -184,7 +184,7 @@ export function TeamScreen() {
                           if (e.key === 'Enter') commitEdit();
                           if (e.key === 'Escape') cancelEdit();
                         }}
-                        className="min-w-0 flex-1 rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-neutral-700 dark:bg-neutral-950"
+                        className="min-w-0 flex-1 rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-neutral-950"
                       />
                       {/* Color swatches */}
                       <div className="flex items-center gap-1.5">
@@ -202,7 +202,7 @@ export function TeamScreen() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={commitEdit}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white transition-all hover:bg-indigo-500"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white transition-all hover:bg-brand-500"
                         >
                           <Check className="h-4 w-4" />
                         </button>

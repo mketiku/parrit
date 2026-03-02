@@ -7,8 +7,8 @@ export function AboutScreen() {
       {/* Header Section */}
       <div className="text-center space-y-4">
         <div className="flex justify-center">
-          <div className="rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 p-3 ring-1 ring-indigo-500/20">
-            <Bird className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
+          <div className="rounded-2xl bg-brand-50 dark:bg-brand-500/10 p-3 ring-1 ring-brand-500/20">
+            <Bird className="h-10 w-10 text-brand-600 dark:text-brand-400" />
           </div>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-100">
@@ -85,13 +85,13 @@ export function AboutScreen() {
 
         {/* Contact Section */}
         <section id="contact" className="space-y-6 pt-6">
-          <div className="rounded-3xl bg-neutral-900 p-8 text-white dark:bg-indigo-600">
+          <div className="rounded-3xl bg-neutral-900 p-8 text-white dark:bg-brand-600">
             <div className="flex flex-col items-center text-center gap-6">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">
                   Get in touch
                 </h2>
-                <p className="text-neutral-400 dark:text-indigo-100 max-w-md">
+                <p className="text-neutral-400 dark:text-brand-100 max-w-md">
                   Have feedback, questions, or ideas for Parrit? I'd love to
                   hear from you.
                 </p>

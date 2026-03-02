@@ -3,15 +3,15 @@ import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
 import { useToastStore, type Toast } from '../../store/useToastStore';
 
 const icons = {
-  success: <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />,
+  success: <CheckCircle2 className="h-4 w-4 shrink-0 text-brand-500" />,
   error: <XCircle className="h-4 w-4 shrink-0 text-red-500" />,
-  info: <Info className="h-4 w-4 shrink-0 text-indigo-500" />,
+  info: <Info className="h-4 w-4 shrink-0 text-brand-500" />,
 };
 
 const barColors = {
-  success: 'bg-emerald-500',
+  success: 'bg-brand-500',
   error: 'bg-red-500',
-  info: 'bg-indigo-500',
+  info: 'bg-brand-500',
 };
 
 function ToastItem({ toast }: { toast: Toast }) {

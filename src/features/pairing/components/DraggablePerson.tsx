@@ -75,7 +75,7 @@ export function DraggablePerson({
           text-sm font-semibold text-white transition-all shadow-inner
           ${
             isSelected && !isOverlay
-              ? 'ring-4 ring-indigo-500 scale-110 shadow-md outline-none'
+              ? 'ring-4 ring-brand-500 scale-110 shadow-md outline-none'
               : 'ring-1 ring-black/10 dark:ring-white/20'
           }
           ${isDragging ? 'z-[100] scale-110 cursor-grabbing shadow-2xl ring-2' : 'hover:scale-105 hover:shadow-md'}

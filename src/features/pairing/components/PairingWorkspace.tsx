@@ -200,7 +200,7 @@ export function PairingWorkspace() {
               <button
                 onClick={saveSession}
                 disabled={isStoreLoading}
-                className="flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                className="flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
               >
                 {isStoreLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -233,26 +233,26 @@ export function PairingWorkspace() {
             {!isAddingBoard ? (
               <button
                 onClick={() => setIsAddingBoard(true)}
-                className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-indigo-400 hover:bg-indigo-50/30 dark:border-neutral-800 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-950/10"
+                className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10"
               >
-                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-500 dark:bg-neutral-800 dark:group-hover:bg-indigo-900/40">
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-brand-100 group-hover:text-brand-500 dark:bg-neutral-800 dark:group-hover:bg-brand-900/40">
                   <Plus className="h-6 w-6" />
                 </div>
-                <span className="text-sm font-semibold text-neutral-500 group-hover:text-indigo-600 dark:text-neutral-400 dark:group-hover:text-indigo-400">
+                <span className="text-sm font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-400 dark:group-hover:text-brand-400">
                   Add Board
                 </span>
               </button>
             ) : (
               <form
                 onSubmit={handleAddBoard}
-                className="flex min-h-[160px] flex-col rounded-2xl border-2 border-indigo-400 bg-white p-5 shadow-lg ring-4 ring-indigo-500/10 animate-in zoom-in-95 duration-200 dark:bg-neutral-900 dark:border-indigo-500/50"
+                className="flex min-h-[160px] flex-col rounded-2xl border-2 border-brand-400 bg-white p-5 shadow-lg ring-4 ring-brand-500/10 animate-in zoom-in-95 duration-200 dark:bg-neutral-900 dark:border-brand-500/50"
               >
                 <input
                   autoFocus
                   placeholder="Board name..."
                   value={newBoardName}
                   onChange={(e) => setNewBoardName(e.target.value)}
-                  className="mb-4 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
+                  className="mb-4 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
                 />
 
                 <label className="flex items-center gap-2 mb-4 cursor-pointer group">
@@ -274,7 +274,7 @@ export function PairingWorkspace() {
                 <div className="mt-auto flex gap-2">
                   <button
                     type="submit"
-                    className="flex-1 rounded-lg bg-indigo-500 py-2 text-xs font-bold text-white transition-colors hover:bg-indigo-600"
+                    className="flex-1 rounded-lg bg-brand-500 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-600"
                   >
                     Add
                   </button>
@@ -315,7 +315,7 @@ export function PairingWorkspace() {
             />
             {selectedPersonIds.has(activeDragItem.person.id) &&
               selectedPersonIds.size > 1 && (
-                <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-neutral-900">
+                <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-neutral-900">
                   {selectedPersonIds.size}
                 </div>
               )}
@@ -342,7 +342,7 @@ export function PairingWorkspace() {
               <button
                 key={b.id}
                 onClick={() => handleBulkMove(b.id)}
-                className="whitespace-nowrap rounded-full bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
+                className="whitespace-nowrap rounded-full bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-100 dark:bg-brand-900/30 dark:text-brand-300 dark:hover:bg-brand-900/50"
               >
                 {b.name}
               </button>
@@ -385,7 +385,7 @@ function DroppableUnpairedPool({
         sticky top-6 flex min-h-[400px] flex-col rounded-2xl border p-5 shadow-xs transition-colors
         ${
           isOver
-            ? 'border-indigo-400 border-dashed bg-indigo-50 dark:border-indigo-500/50 dark:bg-indigo-950/20'
+            ? 'border-brand-400 border-dashed bg-brand-50 dark:border-brand-500/50 dark:bg-brand-950/20'
             : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
         }
       `}

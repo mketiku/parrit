@@ -30,7 +30,7 @@ export default function AppLayout() {
   const toggleTheme = () => setIsDark(!isDark);
 
   return (
-    <div className="flex min-h-screen w-full flex-col font-sans selection:bg-indigo-500/30">
+    <div className="flex min-h-screen w-full flex-col font-sans selection:bg-brand-500/30">
       {/* Header */}
       <header className="sticky top-0 z-50 shrink-0 border-b border-neutral-200 bg-white/50 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
@@ -40,7 +40,7 @@ export default function AppLayout() {
               to="/app"
               className="flex items-center gap-2 transition-opacity hover:opacity-80"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-sm shadow-indigo-500/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm shadow-brand-500/20">
                 <Bird className="h-5 w-5" />
               </div>
               <span className="font-bold tracking-tight">Parrit</span>
@@ -54,7 +54,7 @@ export default function AppLayout() {
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
-                      ? 'bg-neutral-100 text-indigo-600 dark:bg-neutral-800 dark:text-indigo-400'
+                      ? 'bg-neutral-100 text-brand-600 dark:bg-neutral-800 dark:text-brand-400'
                       : 'text-neutral-600 dark:text-neutral-400'
                   }`
                 }
@@ -66,7 +66,7 @@ export default function AppLayout() {
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
-                      ? 'bg-neutral-100 text-indigo-600 dark:bg-neutral-800 dark:text-indigo-400'
+                      ? 'bg-neutral-100 text-brand-600 dark:bg-neutral-800 dark:text-brand-400'
                       : 'text-neutral-600 dark:text-neutral-400'
                   }`
                 }
@@ -78,7 +78,7 @@ export default function AppLayout() {
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
-                      ? 'bg-neutral-100 text-indigo-600 dark:bg-neutral-800 dark:text-indigo-400'
+                      ? 'bg-neutral-100 text-brand-600 dark:bg-neutral-800 dark:text-brand-400'
                       : 'text-neutral-600 dark:text-neutral-400'
                   }`
                 }
@@ -90,7 +90,7 @@ export default function AppLayout() {
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                     isActive
-                      ? 'bg-neutral-100 text-indigo-600 dark:bg-neutral-800 dark:text-indigo-400'
+                      ? 'bg-neutral-100 text-brand-600 dark:bg-neutral-800 dark:text-brand-400'
                       : 'text-neutral-600 dark:text-neutral-400'
                   }`
                 }
@@ -136,27 +136,27 @@ export default function AppLayout() {
           <div className="flex items-center gap-6">
             <Link
               to="/about"
-              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
               About Parrit
             </Link>
             <a
               href="/about#contact"
-              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
               Contact
             </a>
             <a
               href="https://linkedin.com/in/mketiku"
               target="_blank"
-              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
               LinkedIn
             </a>
             <a
               href="https://github.com/mketiku/parrit/issues"
               target="_blank"
-              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
               Help & Issues
             </a>

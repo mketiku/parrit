@@ -54,7 +54,7 @@ export function AuthScreen() {
     <div className="flex min-h-[calc(100vh-8rem)] w-full items-center justify-center p-4 font-sans text-neutral-900 dark:text-neutral-100">
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-neutral-200 bg-white/50 p-8 shadow-2xl backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-sm shadow-indigo-500/20">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500 text-white shadow-sm shadow-brand-500/20">
             <Bird className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -83,7 +83,7 @@ export function AuthScreen() {
               required
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white/80 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-neutral-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-neutral-700 dark:bg-neutral-900/80 dark:placeholder:text-neutral-600 dark:focus:border-indigo-400"
+              className="w-full rounded-xl border border-neutral-300 bg-white/80 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-neutral-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-neutral-900/80 dark:placeholder:text-neutral-600 dark:focus:border-brand-400"
               placeholder="e.g. omega-team"
             />
           </div>
@@ -97,7 +97,7 @@ export function AuthScreen() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white/80 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-neutral-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-neutral-700 dark:bg-neutral-900/80 dark:placeholder:text-neutral-600 dark:focus:border-indigo-400"
+              className="w-full rounded-xl border border-neutral-300 bg-white/80 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-neutral-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-neutral-900/80 dark:placeholder:text-neutral-600 dark:focus:border-brand-400"
               placeholder="••••••••"
             />
           </div>
@@ -105,7 +105,7 @@ export function AuthScreen() {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+            className="flex w-full items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 transition-all hover:bg-brand-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70 dark:bg-brand-500 dark:hover:bg-brand-400"
           >
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -121,7 +121,7 @@ export function AuthScreen() {
           {isSignUp ? 'Already have a workspace? ' : "Don't have a workspace? "}
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="font-medium text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="font-medium text-brand-600 hover:text-brand-500 hover:underline dark:text-brand-400 dark:hover:text-brand-300"
           >
             {isSignUp ? 'Sign in' : 'Create one'}
           </button>

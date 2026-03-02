@@ -121,7 +121,7 @@ export function HistoryScreen() {
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -139,7 +139,7 @@ export function HistoryScreen() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-indigo-500 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
+        <div className="p-3 bg-brand-500 rounded-2xl text-white shadow-lg shadow-brand-500/20">
           <History className="h-6 w-6" />
         </div>
         <div>
@@ -164,7 +164,7 @@ export function HistoryScreen() {
               <p className="text-sm text-neutral-500">No sessions saved yet.</p>
               <Link
                 to="/"
-                className="text-indigo-500 text-sm font-medium hover:underline mt-2 inline-block"
+                className="text-brand-500 text-sm font-medium hover:underline mt-2 inline-block"
               >
                 Go to Workspace
               </Link>
@@ -176,19 +176,19 @@ export function HistoryScreen() {
                   onClick={() => loadSessionDetails(session.id)}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
                     selectedSessionId === session.id
-                      ? 'border-indigo-500 bg-indigo-50/50 shadow-md ring-1 ring-indigo-500 dark:bg-indigo-950/20'
-                      : 'border-neutral-200 bg-white hover:border-indigo-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
+                      ? 'border-brand-500 bg-brand-50/50 shadow-md ring-1 ring-brand-500 dark:bg-brand-950/20'
+                      : 'border-neutral-200 bg-white hover:border-brand-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2 rounded-xl scale-90 ${selectedSessionId === session.id ? 'bg-indigo-500 text-white' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}
+                      className={`p-2 rounded-xl scale-90 ${selectedSessionId === session.id ? 'bg-brand-500 text-white' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}
                     >
                       <Calendar className="h-4 w-4" />
                     </div>
                     <div className="text-left">
                       <p
-                        className={`font-semibold ${selectedSessionId === session.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-neutral-900 dark:text-neutral-100'}`}
+                        className={`font-semibold ${selectedSessionId === session.id ? 'text-brand-900 dark:text-brand-100' : 'text-neutral-900 dark:text-neutral-100'}`}
                       >
                         {format(
                           new Date(session.session_date),
@@ -202,7 +202,7 @@ export function HistoryScreen() {
                     </div>
                   </div>
                   <ChevronRight
-                    className={`h-4 w-4 ${selectedSessionId === session.id ? 'text-indigo-500' : 'text-neutral-300'} transition-transform group-hover:translate-x-1`}
+                    className={`h-4 w-4 ${selectedSessionId === session.id ? 'text-brand-500' : 'text-neutral-300'} transition-transform group-hover:translate-x-1`}
                   />
                 </button>
                 <button
@@ -228,11 +228,11 @@ export function HistoryScreen() {
             </div>
           ) : isLoadingDetails ? (
             <div className="h-[400px] flex items-center justify-center rounded-3xl bg-neutral-50 dark:bg-neutral-900/40">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"></div>
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="bg-indigo-500 rounded-3xl p-6 text-white shadow-xl shadow-indigo-500/20 overflow-hidden relative">
+              <div className="bg-brand-500 rounded-3xl p-6 text-white shadow-xl shadow-brand-500/20 overflow-hidden relative">
                 <div className="relative z-10 flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold italic">
@@ -261,7 +261,7 @@ export function HistoryScreen() {
                     className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 shadow-sm"
                   >
                     <div className="flex items-center gap-2 mb-4">
-                      <LayoutDashboard className="h-4 w-4 text-indigo-500" />
+                      <LayoutDashboard className="h-4 w-4 text-brand-500" />
                       <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
                         {boardName}
                       </h3>
