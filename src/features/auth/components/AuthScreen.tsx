@@ -19,7 +19,7 @@ export function AuthScreen() {
       const pseudoEmail = `${workspaceName
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')}@parrit.local`;
+        .replace(/[^a-z0-9]/g, '-')}@parrit.com`;
 
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
