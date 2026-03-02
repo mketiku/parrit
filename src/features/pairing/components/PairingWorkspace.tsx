@@ -15,6 +15,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { AnimatePresence } from 'framer-motion';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
+import { TemplateManager } from './TemplateManager';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
 import {
@@ -183,6 +184,8 @@ export function PairingWorkspace() {
             </h2>
 
             <div className="flex flex-wrap items-center gap-2">
+              <TemplateManager />
+
               <button
                 onClick={() => recommendPairs()}
                 disabled={isStoreLoading}

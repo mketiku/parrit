@@ -189,127 +189,132 @@ export function DroppableBoard({
         )}
       </div>
 
-      {/* Goal / Meeting Link Section */}
-      <div className="mb-4">
-        {isEditingExtra ? (
-          <div className="space-y-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800">
-            {/* Goals List */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Daily Goals
-              </label>
-              {extraData.goals.map((g, i) => (
-                <div key={i} className="flex items-center gap-2 group/goal">
-                  <div className="flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-                    {g}
+      {!board.isExempt && (
+        <>
+          {/* Goal / Meeting Link Section */}
+          <div className="mb-4">
+            {isEditingExtra ? (
+              <div className="space-y-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800">
+                {/* Goals List */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    Daily Goals
+                  </label>
+                  {extraData.goals.map((g, i) => (
+                    <div key={i} className="flex items-center gap-2 group/goal">
+                      <div className="flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                        {g}
+                      </div>
+                      <button
+                        onClick={() => removeGoal(i)}
+                        className="p-1 text-neutral-400 hover:text-red-500 opacity-0 group-hover/goal:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Target className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
+                      <input
+                        value={newGoal}
+                        onChange={(e) => setNewGoal(e.target.value)}
+                        onKeyDown={(e) =>
+                          e.key === 'Enter' && (e.preventDefault(), addGoal())
+                        }
+                        placeholder="Add a goal..."
+                        className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
+                      />
+                    </div>
+                    <button
+                      onClick={addGoal}
+                      className="rounded-lg bg-neutral-200 px-3 text-xs font-bold text-neutral-600 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                    >
+                      Add
+                    </button>
                   </div>
+                </div>
+
+                {/* Meeting Link */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    Meeting Link
+                  </label>
+                  <div className="relative">
+                    <LinkIcon className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
+                    <input
+                      value={extraData.meetingLink}
+                      onChange={(e) =>
+                        setExtraData((prev) => ({
+                          ...prev,
+                          meetingLink: e.target.value,
+                        }))
+                      }
+                      placeholder="Zoom / Meet link..."
+                      className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-1 pt-1">
                   <button
-                    onClick={() => removeGoal(i)}
-                    className="p-1 text-neutral-400 hover:text-red-500 opacity-0 group-hover/goal:opacity-100 transition-opacity"
+                    onClick={() => setIsEditingExtra(false)}
+                    className="rounded-md px-2 py-1 text-[10px] font-bold uppercase text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleExtraCommit}
+                    className="rounded-md bg-brand-500 px-2 py-1 text-[10px] font-bold uppercase text-white hover:bg-brand-600"
+                  >
+                    Save
                   </button>
                 </div>
-              ))}
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Target className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
-                  <input
-                    value={newGoal}
-                    onChange={(e) => setNewGoal(e.target.value)}
-                    onKeyDown={(e) =>
-                      e.key === 'Enter' && (e.preventDefault(), addGoal())
-                    }
-                    placeholder="Add a goal..."
-                    className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
-                  />
-                </div>
-                <button
-                  onClick={addGoal}
-                  className="rounded-lg bg-neutral-200 px-3 text-xs font-bold text-neutral-600 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                >
-                  Add
-                </button>
               </div>
-            </div>
-
-            {/* Meeting Link */}
-            <div className="space-y-1.5 pt-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Meeting Link
-              </label>
-              <div className="relative">
-                <LinkIcon className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
-                <input
-                  value={extraData.meetingLink}
-                  onChange={(e) =>
-                    setExtraData((prev) => ({
-                      ...prev,
-                      meetingLink: e.target.value,
-                    }))
-                  }
-                  placeholder="Zoom / Meet link..."
-                  className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-1 pt-1">
-              <button
-                onClick={() => setIsEditingExtra(false)}
-                className="rounded-md px-2 py-1 text-[10px] font-bold uppercase text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExtraCommit}
-                className="rounded-md bg-brand-500 px-2 py-1 text-[10px] font-bold uppercase text-white hover:bg-brand-600"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div
-            onClick={() => setIsEditingExtra(true)}
-            className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-950/50"
-          >
-            {board.goals.length > 0 ? (
-              <ul className="space-y-1">
-                {board.goals.map((g, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400"
-                  >
-                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" />
-                    <span className="leading-tight">{g}</span>
-                  </li>
-                ))}
-              </ul>
             ) : (
-              <p className="text-[10px] italic text-neutral-400 group-hover/extra:text-neutral-500 flex items-center gap-1.5">
-                <Plus className="h-3 w-3" /> Add daily goals...
-              </p>
-            )}
-            {board.meetingLink && (
-              <div className="flex items-center gap-1.5 pt-1">
-                <a
-                  href={board.meetingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-brand-50 px-2 py-1 text-brand-600 transition-colors hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20"
-                >
-                  <LinkIcon className="h-3 w-3" />
-                  <span className="text-[10px] font-extrabold uppercase tracking-tighter hover:underline">
-                    Join Zoom/Meeting
-                  </span>
-                </a>
+              <div
+                onClick={() => setIsEditingExtra(true)}
+                className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-950/50"
+              >
+                {board.goals.length > 0 ? (
+                  <ul className="space-y-1">
+                    {board.goals.map((g, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400"
+                      >
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" />
+                        <span className="leading-tight">{g}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[10px] italic text-neutral-400 group-hover/extra:text-neutral-500 flex items-center gap-1.5">
+                    <Plus className="h-3 w-3" /> Add daily goals...
+                  </p>
+                )}
+                {board.meetingLink && (
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <a
+                      href={board.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-brand-50 px-2 py-1 text-brand-600 transition-colors hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20"
+                    >
+                      <LinkIcon className="h-3 w-3" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-tighter hover:underline">
+                        Join Zoom/Meeting
+                      </span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
-      </div>
+          </div>{' '}
+          {/* Closes div.mb-4 */}
+        </>
+      )}
 
       {/* Draggable Zone */}
       <div

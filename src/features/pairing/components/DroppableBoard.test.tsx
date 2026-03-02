@@ -29,7 +29,7 @@ const mockBoard: PairingBoard = {
   name: 'Phoenix',
   isExempt: false,
   sortOrder: 0,
-  goalText: 'Ship the board logic',
+  goals: ['Ship the board logic'],
 };
 
 const mockPeople: Person[] = [
