@@ -34,7 +34,6 @@ export function DroppableBoard({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(board.name);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -46,7 +45,7 @@ export function DroppableBoard({
     if (trimmed && trimmed !== board.name) {
       await updateBoard(board.id, { name: trimmed });
     } else {
-      setEditedName(board.name); // revert if blank or unchanged
+      setEditedName(board.name);
     }
     setIsEditing(false);
   };
@@ -57,14 +56,6 @@ export function DroppableBoard({
       setEditedName(board.name);
       setIsEditing(false);
     }
-  };
-
-  const handleDelete = async () => {
-    if (!confirmDelete) {
-      setConfirmDelete(true);
-      return;
-    }
-    await removeBoard(board.id);
   };
 
   return (
@@ -136,18 +127,9 @@ export function DroppableBoard({
                 <Pencil className="h-3.5 w-3.5" />
               </button>
               <button
-                onClick={handleDelete}
-                onBlur={() => setConfirmDelete(false)}
-                className={`rounded-md p-1 transition-colors ${
-                  confirmDelete
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                    : 'text-neutral-400 hover:bg-neutral-100 hover:text-red-500 dark:hover:bg-neutral-800'
-                }`}
-                title={
-                  confirmDelete
-                    ? 'Click again to confirm delete'
-                    : 'Delete board'
-                }
+                onClick={() => removeBoard(board.id)}
+                className="rounded-md p-1 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                title="Delete board"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
