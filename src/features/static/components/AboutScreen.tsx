@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bird, Linkedin, Github, Heart } from 'lucide-react';
+import { Bird, Heart } from 'lucide-react';
 
 export function AboutScreen() {
   return (
@@ -98,20 +98,12 @@ export function AboutScreen() {
               </div>
               <div className="flex flex-wrap justify-center gap-4">
                 <a
-                  href="https://linkedin.com/in/mketiku"
-                  target="_blank"
-                  className="flex items-center gap-2 rounded-xl bg-white/10 px-6 py-3 font-semibold transition-all hover:bg-white/20"
-                >
-                  <Linkedin className="h-5 w-5" />
-                  LinkedIn
-                </a>
-                <a
                   href="https://github.com/mketiku/parrit/issues"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-xl bg-white text-neutral-900 px-6 py-3 font-semibold transition-all hover:bg-neutral-100"
                 >
-                  <Github className="h-5 w-5" />
-                  Raise an Issue
+                  Open a GitHub Issue
                 </a>
               </div>
             </div>
