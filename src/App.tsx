@@ -13,6 +13,7 @@ import { PairingWorkspace } from './features/pairing/components/PairingWorkspace
 import { HistoryScreen } from './features/pairing/components/HistoryScreen';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
 import { useThemeStore } from './store/useThemeStore';
+import { Analytics } from '@vercel/analytics/react'; // TODO: Remove this analytics component later as requested
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -75,38 +76,41 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* ── Public routes (no login required) ── */}
-        <Route element={<PublicLayout />}>
-          <Route
-            path="/"
-            element={user ? <Navigate to="/app" replace /> : <LandingPage />}
-          />
-          <Route path="/about" element={<AboutScreen />} />
-          <Route
-            path="/login"
-            element={user ? <Navigate to="/app" replace /> : <AuthScreen />}
-          />
-        </Route>
-
-        {/* ── Authenticated app routes ── */}
-        {user ? (
-          <Route element={<AppLayout />}>
-            <Route path="/app" element={<DashboardView />} />
-            <Route path="/app/team" element={<TeamScreen />} />
-            <Route path="/app/history" element={<HistoryScreen />} />
-            <Route path="/app/settings" element={<SettingsScreen />} />
+    <>
+      <BrowserRouter>
+        <Routes>
+          {/* ── Public routes (no login required) ── */}
+          <Route element={<PublicLayout />}>
+            <Route
+              path="/"
+              element={user ? <Navigate to="/app" replace /> : <LandingPage />}
+            />
+            <Route path="/about" element={<AboutScreen />} />
+            <Route
+              path="/login"
+              element={user ? <Navigate to="/app" replace /> : <AuthScreen />}
+            />
           </Route>
-        ) : (
-          /* Redirect any /app/* requests to login when unauthenticated */
-          <Route path="/app/*" element={<Navigate to="/login" replace />} />
-        )}
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* ── Authenticated app routes ── */}
+          {user ? (
+            <Route element={<AppLayout />}>
+              <Route path="/app" element={<DashboardView />} />
+              <Route path="/app/team" element={<TeamScreen />} />
+              <Route path="/app/history" element={<HistoryScreen />} />
+              <Route path="/app/settings" element={<SettingsScreen />} />
+            </Route>
+          ) : (
+            /* Redirect any /app/* requests to login when unauthenticated */
+            <Route path="/app/*" element={<Navigate to="/login" replace />} />
+          )}
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+      <Analytics />
+    </>
   );
 }
 
