@@ -67,17 +67,61 @@ export function PairingWorkspace() {
   const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
     new Set()
   );
+  const [lastClickedPersonId, setLastClickedPersonId] = useState<string | null>(
+    null
+  );
 
-  const handlePersonClick = (personId: string) => {
+  // Derive who is Unpaired
+  const allAssignedIds = new Set(
+    boards.flatMap((b) => b.assignedPersonIds || [])
+  );
+  const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
+
+  const getDisplayedPeopleIds = () => {
+    const ids: string[] = [];
+    boards.forEach((b) => {
+      const assigned = people.filter((p) =>
+        (b.assignedPersonIds || []).includes(p.id)
+      );
+      assigned.forEach((p) => ids.push(p.id));
+    });
+    unpairedPeople.forEach((p) => ids.push(p.id));
+    return ids;
+  };
+
+  const handlePersonClick = (personId: string, e: React.MouseEvent) => {
     setSelectedPersonIds((prev) => {
       const next = new Set(prev);
-      if (next.has(personId)) {
-        next.delete(personId);
+
+      if (e.shiftKey && lastClickedPersonId) {
+        // Range selection
+        const displayedIds = getDisplayedPeopleIds();
+        const startIdx = displayedIds.indexOf(lastClickedPersonId);
+        const endIdx = displayedIds.indexOf(personId);
+
+        if (startIdx !== -1 && endIdx !== -1) {
+          const min = Math.min(startIdx, endIdx);
+          const max = Math.max(startIdx, endIdx);
+          for (let i = min; i <= max; i++) {
+            next.add(displayedIds[i]);
+          }
+        } else {
+          // fallback if something went wrong
+          next.add(personId);
+        }
       } else {
-        next.add(personId);
+        // Standard toggle behavior
+        if (next.has(personId)) {
+          next.delete(personId);
+        } else {
+          next.add(personId);
+        }
       }
+
       return next;
     });
+
+    setLastClickedPersonId(personId);
   };
 
   const handleBulkMove = (targetBoardId: string) => {
@@ -111,12 +155,6 @@ export function PairingWorkspace() {
     // Clear selection after moving
     setSelectedPersonIds(new Set());
   };
-
-  // Derive who is Unpaired
-  const allAssignedIds = new Set(
-    boards.flatMap((b) => b.assignedPersonIds || [])
-  );
-  const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
 
   // Handlers
   const handleDragStart = (event: DragStartEvent) => {
@@ -275,7 +313,7 @@ function DroppableUnpairedPool({
 }: {
   people: Person[];
   selectedPersonIds?: Set<string>;
-  onPersonClick?: (id: string) => void;
+  onPersonClick?: (id: string, e: React.MouseEvent) => void;
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: 'unpaired',
@@ -318,7 +356,7 @@ function DroppableUnpairedPool({
               person={person}
               sourceId="unpaired"
               isSelected={selectedPersonIds?.has(person.id)}
-              onClick={() => onPersonClick?.(person.id)}
+              onClick={(e) => onPersonClick?.(person.id, e)}
             />
           ))
         )}

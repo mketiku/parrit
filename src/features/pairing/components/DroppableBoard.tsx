@@ -8,7 +8,7 @@ interface DroppableBoardProps {
   board: PairingBoard;
   people: Person[];
   selectedPersonIds?: Set<string>;
-  onPersonClick?: (id: string) => void;
+  onPersonClick?: (id: string, e: React.MouseEvent) => void;
 }
 
 export function DroppableBoard({
@@ -90,7 +90,7 @@ export function DroppableBoard({
               person={person}
               sourceId={board.id}
               isSelected={selectedPersonIds?.has(person.id)}
-              onClick={() => onPersonClick?.(person.id)}
+              onClick={(e) => onPersonClick?.(person.id, e)}
             />
           ))
         )}

@@ -7,7 +7,7 @@ interface DraggablePersonProps {
   sourceId: string;
   isOverlay?: boolean;
   isSelected?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 export function DraggablePerson({
@@ -55,7 +55,7 @@ export function DraggablePerson({
       `}
       onClick={(e) => {
         if (e.defaultPrevented) return;
-        onClick?.();
+        onClick?.(e);
       }}
       style={{
         backgroundColor: person.avatarColorHex,
