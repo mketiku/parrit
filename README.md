@@ -37,17 +37,28 @@ Parrit is an "ideal" pairing tool that is fast, beautiful, and maintenance-free.
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd pairing
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
-3. Start the development server:
+3. Set up your environment variables:
+   - Create a free project at [Supabase](https://supabase.com/).
+   - Copy `.env.example` to `.env` in the root directory.
+   - Add your Supabase `URL` and `Anon Key` to `.env`:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
