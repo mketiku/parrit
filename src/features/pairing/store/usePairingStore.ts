@@ -42,6 +42,7 @@ function rowToBoard(row: BoardRow): PairingBoard {
     id: row.id,
     name: row.name,
     isExempt: row.is_exempt,
+    sortOrder: row.sort_order,
     goalText: row.goal_text ?? undefined,
     meetingLink: row.meeting_link ?? undefined,
     assignedPersonIds: row.assigned_person_ids ?? [],
@@ -362,9 +363,13 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Inclusion of all non-null columns (name, sort_order) is mandatory for downsert (upsert).
     const updates = boards.map((b) => ({
       id: b.id,
-      user_id: user.id, // Include user_id to satisfy RLS and NOT NULL constraint on potential inserts
+      user_id: user.id,
+      name: b.name,
+      is_exempt: b.isExempt,
+      sort_order: b.sortOrder,
       assigned_person_ids: b.assignedPersonIds ?? [],
     }));
 

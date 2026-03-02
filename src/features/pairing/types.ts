@@ -8,6 +8,7 @@ export interface PairingBoard {
   id: string;
   name: string;
   isExempt: boolean;
+  sortOrder: number;
   goalText?: string;
   meetingLink?: string;
   assignedPersonIds?: string[];
