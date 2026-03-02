@@ -21,6 +21,7 @@ vi.mocked(usePairingStore).mockReturnValue({
   addBoard: vi.fn(),
   updateBoard: vi.fn(),
   removeBoard: vi.fn(),
+  subscribeToRealtime: vi.fn().mockReturnValue(vi.fn()),
 });
 
 const mockBoard: PairingBoard = {

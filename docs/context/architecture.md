@@ -1,147 +1,111 @@
-# Architecture & User Journeys: Parrit Modern
+# Architecture: Parrit
 
-This document visualizes the data model and the key user journeys for the "Ideal" version of Parrit.
+This document describes the current architecture of the application as implemented.
 
-## 1. Database Schema (Supabase)
+## Database Schema (Supabase)
+
+Two tables, both scoped per workspace via `user_id`.
 
 ```mermaid
 erDiagram
-    PROFILES ||--o{ MEMBERSHIPS : "belongs to"
-    WORKSPACES ||--o{ MEMBERSHIPS : "has"
-    WORKSPACES ||--o{ PEOPLE : "contains"
-    WORKSPACES ||--o{ PAIRING_BOARDS : "contains"
-    WORKSPACES ||--o{ PAIRING_SESSIONS : "has"
-    WORKSPACES ||--o{ BOARD_TEMPLATES : "saves"
-    
-    PAIRING_BOARDS ||--o{ PAIRING_ASSIGNMENTS : "assigned to"
-    PEOPLE ||--o{ PAIRING_ASSIGNMENTS : "involved in"
-    PAIRING_SESSIONS ||--o{ PAIRING_ASSIGNMENTS : "consists of"
-
-    PROFILES {
-        uuid id PK
-        string display_name
-        string avatar_url
-        timestamp created_at
-    }
-
-    WORKSPACES {
-        uuid id PK
-        string name
-        uuid owner_id FK
-        boolean public_view_enabled
-        timestamp created_at
-    }
-
-    MEMBERSHIPS {
-        uuid id PK
-        uuid profile_id FK
-        uuid workspace_id FK
-        enum role "OWNER, EDITOR, VIEWER"
-    }
+    AUTH_USERS ||--o{ PEOPLE : "owns"
+    AUTH_USERS ||--o{ PAIRING_BOARDS : "owns"
 
     PEOPLE {
         uuid id PK
-        uuid workspace_id FK
+        uuid user_id FK
         string name
         string avatar_color_hex
+        timestamptz created_at
     }
 
     PAIRING_BOARDS {
         uuid id PK
-        uuid workspace_id FK
+        uuid user_id FK
         string name
         boolean is_exempt
         string goal_text
         string meeting_link
-    }
-
-    PAIRING_SESSIONS {
-        uuid id PK
-        uuid workspace_id FK
-        timestamp session_time
-    }
-
-    PAIRING_ASSIGNMENTS {
-        uuid id PK
-        uuid session_id FK
-        uuid person_id FK
-        uuid board_id FK
-    }
-
-    BOARD_TEMPLATES {
-        uuid id PK
-        uuid workspace_id FK
-        string name
-        jsonb configuration
+        integer sort_order
+        uuid[] assigned_person_ids
+        timestamptz created_at
     }
 ```
 
+**Key design decision:** Board assignments are stored as a `uuid[]` array directly on `pairing_boards.assigned_person_ids` rather than a separate join table. This simplifies drag-and-drop persistence — a single upsert per drag event updates the whole board state.
+
+Row Level Security (RLS) ensures each workspace (`auth.users` row) can only read and write its own rows.
+
+See `supabase/schema.sql` for the full setup script.
+
 ---
 
-## 2. Key User Journeys
+## State Management
 
-### Journey A: New Team Onboarding
-*Goal: A team lead sets up a fresh workspace for their team.*
+Zustand is used for all client-side state:
+
+| Store             | Location                  | Responsibility                            |
+| ----------------- | ------------------------- | ----------------------------------------- |
+| `useAuthStore`    | `features/auth/store/`    | Session, user, workspace name             |
+| `usePairingStore` | `features/pairing/store/` | People, boards, all CRUD + real-time sync |
+| `useToastStore`   | `store/`                  | Global toast notifications                |
+
+---
+
+## Real-time Sync
+
+`usePairingStore.subscribeToRealtime()` opens a Supabase Realtime channel that listens to `postgres_changes` on both `people` and `pairing_boards`. Incoming events are diffed against local state and applied minimally (insert/update/delete). The subscription is established after login and torn down on sign-out via the `useEffect` cleanup in `App.tsx`.
+
+---
+
+## Authentication Model
+
+Workspaces use a **pseudonym email strategy**: the workspace name entered by the user is combined with a fixed domain (`@parrit.com`) to form a synthetic email, which is passed to Supabase's email/password auth. This means:
+
+- No real email address is collected
+- No email confirmation inbox is required (disabled in Supabase dashboard)
+- Each workspace is a distinct Supabase auth user — data is isolated by `user_id`
+
+See [ADR-0001](../adr/0001-workspace-pseudonym-authentication.md) for full rationale.
+
+---
+
+## Key User Journeys
+
+### Sign-up and first load
 
 ```mermaid
 sequenceDiagram
-    participant U as Team Lead
-    participant A as Auth (Supabase)
-    participant W as Workspace Manager
-    participant D as Database
+    participant U as User
+    participant A as AuthScreen
+    participant S as Supabase Auth
+    participant P as usePairingStore
 
-    U->>A: Signs up via Magic Link
-    A-->>U: Verify Email & Login
-    U->>W: Create "Project Phoenix" Workspace
-    W->>D: Insert Workspace & Owner Membership
-    U->>W: Add Team Members (Names)
-    W->>D: Bulk Insert People
-    U->>W: Create Pairing Boards (e.g., "Main", "OOO")
-    W->>D: Insert Boards
-    U->>W: Move People to Boards
-    W->>D: Update App State (Real-time)
+    U->>A: Enters workspace name + password
+    A->>S: signUp(workspace@parrit.com, password)
+    S-->>A: Session established
+    A-->>U: Redirected to Dashboard
+    P->>S: loadWorkspaceData()
+    S-->>P: Empty (first login)
+    P->>S: Seed 3 boards + 3 default people
+    S-->>P: Seeded rows returned
+    P-->>U: Board + team rendered
 ```
 
----
-
-### Journey B: Daily Pairing Rotation (The "Core Loop")
-*Goal: Rotate pairs based on recommendations and save history.*
+### Drag-and-drop pairing
 
 ```mermaid
 sequenceDiagram
-    participant U as Developer
-    participant R as Recommender
-    participant B as Pairing Board
-    participant H as History Service
-    participant D as Database
+    participant U as User
+    participant W as PairingWorkspace
+    participant Z as usePairingStore
+    participant S as Supabase
 
-    U->>B: Opens Workspace
-    B->>D: Fetches Current Board + History
-    U->>R: Clicks "Recommend Pairs"
-    R->>R: Analyzes History (Priority on Stale Pairs)
-    R-->>B: Proposes New Layout (Optimistic UI)
-    U->>B: Fine-tunes (Drag & Drop)
-    B->>D: Updates current arrangement (Real-time sync to team)
-    U->>H: Clicks "Save Pairing Session"
-    H->>D: Records Session + Assignments (Snapshots history)
-```
-
----
-
-### Journey C: Stakeholder Review
-*Goal: A manager checks pairing status without logging in.*
-
-```mermaid
-sequenceDiagram
-    participant M as Stakeholder (Manager)
-    participant L as Public/View-Only URL
-    participant W as Real-time Service
-    participant B as Live Pairing Board
-
-    M->>L: Visits parrit.io/phoenix/view
-    L->>W: Subscribes to Phoenix Workspace
-    W-->>B: Streams current board layout
-    Note over M, B: Stakeholder sees ghost cursors and live movements
-    M->>B: Clicks "Meeting Link" on Macaw Board
-    B-->>M: Opens Zoom/Teams in new tab
+    U->>W: Drags person to board
+    W->>Z: setBoards(updatedBoards)
+    Z-->>W: Local state updated (instant)
+    Z->>S: persistBoardAssignments (upsert)
+    S-->>Z: Confirmed
+    S-->>Z: Realtime event broadcast to other tabs
+    Z-->>W: Other tabs update automatically
 ```

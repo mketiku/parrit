@@ -37,6 +37,7 @@ describe('PairingWorkspace Component', () => {
       addBoard: vi.fn(),
       updateBoard: vi.fn(),
       removeBoard: vi.fn(),
+      subscribeToRealtime: vi.fn().mockReturnValue(vi.fn()),
     });
 
     render(<PairingWorkspace />);

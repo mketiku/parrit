@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Bird, Moon, Sun, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
+import { Toaster } from '../ui/Toaster';
 
 export default function AppLayout() {
   const { signOut, workspaceName } = useAuthStore();
@@ -152,6 +153,7 @@ export default function AppLayout() {
           </p>
         </div>
       </footer>
+      <Toaster />
     </div>
   );
 }

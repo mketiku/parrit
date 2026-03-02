@@ -46,18 +46,19 @@ function DashboardView() {
 
 function App() {
   const { user, isLoading, initialize } = useAuthStore();
-  const { loadWorkspaceData } = usePairingStore();
+  const { loadWorkspaceData, subscribeToRealtime } = usePairingStore();
 
   React.useEffect(() => {
     initialize();
   }, [initialize]);
 
-  // Load workspace data whenever a user session is established
+  // Load workspace data and subscribe to live updates when authenticated
   React.useEffect(() => {
-    if (user) {
-      loadWorkspaceData();
-    }
-  }, [user, loadWorkspaceData]);
+    if (!user) return;
+    loadWorkspaceData();
+    const unsubscribe = subscribeToRealtime();
+    return unsubscribe;
+  }, [user, loadWorkspaceData, subscribeToRealtime]);
 
   if (isLoading) {
     return (
