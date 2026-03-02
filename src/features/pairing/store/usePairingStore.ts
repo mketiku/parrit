@@ -597,10 +597,22 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       });
 
       // 2. Greedy assignment
-      const unassigned = [...people].sort(() => Math.random() - 0.5);
+      const exemptPersonIds = new Set<string>();
+      boards
+        .filter((b) => b.isExempt)
+        .forEach((b) => {
+          (b.assignedPersonIds || []).forEach((id) => exemptPersonIds.add(id));
+        });
+
+      const unassigned = people
+        .filter((p) => !exemptPersonIds.has(p.id))
+        .sort(() => Math.random() - 0.5);
+
       const newBoards = boards.map((b) => ({
         ...b,
-        assignedPersonIds: [] as string[],
+        assignedPersonIds: b.isExempt
+          ? [...(b.assignedPersonIds || [])]
+          : ([] as string[]),
       }));
       const activeBoards = newBoards.filter((b) => !b.isExempt);
 

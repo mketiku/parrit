@@ -84,7 +84,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
+  @apply bg-neutral-50 text-neutral-900 overflow-x-hidden dark:bg-neutral-950 dark:text-neutral-100;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;

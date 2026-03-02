@@ -304,7 +304,7 @@ export function DroppableBoard({
                     >
                       <LinkIcon className="h-3 w-3" />
                       <span className="text-[10px] font-extrabold uppercase tracking-tighter hover:underline">
-                        Join Zoom/Meeting
+                        Join Meeting
                       </span>
                     </a>
                   </div>

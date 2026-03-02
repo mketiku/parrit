@@ -67,7 +67,7 @@ export default function PublicLayout() {
               Sign In
             </Link>
             <Link
-              to="/login"
+              to="/login?signup=true"
               className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600"
             >
               Get Started
@@ -105,17 +105,9 @@ export default function PublicLayout() {
             >
               Contact
             </a>
-            <a
-              href="https://github.com/mketiku/parrit/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
-            >
-              GitHub
-            </a>
           </div>
           <p className="text-xs text-neutral-400 dark:text-neutral-600">
-            &copy; {new Date().getFullYear()} Michael Ketiku.
+            &copy; {new Date().getFullYear()} Parrit.
           </p>
         </div>
       </footer>

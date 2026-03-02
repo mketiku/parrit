@@ -5,8 +5,8 @@ import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 
 export default function AppLayout() {
-  const { signOut, workspaceName } = useAuthStore();
-  const initials = (workspaceName || 'W').substring(0, 2).toUpperCase();
+  const { signOut } = useAuthStore();
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -26,6 +26,17 @@ export default function AppLayout() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const toggleTheme = () => setIsDark(!isDark);
 
@@ -47,7 +58,7 @@ export default function AppLayout() {
             </Link>
 
             {/* Navigation */}
-            <nav className="flex items-center gap-1 text-sm font-medium">
+            <nav className="flex items-center gap-1 text-sm font-medium overflow-x-auto whitespace-nowrap no-scrollbar hide-scrollbar">
               <NavLink
                 to="/app"
                 end
@@ -101,10 +112,10 @@ export default function AppLayout() {
           </div>
 
           {/* User Context (Placeholder for Auth) & Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4 pl-2">
             <button
               onClick={toggleTheme}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition-colors"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition-colors"
               aria-label="Toggle Dark Mode"
             >
               {isDark ? (
@@ -115,15 +126,23 @@ export default function AppLayout() {
             </button>
             <button
               onClick={() => signOut()}
-              className="group flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-600 ring-1 ring-neutral-300 transition-all hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:ring-neutral-700 dark:hover:bg-neutral-700"
+              className="flex h-8 items-center gap-2 shrink-0 rounded-lg bg-neutral-200 px-3 text-xs font-semibold text-neutral-600 ring-1 ring-neutral-300 transition-all hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:ring-neutral-700 dark:hover:bg-neutral-700"
               title="Sign Out"
             >
-              <span className="group-hover:hidden">{initials}</span>
-              <LogOut className="hidden h-3.5 w-3.5 group-hover:block" />
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
         </div>
       </header>
+
+      {/* Offline Banner */}
+      {isOffline && (
+        <div className="bg-amber-100 px-4 py-2 text-center text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+          ⚠️ You are currently offline. Parrit is running in read-only mode and
+          changes cannot be saved.
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 py-6 md:py-8">
@@ -138,7 +157,7 @@ export default function AppLayout() {
               to="/about"
               className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
             >
-              About Parrit
+              About
             </Link>
             <a
               href="/about#contact"
@@ -146,23 +165,9 @@ export default function AppLayout() {
             >
               Contact
             </a>
-            <a
-              href="https://linkedin.com/in/mketiku"
-              target="_blank"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
-            >
-              LinkedIn
-            </a>
-            <a
-              href="https://github.com/mketiku/parrit/issues"
-              target="_blank"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
-            >
-              Help & Issues
-            </a>
           </div>
           <p className="text-xs text-neutral-400 dark:text-neutral-600">
-            &copy; {new Date().getFullYear()} Michael Ketiku.
+            &copy; {new Date().getFullYear()} Parrit.
           </p>
         </div>
       </footer>

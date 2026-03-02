@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { Bird, Loader2 } from 'lucide-react';
 
 export function AuthScreen() {
+  const location = useLocation();
   const [workspaceName, setWorkspaceName] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(
+    () => new URLSearchParams(location.search).get('signup') === 'true'
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [errorMSG, setErrorMSG] = useState<string | null>(null);
 

@@ -81,14 +81,14 @@ export function LandingPage() {
           </h1>
 
           <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl text-neutral-500 dark:text-neutral-400">
-            Parrit is a fast, beautiful pairing board for engineering teams.
-            Drag people onto boards, sync live with teammates, and track your
-            rotation over time — all without a single email address required.
+            Parrit is a fast, beautiful pairing board for engineering teams. Add
+            people to boards, sync live with teammates, and track your rotation
+            over time — all without a single email address required.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to="/login"
+              to="/login?signup=true"
               className="group inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 text-base font-bold text-white shadow-lg shadow-brand-500/30 transition-all hover:bg-brand-600 hover:shadow-brand-500/40 hover:scale-[1.02] active:scale-[0.98]"
             >
               Create a Workspace
@@ -116,7 +116,7 @@ export function LandingPage() {
               <div className="h-3 w-3 rounded-full bg-amber-400/80" />
               <div className="h-3 w-3 rounded-full bg-green-400/80" />
               <div className="ml-4 flex-1 rounded-md bg-neutral-100 dark:bg-neutral-800 px-3 py-1 text-xs text-neutral-400 dark:text-neutral-500">
-                parrit.app/workspace
+                parrit.org/workspace
               </div>
             </div>
             {/* Fake pairing workspace UI */}
@@ -130,9 +130,9 @@ export function LandingPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[
                   'Blue Macaw 🦜',
-                  'Toco Toucan 🍌',
+                  'Toco Toucan 🦤',
                   'Sulphur Cockatoo 🕊️',
-                  'Canada Goose 🇨🇦',
+                  'Canada Goose 🪿',
                   'Roseate Spoonbill 🦩',
                   'Out of Office 🛫',
                 ].map((name, i) => {
@@ -235,7 +235,7 @@ export function LandingPage() {
               Set up your workspace in under a minute. Free, forever.
             </p>
             <Link
-              to="/login"
+              to="/login?signup=true"
               className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-600 shadow-lg transition-all hover:bg-brand-50 hover:scale-[1.02] active:scale-[0.98]"
             >
               Create a Free Workspace
