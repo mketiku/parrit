@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import type { PairingBoard, Person } from '../types';
 import { DraggablePerson } from './DraggablePerson';
@@ -39,9 +39,8 @@ export function DroppableBoard({
 
   const { updateBoard, removeBoard } = usePairingStore();
   const { stalePairHighlightingEnabled } = useWorkspacePrefsStore();
-  const { isRecentPair } = useStalePairsDetector(3); // flag pairs seen in last 3 sessions
+  const { isRecentPair } = useStalePairsDetector(3);
 
-  // Only compute if the feature is enabled
   const hasStalePairs =
     stalePairHighlightingEnabled &&
     !board.isExempt &&
@@ -64,28 +63,29 @@ export function DroppableBoard({
     if (isEditing) inputRef.current?.focus();
   }, [isEditing]);
 
-  const handleExtraCommit = async () => {
-    await updateBoard(board.id, {
-      goals: extraData.goals,
-      meetingLink: extraData.meetingLink.trim() || undefined,
-    });
-    setIsEditingExtra(false);
-  };
+  // Auto-save helper — called immediately after any goals/link mutation
+  const autoSave = useCallback(
+    (goals: string[], meetingLink: string) => {
+      updateBoard(board.id, {
+        goals,
+        meetingLink: meetingLink.trim() || undefined,
+      });
+    },
+    [board.id, updateBoard]
+  );
 
   const addGoal = () => {
     if (!newGoal.trim()) return;
-    setExtraData((prev) => ({
-      ...prev,
-      goals: [...prev.goals, newGoal.trim()],
-    }));
+    const updated = [...extraData.goals, newGoal.trim()];
+    setExtraData((prev) => ({ ...prev, goals: updated }));
     setNewGoal('');
+    autoSave(updated, extraData.meetingLink);
   };
 
   const removeGoal = (index: number) => {
-    setExtraData((prev) => ({
-      ...prev,
-      goals: prev.goals.filter((_, i) => i !== index),
-    }));
+    const updated = extraData.goals.filter((_, i) => i !== index);
+    setExtraData((prev) => ({ ...prev, goals: updated }));
+    autoSave(updated, extraData.meetingLink);
   };
 
   const handleRenameCommit = async () => {
@@ -275,24 +275,21 @@ export function DroppableBoard({
                           meetingLink: e.target.value,
                         }))
                       }
+                      onBlur={() =>
+                        autoSave(extraData.goals, extraData.meetingLink)
+                      }
                       placeholder="Zoom / Meet link..."
                       className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-1 pt-1">
+                <div className="flex justify-end pt-1">
                   <button
                     onClick={() => setIsEditingExtra(false)}
                     className="rounded-md px-2 py-1 text-[10px] font-bold uppercase text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleExtraCommit}
-                    className="rounded-md bg-brand-500 px-2 py-1 text-[10px] font-bold uppercase text-white hover:bg-brand-600"
-                  >
-                    Save
+                    Done
                   </button>
                 </div>
               </div>

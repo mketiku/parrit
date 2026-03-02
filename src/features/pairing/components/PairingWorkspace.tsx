@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   closestCenter,
   DndContext,
@@ -14,6 +14,7 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { AnimatePresence } from 'framer-motion';
+import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import { TemplateManager } from './TemplateManager';
@@ -27,6 +28,7 @@ import {
   Sparkles,
   History,
   Loader2,
+  ImageDown,
 } from 'lucide-react';
 
 export function PairingWorkspace() {
@@ -47,6 +49,28 @@ export function PairingWorkspace() {
   const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
     new Set()
   );
+  const [isExporting, setIsExporting] = useState(false);
+  const boardGridRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPng = async () => {
+    if (!boardGridRef.current) return;
+    setIsExporting(true);
+    try {
+      const dataUrl = await toPng(boardGridRef.current, {
+        cacheBust: true,
+        backgroundColor: document.documentElement.classList.contains('dark')
+          ? '#0a0a0a'
+          : '#f9fafb',
+        pixelRatio: 2, // retina quality
+      });
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `parrit-boards-${new Date().toISOString().split('T')[0]}.png`;
+      a.click();
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -207,6 +231,20 @@ export function PairingWorkspace() {
               </button>
 
               <button
+                onClick={handleExportPng}
+                disabled={isStoreLoading || isExporting}
+                title="Export as PNG"
+                className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
+                ) : (
+                  <ImageDown className="h-4 w-4 text-brand-500" />
+                )}
+                Export PNG
+              </button>
+
+              <button
                 onClick={saveSession}
                 disabled={isStoreLoading}
                 className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-brand-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
@@ -221,7 +259,10 @@ export function PairingWorkspace() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div
+            ref={boardGridRef}
+            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
             {boards.map((board) => {
               const assignedPeople = (board.assignedPersonIds || [])
                 .map((id) => people.find((p) => p.id === id))
