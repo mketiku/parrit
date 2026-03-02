@@ -14,7 +14,6 @@ import { HistoryScreen } from './features/pairing/components/HistoryScreen';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
 import { useThemeStore } from './store/useThemeStore';
 import { PublicView } from './features/pairing/components/PublicView';
-import { Analytics } from '@vercel/analytics/react';
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -111,7 +110,6 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
-      <Analytics />
     </>
   );
 }

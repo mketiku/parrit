@@ -1,14 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuthStore } from '../../auth/store/useAuthStore';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   History,
   Calendar,
-  LayoutDashboard,
   ChevronRight,
   Inbox,
   Trash2,
-  ArrowDownCircle,
+  ArrowLeft,
+  Bird,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -17,12 +19,10 @@ import { usePairingStore } from '../store/usePairingStore';
 import type { PairingBoard, Person } from '../types';
 
 /**
- * Robust date parsing that treats YYYY-MM-DD as LOCAL time, avoiding the UTC offset
- * that causes "Sunday" to appear instead of "Monday" in many timezones.
+ * Robust date parsing that treats YYYY-MM-DD as LOCAL time
  */
 function parseInputDate(dateStr: string | null) {
   if (!dateStr) return new Date();
-  // Handle ISO timestamp or just YYYY-MM-DD
   const cleanDate = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
   const parts = cleanDate.split('-');
   if (parts.length === 3) {
@@ -36,9 +36,6 @@ interface HistorySession {
   id: string;
   session_date: string;
   created_at: string;
-  _count?: {
-    people: number;
-  };
 }
 
 interface HistoryDetail {
@@ -91,13 +88,7 @@ export function HistoryScreen() {
   const loadSessions = useCallback(async () => {
     const { data, error } = await supabase
       .from('pairing_sessions')
-      .select(
-        `
-        id,
-        session_date,
-        created_at
-      `
-      )
+      .select('id, session_date, created_at')
       .order('session_date', { ascending: false })
       .limit(20);
 
@@ -111,18 +102,18 @@ export function HistoryScreen() {
     async (sessionId: string) => {
       setIsLoadingDetails(true);
       setSelectedSessionId(sessionId);
-      setDetails([]); // Clear previous details
+      setDetails([]);
 
       try {
         const { data, error } = await supabase
           .from('pairing_history')
           .select(
             `
-          person_id,
-          board_id,
-          people (name, avatar_color_hex),
-          pairing_boards (name)
-        `
+            person_id,
+            board_id,
+            people (name, avatar_color_hex),
+            pairing_boards (name)
+          `
           )
           .eq('session_id', sessionId);
 
@@ -131,9 +122,8 @@ export function HistoryScreen() {
         if (data) {
           const rows = data as unknown as DbHistoryRow[];
           const formatted = rows
-            .filter((row) => row.board_id && row.person_id) // skip fully null rows
+            .filter((row) => row.board_id && row.person_id)
             .map((row) => {
-              // Try joined data first, fall back to in-memory store data
               const storeBoard = storeBoards.find(
                 (b: PairingBoard) => b.id === row.board_id
               );
@@ -142,15 +132,9 @@ export function HistoryScreen() {
               );
 
               const board_name =
-                row.pairing_boards?.name ||
-                storeBoard?.name ||
-                `Board (${row.board_id.slice(0, 6)})…`;
-
+                row.pairing_boards?.name || storeBoard?.name || 'Unknown Board';
               const person_name =
-                row.people?.name ||
-                storePerson?.name ||
-                `Person (${row.person_id.slice(0, 6)})…`;
-
+                row.people?.name || storePerson?.name || 'Unknown Person';
               const avatar_color =
                 row.people?.avatar_color_hex ||
                 storePerson?.avatarColorHex ||
@@ -162,8 +146,7 @@ export function HistoryScreen() {
         }
       } catch (err: unknown) {
         console.error('Error loading session details:', err);
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        addToast(`Failed to load session details: ${message}`, 'error');
+        addToast('Failed to load session details', 'error');
       } finally {
         setIsLoadingDetails(false);
       }
@@ -172,21 +155,21 @@ export function HistoryScreen() {
   );
 
   useEffect(() => {
-    (async () => {
-      if (!user) return;
-      await loadSessions();
-    })();
+    if (!user) return;
+    loadSessions();
   }, [user, loadSessions]);
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
+      <div className="flex flex-1 flex-col items-center justify-center p-12">
+        <Loader2 className="h-10 w-10 animate-spin text-brand-500 mb-4" />
+        <span className="text-sm font-bold text-neutral-400 uppercase tracking-widest">
+          Searching Archives
+        </span>
       </div>
     );
   }
 
-  // Group details by board
   const detailsByBoard = details.reduce(
     (acc, curr) => {
       if (!acc[curr.board_name]) acc[curr.board_name] = [];
@@ -197,192 +180,261 @@ export function HistoryScreen() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-brand-500 rounded-2xl text-white shadow-lg shadow-brand-500/20">
-          <History className="h-6 w-6" />
+    <div className="max-w-7xl mx-auto px-4 py-8 selection:bg-brand-100 selection:text-brand-900">
+      <header className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-xl shadow-brand-500/20">
+            <History className="h-7 w-7" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+              Pairing History
+            </h1>
+            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+              Archives of your team's tactical growth.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-            Pairing History
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400">
-            Review past configurations and track your team's rotation.
-          </p>
-        </div>
-      </div>
+        <Link
+          to="/app"
+          className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-brand-500 transition-colors"
+        >
+          <ArrowLeft className="h-3 w-3" />
+          Back to Workspace
+        </Link>
+      </header>
 
-      <div
-        id="history-content"
-        className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Sessions List */}
         <div className="lg:col-span-4 space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-4 px-2">
-            Past Sessions
-          </h2>
-          {sessions.length === 0 ? (
-            <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-2xl p-8 text-center border border-dashed border-neutral-200 dark:border-neutral-800">
-              <Inbox className="h-10 w-10 text-neutral-300 mx-auto mb-3" />
-              <p className="text-sm text-neutral-500">No sessions saved yet.</p>
-              <Link
-                to="/app"
-                className="text-brand-500 text-sm font-medium hover:underline mt-2 inline-block"
+          <div className="flex items-center justify-between mb-4 px-2">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+              Recent Snapshots
+            </h2>
+            <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-neutral-500 font-bold">
+              {sessions.length} TOTAL
+            </span>
+          </div>
+
+          <AnimatePresence mode="popLayout">
+            {sessions.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white dark:bg-neutral-900 rounded-3xl p-10 text-center border border-dashed border-neutral-200 dark:border-neutral-800"
               >
-                Go to Dashboard
-              </Link>
-            </div>
-          ) : (
-            sessions.map((session) => (
-              <div key={session.id} className="group relative">
-                <button
-                  onClick={() => {
-                    loadSessionDetails(session.id);
-                    // On mobile, scroll to details
-                    if (window.innerWidth < 1024) {
-                      setTimeout(() => {
-                        document
-                          .getElementById('session-details')
-                          ?.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
-                    }
-                  }}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
-                    selectedSessionId === session.id
-                      ? 'border-brand-500 bg-brand-50/50 shadow-md ring-1 ring-brand-500 dark:bg-brand-950/20'
-                      : 'border-neutral-200 bg-white hover:border-brand-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
-                  }`}
+                <div className="h-16 w-16 bg-neutral-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6 text-neutral-300">
+                  <Inbox className="h-8 w-8" />
+                </div>
+                <p className="text-sm font-bold text-neutral-500 mb-4">
+                  The archives are empty.
+                </p>
+                <Link
+                  to="/app"
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-xs font-bold text-white shadow-lg transition-all hover:bg-brand-600"
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-xl scale-90 ${selectedSessionId === session.id ? 'bg-brand-500 text-white' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}
+                  Start a Session
+                </Link>
+              </motion.div>
+            ) : (
+              <div className="space-y-3">
+                {sessions.map((session, idx) => (
+                  <motion.div
+                    key={session.id}
+                    layout
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="group relative"
+                  >
+                    <button
+                      onClick={() => loadSessionDetails(session.id)}
+                      className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                        selectedSessionId === session.id
+                          ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20 shadow-lg shadow-brand-500/5'
+                          : 'border-neutral-200 bg-white hover:border-brand-200 dark:border-neutral-800 dark:bg-neutral-900/50'
+                      }`}
                     >
-                      <Calendar className="h-4 w-4" />
-                    </div>
-                    <div className="text-left">
-                      <p
-                        className={`font-semibold ${selectedSessionId === session.id ? 'text-brand-900 dark:text-brand-100' : 'text-neutral-900 dark:text-neutral-100'}`}
-                      >
-                        {format(
-                          parseInputDate(session.session_date),
-                          'MMMM do, yyyy'
-                        )}
-                      </p>
-                      <p className="text-xs text-neutral-500 italic">
-                        Snapshot at{' '}
-                        {format(new Date(session.created_at), 'h:mm a')}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight
-                    className={`h-4 w-4 ${selectedSessionId === session.id ? 'text-brand-500' : 'text-neutral-300'} transition-transform group-hover:translate-x-1`}
-                  />
-                </button>
-                <button
-                  onClick={(e) => deleteSession(e, session.id)}
-                  className="absolute -right-2 -top-2 hidden h-8 w-8 items-center justify-center rounded-full bg-white text-neutral-400 shadow-sm border border-neutral-200 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-500 group-hover:flex"
-                  title="Delete Snapshot"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors ${
+                            selectedSessionId === session.id
+                              ? 'bg-brand-500 text-white'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
+                          }`}
+                        >
+                          <Calendar className="h-5 w-5" />
+                        </div>
+                        <div className="text-left">
+                          <p
+                            className={`font-black tracking-tight ${selectedSessionId === session.id ? 'text-brand-900 dark:text-white' : 'text-neutral-900 dark:text-neutral-100'}`}
+                          >
+                            {format(
+                              parseInputDate(session.session_date),
+                              'MMM do, yyyy'
+                            )}
+                          </p>
+                          <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                            {format(new Date(session.created_at), 'h:mm a')} •
+                            snapshot
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        className={`h-4 w-4 transition-all ${selectedSessionId === session.id ? 'text-brand-500 translate-x-1' : 'text-neutral-300'}`}
+                      />
+                    </button>
+                    <button
+                      onClick={(e) => deleteSession(e, session.id)}
+                      className="absolute -right-2 -top-2 flex h-8 w-8 scale-0 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-xl border border-neutral-100 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 group-hover:scale-100 active:scale-90"
+                      title="Delete Session"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </motion.div>
+                ))}
               </div>
-            ))
-          )}
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Selected Session Details */}
         <div id="session-details" className="lg:col-span-8 scroll-mt-24">
-          {!selectedSessionId ? (
-            <div className="h-[400px] flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/20">
-              <History className="h-12 w-12 text-neutral-300 mb-4" />
-              <p className="text-neutral-500 font-medium">
-                Select a session from the left to see who was pairing.
-              </p>
-            </div>
-          ) : isLoadingDetails ? (
-            <div className="h-[400px] flex items-center justify-center rounded-3xl bg-neutral-50 dark:bg-neutral-900/40">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"></div>
-            </div>
-          ) : (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="bg-brand-500 rounded-3xl p-6 text-white shadow-xl shadow-brand-500/20 overflow-hidden relative">
-                <div className="relative z-10 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold italic">
-                      Session Snapshot
-                    </h2>
-                    <p className="opacity-90 text-sm">
-                      {(() => {
-                        const session = sessions.find(
-                          (s) => s.id === selectedSessionId
-                        );
-                        if (!session) return 'Unknown Session';
-                        try {
-                          return format(
-                            parseInputDate(session.session_date),
-                            'EEEE, MMMM do, yyyy'
-                          );
-                        } catch {
-                          return 'Invalid Date';
-                        }
-                      })()}
-                    </p>
-                  </div>
-                  <History className="h-10 w-10 opacity-20" />
+          <AnimatePresence mode="wait">
+            {!selectedSessionId ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="h-[500px] flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-neutral-200 dark:border-neutral-800 bg-white/30 dark:bg-neutral-900/20"
+              >
+                <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-[2.5rem] bg-white text-neutral-200 shadow-xl dark:bg-neutral-900 dark:text-neutral-800">
+                  <History className="h-12 w-12" />
                 </div>
-                {/* Decorative circle */}
-                <div className="absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
-              </div>
+                <p className="text-xl font-black text-neutral-400 dark:text-neutral-600 tracking-tight">
+                  Select a Snapshot
+                </p>
+                <p className="mt-2 text-sm font-medium text-neutral-400/60 max-w-xs text-center">
+                  Pick a date from the left to explore who was pairing and what
+                  they were working on.
+                </p>
+              </motion.div>
+            ) : isLoadingDetails ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="h-[500px] flex flex-col items-center justify-center rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white/30 dark:bg-neutral-900/20"
+              >
+                <Loader2 className="h-10 w-10 animate-spin text-brand-500 mb-6" />
+                <span className="text-sm font-black text-neutral-400 uppercase tracking-[0.2em]">
+                  Retrieving Data
+                </span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="details"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-8"
+              >
+                <div className="relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-brand-500 rounded-[2rem] shadow-2xl shadow-brand-500/20" />
+                  <div className="absolute -top-12 -right-12 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none transition-transform group-hover:scale-125 duration-1000" />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(detailsByBoard).map(([boardName, people]) => (
-                  <div
-                    key={boardName}
-                    className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 shadow-sm"
-                  >
-                    <div className="flex items-center gap-2 mb-4">
-                      <LayoutDashboard className="h-4 w-4 text-brand-500" />
-                      <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
-                        {boardName}
-                      </h3>
-                      <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-neutral-500 font-bold uppercase tracking-wider ml-auto">
-                        {people.length} People
-                      </span>
+                  <div className="relative z-10 p-10 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-brand-200" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-100 opacity-80">
+                          Workspace Snapshot
+                        </span>
+                      </div>
+                      <h2 className="text-4xl font-black tracking-tight leading-none mb-2">
+                        {format(
+                          parseInputDate(
+                            sessions.find((s) => s.id === selectedSessionId)
+                              ?.session_date || null
+                          ),
+                          'EEEE'
+                        )}
+                      </h2>
+                      <p className="text-lg font-bold text-brand-100 opacity-90">
+                        {format(
+                          parseInputDate(
+                            sessions.find((s) => s.id === selectedSessionId)
+                              ?.session_date || null
+                          ),
+                          'MMMM do, yyyy'
+                        )}
+                      </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {people.map((p, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-1.5 rounded-xl border border-neutral-100 dark:border-neutral-800"
-                        >
-                          <div
-                            className="h-6 w-6 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
-                            style={{ backgroundColor: p.avatar_color }}
-                          >
-                            {p.person_name.substring(0, 2).toUpperCase()}
-                          </div>
-                          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            {p.person_name}
+                    <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-md border border-white/20">
+                      <Bird className="h-10 w-10" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Object.entries(detailsByBoard).map(
+                    ([boardName, people], bIdx) => (
+                      <motion.div
+                        key={boardName}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: bIdx * 0.1 }}
+                        className="bg-white dark:bg-neutral-900/60 rounded-[2rem] border border-neutral-100 dark:border-neutral-800/80 p-8 shadow-sm flex flex-col"
+                      >
+                        <div className="flex items-center gap-3 mb-8">
+                          <div className="h-3 w-3 rounded-full bg-brand-500 shadow-sm ring-4 ring-brand-500/10" />
+                          <h3 className="text-xl font-black text-neutral-900 dark:text-neutral-100">
+                            {boardName}
+                          </h3>
+                          <span className="text-[9px] bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-xl text-neutral-500 font-black uppercase tracking-widest ml-auto border border-neutral-200/50 dark:border-neutral-800">
+                            {people.length} PPL
                           </span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
 
-              {/* Proactive: Add a way to hint that they can go back to Dashboard */}
-              <div className="flex justify-center pt-4">
-                <Link
-                  to="/app"
-                  className="flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-brand-500 transition-colors"
-                >
-                  <ArrowDownCircle className="h-4 w-4 rotate-90" />
-                  Back to current workspace
-                </Link>
-              </div>
-            </div>
-          )}
+                        <div className="flex flex-wrap gap-3">
+                          {people.map((p, pIdx) => (
+                            <div
+                              key={pIdx}
+                              className="flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border border-neutral-100/50 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all active:scale-95"
+                            >
+                              <div
+                                className="flex h-8 w-8 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl shadow-black/5"
+                                style={{ backgroundColor: p.avatar_color }}
+                              >
+                                {p.person_name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+                                {p.person_name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )
+                  )}
+                </div>
+
+                <div className="py-12 flex flex-col items-center">
+                  <div className="h-px w-24 bg-neutral-100 dark:bg-neutral-800 mb-8" />
+                  <Link
+                    to="/app"
+                    className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-brand-500 transition-all hover:gap-5"
+                  >
+                    End of Tape
+                    <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-neutral-50 dark:bg-neutral-800 group transition-colors">
+                      <Bird className="h-4 w-4" />
+                    </div>
+                    Back to Workspace
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

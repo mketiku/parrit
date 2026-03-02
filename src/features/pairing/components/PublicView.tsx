@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import type { PairingBoard, Person } from '../types';
-import { Bird, Loader2, Users, Target, Lock } from 'lucide-react';
+import {
+  Bird,
+  Loader2,
+  Users,
+  Target,
+  Lock,
+  ArrowRight,
+  ExternalLink,
+} from 'lucide-react';
 
 export function PublicView() {
   const { userId } = useParams<{ userId: string }>();
@@ -100,7 +109,16 @@ export function PublicView() {
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-neutral-50 dark:bg-neutral-950">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+          <span className="text-sm font-medium text-neutral-500">
+            Syncing with workspace...
+          </span>
+        </motion.div>
       </div>
     );
   }
@@ -108,133 +126,249 @@ export function PublicView() {
   if (isPublic === false) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-neutral-50 dark:bg-neutral-950">
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-3xl bg-neutral-100 text-neutral-400 dark:bg-neutral-900">
-          <Lock className="h-8 w-8" />
-        </div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-          Private Workspace
-        </h1>
-        <p className="mt-2 max-w-xs text-neutral-500 dark:text-neutral-400">
-          This workspace is not currently shared publicly.
-        </p>
-        <Link
-          to="/"
-          className="mt-8 font-semibold text-brand-500 hover:text-brand-600 transition-colors"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md"
         >
-          Go Back Home
-        </Link>
+          <div className="mb-8 flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 blur-2xl bg-neutral-200 dark:bg-neutral-800 rounded-full opacity-50" />
+              <div className="relative flex h-20 w-20 items-center justify-center rounded-[2rem] bg-white text-neutral-400 shadow-xl dark:bg-neutral-900">
+                <Lock className="h-10 w-10 text-neutral-400" />
+              </div>
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+            Access Restricted
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400 mb-10 leading-relaxed">
+            This workspace dashboard is currently set to private by its owner.
+            Reach out to the team for the current pairing status.
+          </p>
+          <Link
+            to="/"
+            className="group inline-flex items-center gap-2 rounded-2xl bg-neutral-900 px-8 py-4 text-sm font-bold text-white shadow-xl hover:bg-black hover:scale-[1.02] active:scale-95 transition-all dark:bg-brand-500 dark:hover:bg-brand-600"
+          >
+            Go to Homepage
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-4 sm:p-8 dark:bg-neutral-950 font-sans">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-12 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 text-white shadow-lg">
-              <Bird className="h-6 w-6" />
-            </div>
+    <div className="min-h-screen bg-neutral-50 p-4 sm:p-8 dark:bg-neutral-950 font-sans selection:bg-brand-100 selection:text-brand-900">
+      <div className="mx-auto max-w-7xl">
+        {/* Floating Background Glows */}
+        <div className="fixed top-0 left-1/4 h-64 w-64 rounded-full bg-brand-500/5 blur-[120px] pointer-events-none" />
+        <div className="fixed bottom-0 right-1/4 h-80 w-80 rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
+
+        <header className="relative mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between px-2">
+          <div className="flex items-center gap-4">
+            <motion.div
+              initial={{ rotate: -15, scale: 0.8, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              className="flex h-14 w-14 items-center justify-center rounded-3xl bg-brand-500 text-white shadow-2xl shadow-brand-500/20"
+            >
+              <Bird className="h-8 w-8" />
+            </motion.div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                Parrit Overview
+              <h1 className="text-2xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                Live Overview
+                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse mt-1" />
               </h1>
-              <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-                Read-only pairing status
+              <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-brand-500">
+                Team Dashboard
+                <span className="h-4 w-px bg-neutral-200 dark:bg-neutral-800" />
+                <span className="text-neutral-400 dark:text-neutral-600">
+                  Read-Only
+                </span>
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+
+          <div className="flex flex-col sm:items-end">
+            <p className="text-lg font-black text-neutral-900 dark:text-neutral-100">
               {new Date().toLocaleDateString(undefined, {
                 weekday: 'long',
-                month: 'long',
+                month: 'short',
                 day: 'numeric',
+              })}
+            </p>
+            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-500">
+              Synced:{' '}
+              {new Date().toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
               })}
             </p>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {boards.map((board) => {
-            const assigned = (board.assignedPersonIds ?? [])
-              .map((id: string) => people.find((p) => p.id === id))
-              .filter(Boolean) as Person[];
+        <motion.div
+          layout
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+          <AnimatePresence initial={false}>
+            {boards.map((board, idx) => {
+              const assigned = (board.assignedPersonIds ?? [])
+                .map((id: string) => people.find((p) => p.id === id))
+                .filter(Boolean) as Person[];
 
-            return (
-              <div
-                key={board.id}
-                className="flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-all dark:border-neutral-800 dark:bg-neutral-900"
-              >
-                <div className="mb-4 flex items-center gap-2">
-                  <div
-                    className={`h-2 w-2 rounded-full ${board.isExempt ? 'bg-amber-500' : 'bg-brand-500'}`}
-                  />
-                  <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate flex-1">
-                    {board.name}
-                  </h3>
-                  {board.isExempt && (
-                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
-                      EXEMPT
-                    </span>
-                  )}
-                </div>
-
-                {board.goals && (board.goals as string[]).length > 0 && (
-                  <div className="mb-6 space-y-2">
-                    {(board.goals as string[]).map((goal, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <Target className="mt-1 h-3 w-3 shrink-0 text-brand-500/60" />
-                        <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                          {goal}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="mt-auto flex flex-wrap gap-2">
-                  {assigned.length === 0 ? (
-                    <span className="text-xs italic text-neutral-400">
-                      Empty board
-                    </span>
-                  ) : (
-                    assigned.map((p) => (
+              return (
+                <motion.div
+                  key={board.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="group flex flex-col rounded-3xl border border-neutral-200/60 bg-white p-6 shadow-sm shadow-black/5 hover:shadow-xl hover:shadow-brand-500/5 transition-all dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:backdrop-blur-sm"
+                >
+                  <div className="mb-6 flex items-start justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div
-                        key={p.id}
-                        className="flex items-center gap-2 rounded-full bg-neutral-100/50 pr-3 py-1 dark:bg-neutral-800/50"
-                      >
+                        className={`mt-1 h-3 w-3 shrink-0 rounded-full shadow-sm ring-4 ${
+                          board.isExempt
+                            ? 'bg-amber-500 ring-amber-500/10'
+                            : 'bg-brand-500 ring-brand-500/10'
+                        }`}
+                      />
+                      <h3 className="text-lg font-black text-neutral-900 dark:text-neutral-100 truncate">
+                        {board.name}
+                      </h3>
+                    </div>
+                    {board.isExempt && (
+                      <span className="rounded-xl bg-amber-50 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-amber-600 dark:bg-amber-950/20 dark:text-amber-500 border border-amber-200/50 dark:border-amber-500/20">
+                        OFF
+                      </span>
+                    )}
+                  </div>
+
+                  {board.goals && (board.goals as string[]).length > 0 ? (
+                    <div className="mb-8 flex-1 space-y-3">
+                      {(board.goals as string[]).map((goal, gIdx) => (
                         <div
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm"
-                          style={{ backgroundColor: p.avatarColorHex }}
+                          key={gIdx}
+                          className="flex items-start gap-3 group/goal"
                         >
-                          {p.name.charAt(0).toUpperCase()}
+                          <div className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-400 group-hover/goal:bg-brand-500 group-hover/goal:text-white transition-colors dark:bg-neutral-800 dark:text-neutral-600">
+                            <Target className="h-2.5 w-2.5" />
+                          </div>
+                          <p className="text-[13px] font-medium leading-normal text-neutral-600 dark:text-neutral-400 group-hover/goal:text-neutral-900 dark:group-hover/goal:text-neutral-200 transition-colors">
+                            {goal}
+                          </p>
                         </div>
-                        <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                          {p.name.split(' ')[0]}
-                        </span>
-                      </div>
-                    ))
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mb-8 flex-1 flex items-center justify-center rounded-2xl border border-dashed border-neutral-100 dark:border-neutral-800/50 py-10">
+                      <span className="text-xs font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-widest">
+                        No Goals Set
+                      </span>
+                    </div>
                   )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+
+                  <div className="mt-auto pt-6 border-t border-neutral-100/50 dark:border-neutral-800/30">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-600">
+                        Assignees
+                      </span>
+                      <div className="flex -space-x-2">
+                        {assigned.map((p) => (
+                          <div
+                            key={p.id}
+                            className="h-6 w-6 rounded-full border-2 border-white dark:border-neutral-900 shadow-sm overflow-hidden"
+                            style={{ backgroundColor: p.avatarColorHex }}
+                          />
+                        ))}
+                        {assigned.length === 0 && (
+                          <span className="h-6 w-6 rounded-full border-2 border-dashed border-neutral-200" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {assigned.length === 0 ? (
+                        <span className="text-xs font-medium italic text-neutral-400/60 py-1">
+                          Available for work
+                        </span>
+                      ) : (
+                        assigned.map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex items-center gap-2 rounded-2xl bg-neutral-100/80 pl-1 pr-3 py-1.5 dark:bg-neutral-800/40 hover:bg-white dark:hover:bg-neutral-800 hover:shadow-md transition-all border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 group/avatar"
+                          >
+                            <div
+                              className="flex h-7 w-7 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl transition-transform group-hover/avatar:scale-110"
+                              style={{ backgroundColor: p.avatarColorHex }}
+                            >
+                              {p.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                              {p.name.split(' ')[0]}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </motion.div>
 
         {boards.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-neutral-200 py-20 dark:border-neutral-800">
-            <Users className="mb-4 h-12 w-12 text-neutral-300 dark:text-neutral-700" />
-            <p className="font-medium text-neutral-500">
-              No active boards found.
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-neutral-200/50 py-32 dark:border-neutral-800/50 bg-white/30 dark:bg-neutral-900/20 backdrop-blur-sm"
+          >
+            <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-[2.5rem] bg-white text-neutral-200 shadow-xl dark:bg-neutral-900 dark:text-neutral-800">
+              <Users className="h-12 w-12" />
+            </div>
+            <p className="text-xl font-black text-neutral-400 dark:text-neutral-600 tracking-tight">
+              Quiet Workspace...
             </p>
-          </div>
+            <p className="mt-2 text-sm font-medium text-neutral-400/60 max-w-xs text-center leading-relaxed">
+              We couldn't find any active pairing boards for this team right
+              now.
+            </p>
+          </motion.div>
         )}
 
-        <footer className="mt-16 text-center border-t border-neutral-100 pt-8 dark:border-neutral-900">
-          <p className="text-xs font-medium text-neutral-400">
-            Powered by Parrit 🦜 • Team Orchestration Simplified
-          </p>
+        <footer className="mt-24 space-y-10 border-t border-neutral-200/50 pt-16 dark:border-neutral-800/50 px-4">
+          <div className="flex flex-col gap-10 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-6">
+              <Link
+                to="/"
+                className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-brand-500 transition-colors"
+              >
+                Home
+              </Link>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-brand-500 transition-colors"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Open Source
+              </a>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+                System Operational
+              </span>
+            </div>
+          </div>
+          <div className="pb-16 text-center">
+            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-300 dark:text-neutral-700">
+              Crafted for Modern Engineering Teams • Parrit
+            </p>
+          </div>
         </footer>
       </div>
     </div>
