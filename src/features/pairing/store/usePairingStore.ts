@@ -129,8 +129,8 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     const people = (peopleRes.data as PersonRow[]).map(rowToPerson);
     const boards = (boardsRes.data as BoardRow[]).map(rowToBoard);
 
-    // Seed defaults for brand new workspaces
-    if (boards.length === 0) {
+    // Seed defaults only for completely empty workspaces
+    if (boards.length === 0 && people.length === 0) {
       const defaultBoards = [
         {
           name: 'Board 1',
