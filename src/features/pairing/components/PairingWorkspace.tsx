@@ -18,8 +18,10 @@ import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import { TemplateManager } from './TemplateManager';
+import { BoardExportView } from './BoardExportView';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
+import { useAuthStore } from '../../auth/store/useAuthStore';
 import {
   Users,
   X,
@@ -41,6 +43,7 @@ export function PairingWorkspace() {
     recommendPairs,
     isLoading: isStoreLoading,
   } = usePairingStore();
+  const { workspaceName } = useAuthStore();
 
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -50,18 +53,16 @@ export function PairingWorkspace() {
     new Set()
   );
   const [isExporting, setIsExporting] = useState(false);
-  const boardGridRef = useRef<HTMLDivElement>(null);
+  const exportViewRef = useRef<HTMLDivElement>(null);
 
   const handleExportPng = async () => {
-    if (!boardGridRef.current) return;
+    if (!exportViewRef.current) return;
     setIsExporting(true);
     try {
-      const dataUrl = await toPng(boardGridRef.current, {
+      const dataUrl = await toPng(exportViewRef.current, {
         cacheBust: true,
-        backgroundColor: document.documentElement.classList.contains('dark')
-          ? '#0a0a0a'
-          : '#f9fafb',
-        pixelRatio: 2, // retina quality
+        backgroundColor: '#f9fafb',
+        pixelRatio: 2,
       });
       const a = document.createElement('a');
       a.href = dataUrl;
@@ -199,217 +200,224 @@ export function PairingWorkspace() {
   const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start pb-24 sm:pb-0">
-        {/* Main Workspaces Column */}
-        <div className="flex-1 min-w-0 space-y-4 sm:space-y-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-              Pairing Boards
-            </h2>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-start pb-24 sm:pb-0">
+          {/* Main Workspaces Column */}
+          <div className="flex-1 min-w-0 space-y-4 sm:space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                Pairing Boards
+              </h2>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <TemplateManager />
+              <div className="flex flex-wrap items-center gap-2">
+                <TemplateManager />
 
-              <button
-                onClick={() => recommendPairs()}
-                disabled={isStoreLoading}
-                className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-              >
-                {isStoreLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
-                ) : (
-                  <Sparkles className="h-4 w-4 text-amber-500" />
-                )}
-                Recommend Pairs
-              </button>
+                <button
+                  onClick={() => recommendPairs()}
+                  disabled={isStoreLoading}
+                  className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                >
+                  {isStoreLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                  )}
+                  Recommend Pairs
+                </button>
 
-              <button
-                onClick={handleExportPng}
-                disabled={isStoreLoading || isExporting}
-                title="Export as PNG"
-                className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-              >
-                {isExporting ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
-                ) : (
-                  <ImageDown className="h-4 w-4 text-brand-500" />
-                )}
-                Export PNG
-              </button>
+                <button
+                  onClick={handleExportPng}
+                  disabled={isStoreLoading || isExporting}
+                  title="Export as PNG"
+                  className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
+                  ) : (
+                    <ImageDown className="h-4 w-4 text-brand-500" />
+                  )}
+                  Export PNG
+                </button>
 
-              <button
-                onClick={saveSession}
-                disabled={isStoreLoading}
-                className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-brand-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
-              >
-                {isStoreLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <History className="h-4 w-4" />
-                )}
-                Save Session
-              </button>
+                <button
+                  onClick={saveSession}
+                  disabled={isStoreLoading}
+                  className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-brand-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                >
+                  {isStoreLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <History className="h-4 w-4" />
+                  )}
+                  Save Session
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {boards.map((board) => {
+                const assignedPeople = (board.assignedPersonIds || [])
+                  .map((id) => people.find((p) => p.id === id))
+                  .filter((p): p is Person => !!p);
+
+                return (
+                  <DroppableBoard
+                    key={board.id}
+                    board={board}
+                    people={assignedPeople}
+                    selectedPersonIds={selectedPersonIds}
+                    onPersonClick={handlePersonClick}
+                  />
+                );
+              })}
+
+              {/* Add Board Trigger */}
+              {!isAddingBoard ? (
+                <button
+                  onClick={() => setIsAddingBoard(true)}
+                  className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10"
+                >
+                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-brand-100 group-hover:text-brand-500 dark:bg-neutral-800 dark:group-hover:bg-brand-900/40">
+                    <Plus className="h-6 w-6" />
+                  </div>
+                  <span className="text-sm font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-400 dark:group-hover:text-brand-400">
+                    Add Board
+                  </span>
+                </button>
+              ) : (
+                <form
+                  onSubmit={handleAddBoard}
+                  className="flex min-h-[160px] flex-col rounded-2xl border-2 border-brand-400 bg-white p-5 shadow-lg ring-4 ring-brand-500/10 animate-in zoom-in-95 duration-200 dark:bg-neutral-900 dark:border-brand-500/50"
+                >
+                  <input
+                    autoFocus
+                    placeholder="Board name..."
+                    value={newBoardName}
+                    onChange={(e) => setNewBoardName(e.target.value)}
+                    className="mb-4 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
+                  />
+
+                  <label className="flex items-center gap-2 mb-4 cursor-pointer group">
+                    <div
+                      onClick={() => setNewBoardIsExempt(!newBoardIsExempt)}
+                      className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+                        newBoardIsExempt
+                          ? 'bg-amber-500 border-amber-500 text-white'
+                          : 'border-neutral-300 dark:border-neutral-600'
+                      }`}
+                    >
+                      {newBoardIsExempt && <ShieldX className="h-3 w-3" />}
+                    </div>
+                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                      Mark as Exempt (OOO)
+                    </span>
+                  </label>
+
+                  <div className="mt-auto flex gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 rounded-lg bg-brand-500 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-600"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingBoard(false);
+                        setNewBoardName('');
+                        setNewBoardIsExempt(false);
+                      }}
+                      className="rounded-lg bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-600 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
 
-          <div
-            ref={boardGridRef}
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {boards.map((board) => {
-              const assignedPeople = (board.assignedPersonIds || [])
-                .map((id) => people.find((p) => p.id === id))
-                .filter((p): p is Person => !!p);
-
-              return (
-                <DroppableBoard
-                  key={board.id}
-                  board={board}
-                  people={assignedPeople}
-                  selectedPersonIds={selectedPersonIds}
-                  onPersonClick={handlePersonClick}
-                />
-              );
-            })}
-
-            {/* Add Board Trigger */}
-            {!isAddingBoard ? (
-              <button
-                onClick={() => setIsAddingBoard(true)}
-                className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10"
-              >
-                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-brand-100 group-hover:text-brand-500 dark:bg-neutral-800 dark:group-hover:bg-brand-900/40">
-                  <Plus className="h-6 w-6" />
-                </div>
-                <span className="text-sm font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-400 dark:group-hover:text-brand-400">
-                  Add Board
-                </span>
-              </button>
-            ) : (
-              <form
-                onSubmit={handleAddBoard}
-                className="flex min-h-[160px] flex-col rounded-2xl border-2 border-brand-400 bg-white p-5 shadow-lg ring-4 ring-brand-500/10 animate-in zoom-in-95 duration-200 dark:bg-neutral-900 dark:border-brand-500/50"
-              >
-                <input
-                  autoFocus
-                  placeholder="Board name..."
-                  value={newBoardName}
-                  onChange={(e) => setNewBoardName(e.target.value)}
-                  className="mb-4 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
-                />
-
-                <label className="flex items-center gap-2 mb-4 cursor-pointer group">
-                  <div
-                    onClick={() => setNewBoardIsExempt(!newBoardIsExempt)}
-                    className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
-                      newBoardIsExempt
-                        ? 'bg-amber-500 border-amber-500 text-white'
-                        : 'border-neutral-300 dark:border-neutral-600'
-                    }`}
-                  >
-                    {newBoardIsExempt && <ShieldX className="h-3 w-3" />}
-                  </div>
-                  <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                    Mark as Exempt (OOO)
-                  </span>
-                </label>
-
-                <div className="mt-auto flex gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 rounded-lg bg-brand-500 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-600"
-                  >
-                    Add
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAddingBoard(false);
-                      setNewBoardName('');
-                      setNewBoardIsExempt(false);
-                    }}
-                    className="rounded-lg bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-600 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-
-        {/* Sidebar Pool Column */}
-        <div className="xl:w-80 w-full fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-neutral-200 p-4 dark:bg-neutral-950/95 dark:border-neutral-800 xl:relative xl:z-auto xl:bg-transparent xl:shadow-none xl:border-none xl:p-0 xl:dark:bg-transparent sm:block">
-          <DroppableUnpairedPool
-            people={unpairedPeople}
-            selectedPersonIds={selectedPersonIds}
-            onPersonClick={handlePersonClick}
-          />
-        </div>
-      </div>
-
-      <DragOverlay dropAnimation={null}>
-        {activeDragItem ? (
-          <div className="relative">
-            <DraggablePerson
-              person={activeDragItem.person}
-              sourceId={activeDragItem.sourceId}
-              isOverlay
+          {/* Sidebar Pool Column */}
+          <div className="xl:w-80 w-full fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-neutral-200 p-4 dark:bg-neutral-950/95 dark:border-neutral-800 xl:relative xl:z-auto xl:bg-transparent xl:shadow-none xl:border-none xl:p-0 xl:dark:bg-transparent sm:block">
+            <DroppableUnpairedPool
+              people={unpairedPeople}
+              selectedPersonIds={selectedPersonIds}
+              onPersonClick={handlePersonClick}
             />
-            {selectedPersonIds.has(activeDragItem.person.id) &&
-              selectedPersonIds.size > 1 && (
-                <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-neutral-900">
-                  {selectedPersonIds.size}
-                </div>
-              )}
           </div>
-        ) : null}
-      </DragOverlay>
-
-      {/* Bulk Action / Click-to-Move Bar */}
-      {selectedPersonIds.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 rounded-full bg-white/95 px-6 py-4 shadow-2xl ring-1 ring-neutral-200 backdrop-blur-md transition-all dark:bg-neutral-900/95 dark:ring-neutral-800">
-          <span className="whitespace-nowrap font-semibold text-neutral-900 dark:text-neutral-100">
-            {selectedPersonIds.size} selected
-          </span>
-          <div className="h-6 w-px bg-neutral-200 dark:bg-neutral-700" />
-
-          <div className="flex max-w-[50vw] items-center gap-2 overflow-x-auto pb-1 sm:max-w-[60vw]">
-            <button
-              onClick={() => handleBulkMove('unpaired')}
-              className="whitespace-nowrap rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-medium hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-            >
-              Move to Pool
-            </button>
-            {boards.map((b) => (
-              <button
-                key={b.id}
-                onClick={() => handleBulkMove(b.id)}
-                className="whitespace-nowrap rounded-full bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-100 dark:bg-brand-900/30 dark:text-brand-300 dark:hover:bg-brand-900/50"
-              >
-                {b.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="h-6 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700" />
-          <button
-            onClick={() => setSelectedPersonIds(new Set())}
-            className="shrink-0 p-1 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-            aria-label="Clear selection"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
-      )}
-    </DndContext>
+
+        <DragOverlay dropAnimation={null}>
+          {activeDragItem ? (
+            <div className="relative">
+              <DraggablePerson
+                person={activeDragItem.person}
+                sourceId={activeDragItem.sourceId}
+                isOverlay
+              />
+              {selectedPersonIds.has(activeDragItem.person.id) &&
+                selectedPersonIds.size > 1 && (
+                  <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-neutral-900">
+                    {selectedPersonIds.size}
+                  </div>
+                )}
+            </div>
+          ) : null}
+        </DragOverlay>
+
+        {/* Bulk Action / Click-to-Move Bar */}
+        {selectedPersonIds.size > 0 && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 rounded-full bg-white/95 px-6 py-4 shadow-2xl ring-1 ring-neutral-200 backdrop-blur-md transition-all dark:bg-neutral-900/95 dark:ring-neutral-800">
+            <span className="whitespace-nowrap font-semibold text-neutral-900 dark:text-neutral-100">
+              {selectedPersonIds.size} selected
+            </span>
+            <div className="h-6 w-px bg-neutral-200 dark:bg-neutral-700" />
+
+            <div className="flex max-w-[50vw] items-center gap-2 overflow-x-auto pb-1 sm:max-w-[60vw]">
+              <button
+                onClick={() => handleBulkMove('unpaired')}
+                className="whitespace-nowrap rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-medium hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              >
+                Move to Pool
+              </button>
+              {boards.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => handleBulkMove(b.id)}
+                  className="whitespace-nowrap rounded-full bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-100 dark:bg-brand-900/30 dark:text-brand-300 dark:hover:bg-brand-900/50"
+                >
+                  {b.name}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-6 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700" />
+            <button
+              onClick={() => setSelectedPersonIds(new Set())}
+              className="shrink-0 p-1 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+              aria-label="Clear selection"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+      </DndContext>
+
+      {/* Hidden clean export view — off-screen, captured for PNG */}
+      <BoardExportView
+        boards={boards}
+        people={people}
+        workspaceName={workspaceName ?? 'Parrit'}
+        exportRef={exportViewRef}
+      />
+    </>
   );
 }
 

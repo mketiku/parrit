@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { motion } from 'framer-motion';
 import type { Person, DragItem } from '../types';
+import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 
 interface DraggablePersonProps {
   person: Person;
@@ -18,6 +19,7 @@ export function DraggablePerson({
   isSelected,
   onClick,
 }: DraggablePersonProps) {
+  const { showFullName } = useWorkspacePrefsStore();
   const dragData: DragItem = {
     type: 'PERSON',
     person,
@@ -71,8 +73,9 @@ export function DraggablePerson({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={`
-          relative flex h-10 w-10 shrink-0 cursor-grab items-center justify-center rounded-full 
+          relative flex shrink-0 cursor-grab items-center justify-center rounded-full 
           text-sm font-semibold text-white transition-all shadow-inner
+          ${showFullName ? 'h-8 w-auto min-w-[2rem] px-1' : 'h-10 w-10'}
           ${
             isSelected && !isOverlay
               ? 'ring-4 ring-brand-500 scale-110 shadow-md outline-none'
@@ -89,7 +92,13 @@ export function DraggablePerson({
           opacity: isDragging && !isOverlay ? 0 : 1,
         }}
       >
-        {initials}
+        {showFullName ? (
+          <span className="px-2 text-[11px] font-bold tracking-tight whitespace-nowrap">
+            {trimmedName.split(' ')[0]}
+          </span>
+        ) : (
+          initials
+        )}
       </button>
 
       {/* Hover Tooltip */}

@@ -13,6 +13,8 @@ import {
   Plus,
   Link as LinkIcon,
   Target,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useStalePairsDetector } from './useStaleParisDetector';
@@ -86,6 +88,39 @@ export function DroppableBoard({
     const updated = extraData.goals.filter((_, i) => i !== index);
     setExtraData((prev) => ({ ...prev, goals: updated }));
     autoSave(updated, extraData.meetingLink);
+  };
+
+  const moveGoal = (index: number, direction: 'up' | 'down') => {
+    const other = direction === 'up' ? index - 1 : index + 1;
+    if (other < 0 || other >= extraData.goals.length) return;
+    const updated = [...extraData.goals];
+    [updated[index], updated[other]] = [updated[other], updated[index]];
+    setExtraData((prev) => ({ ...prev, goals: updated }));
+    autoSave(updated, extraData.meetingLink);
+  };
+
+  const [editingGoalIndex, setEditingGoalIndex] = useState<number | null>(null);
+  const [editingGoalText, setEditingGoalText] = useState('');
+
+  const startEditGoal = (index: number) => {
+    setEditingGoalIndex(index);
+    setEditingGoalText(extraData.goals[index]);
+  };
+
+  const commitEditGoal = (index: number) => {
+    const trimmed = editingGoalText.trim();
+    if (!trimmed) {
+      // If cleared, remove it
+      removeGoal(index);
+    } else {
+      const updated = extraData.goals.map((g, i) =>
+        i === index ? trimmed : g
+      );
+      setExtraData((prev) => ({ ...prev, goals: updated }));
+      autoSave(updated, extraData.meetingLink);
+    }
+    setEditingGoalIndex(null);
+    setEditingGoalText('');
   };
 
   const handleRenameCommit = async () => {
@@ -226,16 +261,66 @@ export function DroppableBoard({
                     Daily Goals
                   </label>
                   {extraData.goals.map((g, i) => (
-                    <div key={i} className="flex items-center gap-2 group/goal">
-                      <div className="flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-                        {g}
+                    <div key={i} className="flex items-center gap-1 group/goal">
+                      {/* Priority arrows */}
+                      <div className="flex flex-col opacity-0 group-hover/goal:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => moveGoal(i, 'up')}
+                          disabled={i === 0}
+                          className="p-0.5 text-neutral-300 hover:text-neutral-600 disabled:opacity-20 dark:hover:text-neutral-300"
+                          title="Move up"
+                        >
+                          <ChevronUp className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => moveGoal(i, 'down')}
+                          disabled={i === extraData.goals.length - 1}
+                          className="p-0.5 text-neutral-300 hover:text-neutral-600 disabled:opacity-20 dark:hover:text-neutral-300"
+                          title="Move down"
+                        >
+                          <ChevronDown className="h-3 w-3" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => removeGoal(i)}
-                        className="p-1 text-neutral-400 hover:text-red-500 opacity-0 group-hover/goal:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+
+                      {/* Goal text / inline editor */}
+                      {editingGoalIndex === i ? (
+                        <input
+                          autoFocus
+                          value={editingGoalText}
+                          onChange={(e) => setEditingGoalText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') commitEditGoal(i);
+                            if (e.key === 'Escape') {
+                              setEditingGoalIndex(null);
+                              setEditingGoalText('');
+                            }
+                          }}
+                          onBlur={() => commitEditGoal(i)}
+                          className="flex-1 rounded-lg border border-brand-400 bg-white px-3 py-1.5 text-xs text-neutral-700 outline-none ring-2 ring-brand-500/20 dark:border-brand-600 dark:bg-neutral-900 dark:text-neutral-300"
+                        />
+                      ) : (
+                        <div className="flex flex-1 items-center rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                          <span className="flex-1 leading-snug">{g}</span>
+                        </div>
+                      )}
+
+                      {/* Edit & Delete */}
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover/goal:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => startEditGoal(i)}
+                          className="rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-brand-600 dark:hover:bg-neutral-800"
+                          title="Edit goal"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => removeGoal(i)}
+                          className="rounded p-1 text-neutral-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                          title="Remove goal"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   <div className="flex gap-2">

@@ -8,14 +8,18 @@ import { persist } from 'zustand/middleware';
 interface WorkspacePrefsState {
   stalePairHighlightingEnabled: boolean;
   setStalePairHighlighting: (enabled: boolean) => void;
+  showFullName: boolean;
+  setShowFullName: (enabled: boolean) => void;
 }
 
 export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
   persist(
     (set) => ({
-      stalePairHighlightingEnabled: false, // off by default
+      stalePairHighlightingEnabled: false,
       setStalePairHighlighting: (enabled) =>
         set({ stalePairHighlightingEnabled: enabled }),
+      showFullName: false,
+      setShowFullName: (enabled) => set({ showFullName: enabled }),
     }),
     {
       name: 'parrit-workspace-prefs',
