@@ -7,7 +7,7 @@ import React from 'react';
 
 const mockPerson: Person = {
   id: 'user-1',
-  name: 'Michael Ketiku',
+  name: 'Peter Parker ',
   avatarColorHex: '#6366f1',
 };
 
@@ -19,8 +19,8 @@ describe('DraggablePerson Component', () => {
       </DndContext>
     );
 
-    // Should render MK for Michael Ketiku
-    expect(screen.getByText('MK')).toBeInTheDocument();
+    // Should render PP for Peter Parker
+    expect(screen.getByText('PP')).toBeInTheDocument();
   });
 
   it('renders a tooltip/title with the full name', () => {
@@ -33,7 +33,7 @@ describe('DraggablePerson Component', () => {
     // The button or container should have the full name as accessible title or aria-label
     expect(screen.getByRole('button')).toHaveAttribute(
       'aria-label',
-      'Michael Ketiku'
+      'Peter Parker'
     );
   });
 });

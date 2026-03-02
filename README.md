@@ -6,16 +6,17 @@ Created and maintained by **Michael Ketiku**.
 
 ## Overview
 
-Parrit is an "ideal" pairing tool that is fast, beautiful, and maintenance-free. It helps teams manage their pairing sessions, track pairing history, and provides intelligent recommendations to ensure optimal team collaboration.
+Parrit was created to ensure continued support for the pairing community after the original `parrit.io` site was taken down in 2025. This new Parrit is designed to be fast, beautiful, and maintenance-free—providing a modern home for teams to manage their pairing boards and collaboration sessions.
 
 ## Features
 
-- **Workspace Management**: Individual authentication with multi-workspace support.
-- **Dynamic Pairing Boards**: Create, rename, and manage boards for different team contexts.
-- **Real-time Collaboration**: Powered by Supabase for instant updates across the team.
-- **Intelligent Recommendations**: Weighted-random pairing algorithm to suggest optimal pairs.
-- **Premium UI/UX**: Professional glassmorphism design with theme support (Light/Dark/System).
-- **Accessibility First**: Built with ARIA support and keyboard navigation in mind.
+- **Workspace-based Auth**: High-privacy authentication using Workspace IDs (no PII or personal emails required).
+- **Dynamic Pairing Boards**: Create and manage boards for different team contexts with real-time feedback.
+- **Team Management**: Add, edit, and remove team members with custom avatars and colors.
+- **Advanced Drag & Drop**: Multi-select (Shift+Click) and bulk drag operations for efficient pairing.
+- **Real-time Collaboration**: Instant synchronization and updates across the entire team.
+- **Premium UI/UX**: Human-modern design with theme support (Light/Dark/System) and hover tooltips.
+- **Project Governance**: Architecture decisions are documented using ADRs in `docs/adr/`.
 
 ## Tech Stack
 
@@ -70,10 +71,10 @@ Parrit is an "ideal" pairing tool that is fast, beautiful, and maintenance-free.
 
 ## Project Structure
 
-- `src/features/`: Feature-based modules (auth, pairing, recommendation, etc.)
+- `src/features/`: Feature-based modules (auth, pairing, settings, team).
 - `src/components/`: Reusable UI components.
 - `src/lib/`: External service clients and utilities.
-- `docs/`: Project documentation and implementation plans.
+- `docs/`: Project documentation and Architecture Decision Records (ADRs).
 
 ## License
 

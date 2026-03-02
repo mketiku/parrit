@@ -112,7 +112,7 @@ export function TeamScreen() {
           <input
             autoFocus
             type="text"
-            placeholder="Full name (e.g. Michael Ketiku)"
+            placeholder="Full name (e.g. Peter Parker)"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             className="min-w-0 flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-neutral-700 dark:bg-neutral-900"

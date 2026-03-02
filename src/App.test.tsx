@@ -15,6 +15,7 @@ describe('App Root Component', () => {
         email: 'test@example.com',
       } as unknown as import('@supabase/supabase-js').User,
       session: null,
+      workspaceName: 'test',
       isLoading: false,
       initialize: vi.fn(),
       signOut: vi.fn(),
@@ -26,6 +27,6 @@ describe('App Root Component', () => {
     expect(screen.getByText('Parrit')).toBeInTheDocument();
 
     // Default route placeholder text should exist
-    expect(screen.getByText('Phoenix Workspace')).toBeInTheDocument();
+    expect(screen.getByText('Test Workspace')).toBeInTheDocument();
   });
 });

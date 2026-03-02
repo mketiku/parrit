@@ -33,8 +33,11 @@ export function DraggablePerson({
     typeof setTimeout
   > | null>(null);
 
-  const initials = person.name
+  const trimmedName = person.name.trim();
+
+  const initials = trimmedName
     .split(' ')
+    .filter(Boolean)
     .map((n) => n[0])
     .join('')
     .substring(0, 2)
@@ -56,7 +59,7 @@ export function DraggablePerson({
         ref={setNodeRef}
         {...listeners}
         {...attributes}
-        aria-label={person.name}
+        aria-label={trimmedName}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={`

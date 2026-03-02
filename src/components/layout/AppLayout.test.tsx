@@ -12,6 +12,7 @@ vi.mocked(useAuthStore).mockReturnValue({
     email: 'test@example.com',
   } as unknown as import('@supabase/supabase-js').User,
   session: null,
+  workspaceName: 'test',
   isLoading: false,
   initialize: vi.fn(),
   signOut: vi.fn(),
@@ -25,8 +26,8 @@ describe('AppLayout Component', () => {
       </MemoryRouter>
     );
 
-    // Assert main logo is present
-    expect(screen.getByText(/Parrit/i)).toBeInTheDocument();
+    // Assert logo/branding is present
+    expect(screen.getAllByText(/Parrit/i)[0]).toBeInTheDocument();
 
     // Assert navigation items are present based on UI design
     expect(

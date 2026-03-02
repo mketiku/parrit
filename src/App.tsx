@@ -6,15 +6,21 @@ import { useAuthStore } from './features/auth/store/useAuthStore';
 import { Loader2 } from 'lucide-react';
 import { SettingsScreen } from './features/settings/components/SettingsScreen';
 import { TeamScreen } from './features/team/components/TeamScreen';
+import { AboutScreen } from './features/static/components/AboutScreen';
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
 
 // Placeholder views
 function DashboardView() {
+  const { workspaceName } = useAuthStore();
+  const displayName = workspaceName
+    ? workspaceName.charAt(0).toUpperCase() + workspaceName.slice(1)
+    : 'Workspace';
+
   return (
     <div className="flex h-full flex-col">
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          Phoenix Workspace
+          {displayName} Workspace
         </h1>
         <p className="mt-2 text-neutral-500 dark:text-neutral-400">
           Drag and drop team members to configure today's pairing sessions.
@@ -54,6 +60,7 @@ function App() {
           <Route path="/" element={<DashboardView />} />
           <Route path="/team" element={<TeamScreen />} />
           <Route path="/settings" element={<SettingsScreen />} />
+          <Route path="/about" element={<AboutScreen />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Bird, Moon, Sun, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 
 export default function AppLayout() {
-  const { signOut } = useAuthStore();
+  const { signOut, workspaceName } = useAuthStore();
+  const initials = (workspaceName || 'W').substring(0, 2).toUpperCase();
+
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return (
@@ -33,12 +35,15 @@ export default function AppLayout() {
         <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
           <div className="flex items-center gap-6 sm:gap-8">
             {/* Logo */}
-            <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              className="flex items-center gap-2 transition-opacity hover:opacity-80"
+            >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-sm shadow-indigo-500/20">
                 <Bird className="h-5 w-5" />
               </div>
               <span className="font-bold tracking-tight">Parrit</span>
-            </div>
+            </Link>
 
             {/* Navigation */}
             <nav className="flex items-center gap-1 text-sm font-medium">
@@ -99,7 +104,7 @@ export default function AppLayout() {
               className="group flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-600 ring-1 ring-neutral-300 transition-all hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:ring-neutral-700 dark:hover:bg-neutral-700"
               title="Sign Out"
             >
-              <span className="group-hover:hidden">MK</span>
+              <span className="group-hover:hidden">{initials}</span>
               <LogOut className="hidden h-3.5 w-3.5 group-hover:block" />
             </button>
           </div>
@@ -110,6 +115,43 @@ export default function AppLayout() {
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 py-6 md:py-8">
         <Outlet />
       </main>
+
+      {/* Footer */}
+      <footer className="shrink-0 border-t border-neutral-200 bg-white/50 py-6 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/50">
+        <div className="mx-auto flex flex-col md:flex-row w-full items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12 gap-4">
+          <div className="flex items-center gap-6">
+            <Link
+              to="/about"
+              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+            >
+              About Parrit
+            </Link>
+            <a
+              href="/about#contact"
+              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+            >
+              Contact
+            </a>
+            <a
+              href="https://linkedin.com/in/mketiku"
+              target="_blank"
+              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+            >
+              LinkedIn
+            </a>
+            <a
+              href="https://github.com/mketiku/parrit/issues"
+              target="_blank"
+              className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors"
+            >
+              Help & Issues
+            </a>
+          </div>
+          <p className="text-xs text-neutral-400 dark:text-neutral-600">
+            &copy; {new Date().getFullYear()} Michael Ketiku.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
