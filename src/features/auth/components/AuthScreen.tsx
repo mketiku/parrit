@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabase';
 import { Bird, Loader2 } from 'lucide-react';
 
 export function AuthScreen() {
-  const [email, setEmail] = useState('');
+  const [workspaceName, setWorkspaceName] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,20 +15,26 @@ export function AuthScreen() {
     setErrorMSG(null);
 
     try {
+      // Create a pseudo-email string mapped to the workspace name to satisfy Supabase
+      const pseudoEmail = `${workspaceName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')}@parrit.local`;
+
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: pseudoEmail,
           password,
         });
         if (error) throw error;
         // Sometimes signUp requires email confirmation depending on Supabase settings
         alert(
-          'Success! Check your email to confirm your account (if enabled), or just sign in now.'
+          'Workspace successfully created! You are securely authenticated.'
         );
         setIsSignUp(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: pseudoEmail,
           password,
         });
         if (error) throw error;
@@ -70,15 +76,15 @@ export function AuthScreen() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">
             <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-              Work Email
+              Workspace Name
             </label>
             <input
-              type="email"
+              type="text"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={workspaceName}
+              onChange={(e) => setWorkspaceName(e.target.value)}
               className="w-full rounded-xl border border-neutral-300 bg-white/80 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-neutral-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-neutral-700 dark:bg-neutral-900/80 dark:placeholder:text-neutral-600 dark:focus:border-indigo-400"
-              placeholder="you@company.com"
+              placeholder="e.g. omega-squad"
             />
           </div>
 
