@@ -65,7 +65,7 @@ export function ProductTutorial() {
     if (isActive) {
       const handleResize = () => updateSpotlight();
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') exitTutorial();
+        if (e.key === 'Escape') handleFinish();
         if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
           if (currentStepIndex < steps.length - 1) nextStep();
           else handleFinish();
@@ -119,7 +119,7 @@ export function ProductTutorial() {
             style={{
               clipPath: `polygon(0% 0%, 0% 100%, ${spotlightRect.left}px 100%, ${spotlightRect.left}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.bottom}px, ${spotlightRect.left}px ${spotlightRect.bottom}px, ${spotlightRect.left}px 100%, 100% 100%, 100% 0%)`,
             }}
-            onClick={exitTutorial}
+            onClick={handleFinish}
           />
 
           <motion.div
@@ -146,7 +146,7 @@ export function ProductTutorial() {
                 </span>
               </div>
               <button
-                onClick={exitTutorial}
+                onClick={handleFinish}
                 className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/10 transition-colors"
                 title="Skip Tour"
               >
