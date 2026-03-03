@@ -216,9 +216,25 @@ create policy "settings_upsert_own" on public.workspace_settings for insert with
 create policy "settings_update_own" on public.workspace_settings for update using (auth.uid() = user_id);
 create policy "settings_public_read" on public.workspace_settings for select using (true);
 
+-- ============================================================
+-- STEP 5: PERMISSIONS (Backup)
+-- ============================================================
+
+grant select on public.workspace_settings to anon, authenticated;
+grant select on public.workspace_settings to anon, authenticated;
+
 -- Update boards/people for public view
 create policy "boards_public_select" on public.pairing_boards for select
 using (exists (select 1 from public.workspace_settings s where s.user_id = public.pairing_boards.user_id and s.public_view_enabled = true));
 
 create policy "people_public_select" on public.people for select
 using (exists (select 1 from public.workspace_settings s where s.user_id = public.people.user_id and s.public_view_enabled = true));
+
+grant select on public.pairing_boards to anon, authenticated;
+grant select on public.people to anon, authenticated;
+grant select on public.pairing_sessions to anon, authenticated;
+grant select on public.pairing_history to anon, authenticated;
+
+-- ============================================================
+-- DONE
+-- ============================================================

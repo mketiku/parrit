@@ -1,5 +1,12 @@
 import React, { useState, useCallback, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  useFloating,
+  autoUpdate,
+  offset,
+  flip,
+  shift,
+} from '@floating-ui/react-dom';
 import { TUTORIAL_STEPS, useTutorialStore } from '../store/useTutorialStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { supabase } from '../../../lib/supabase';
@@ -15,34 +22,30 @@ export function ProductTutorial() {
 
   const currentStep = TUTORIAL_STEPS[currentStepIndex];
 
-  // Update spotlight position when step or window changes
+  // Industry standard positioning logic
+  const { x, y, refs, strategy } = useFloating({
+    placement: currentStep?.placement || 'bottom',
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      offset(16),
+      flip({ fallbackAxisSideDirection: 'end' }),
+      shift({ padding: 16 }),
+    ],
+  });
+
   const updateSpotlight = useCallback(() => {
     if (!currentStep?.targetId) return;
     const el = document.getElementById(currentStep.targetId);
     if (el) {
+      refs.setReference(el);
       setSpotlightRect(el.getBoundingClientRect());
     } else {
+      refs.setReference(null);
       setSpotlightRect(null);
     }
-  }, [currentStep]);
+  }, [currentStep, refs]);
 
-  useLayoutEffect(() => {
-    if (isActive) {
-      // Use requestAnimationFrame to avoid synchronous setState inside effect
-      const handle = requestAnimationFrame(updateSpotlight);
-
-      window.addEventListener('resize', updateSpotlight);
-      window.addEventListener('scroll', updateSpotlight, true);
-
-      return () => {
-        cancelAnimationFrame(handle);
-        window.removeEventListener('resize', updateSpotlight);
-        window.removeEventListener('scroll', updateSpotlight, true);
-      };
-    }
-  }, [isActive, updateSpotlight]);
-
-  const handleFinish = async () => {
+  const handleFinish = useCallback(async () => {
     exitTutorial();
     setOnboardingCompleted(true);
     if (user) {
@@ -50,49 +53,80 @@ export function ProductTutorial() {
         .from('workspace_settings')
         .upsert({ user_id: user.id, onboarding_completed: true });
     }
-  };
+  }, [exitTutorial, setOnboardingCompleted, user]);
 
-  if (!isActive) return null;
+  useLayoutEffect(() => {
+    if (isActive) {
+      const handleResize = () => updateSpotlight();
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') exitTutorial();
+        if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
+          if (currentStepIndex < TUTORIAL_STEPS.length - 1) nextStep();
+          else handleFinish();
+        }
+        if (e.key === 'ArrowLeft') prevStep();
+      };
+
+      const handle = requestAnimationFrame(updateSpotlight);
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('scroll', updateSpotlight, true);
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        cancelAnimationFrame(handle);
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('scroll', updateSpotlight, true);
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [
+    isActive,
+    updateSpotlight,
+    currentStepIndex,
+    nextStep,
+    prevStep,
+    exitTutorial,
+    handleFinish,
+  ]);
 
   const isLastStep = currentStepIndex === TUTORIAL_STEPS.length - 1;
 
-  return (
-    <div className="fixed inset-0 z-[100] overflow-hidden pointer-events-none">
-      {/* Dark Overlay with Circle Cutout */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] pointer-events-auto"
-        style={{
-          clipPath: spotlightRect
-            ? `polygon(0% 0%, 0% 100%, ${spotlightRect.left}px 100%, ${spotlightRect.left}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.bottom}px, ${spotlightRect.left}px ${spotlightRect.bottom}px, ${spotlightRect.left}px 100%, 100% 100%, 100% 0%)`
-            : 'none',
-        }}
-        onClick={exitTutorial}
-      />
+  // We only render when we know the coordinates and the rect.
+  const isReady = isActive && x != null && y != null && spotlightRect != null;
 
-      <AnimatePresence mode="wait">
-        {spotlightRect && (
+  // To satisfy the linter about "accessing ref during render",
+  // we extract the functions we need.
+  const { setFloating } = refs;
+
+  return (
+    <AnimatePresence>
+      {isReady && (
+        <div className="fixed inset-0 z-[100] overflow-hidden pointer-events-none">
+          {/* Dark Overlay with Circle Cutout */}
           <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-[2px] pointer-events-auto"
+            style={{
+              clipPath: `polygon(0% 0%, 0% 100%, ${spotlightRect.left}px 100%, ${spotlightRect.left}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.bottom}px, ${spotlightRect.left}px ${spotlightRect.bottom}px, ${spotlightRect.left}px 100%, 100% 100%, 100% 0%)`,
+            }}
+            onClick={exitTutorial}
+          />
+
+          <motion.div
+            ref={setFloating}
             key={currentStepIndex}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute pointer-events-auto z-[101] w-80 rounded-2xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl dark:bg-black/20"
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="absolute pointer-events-auto z-[101] w-80 rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-neutral-900"
             style={{
-              top:
-                spotlightRect.bottom + 20 + spotlightRect.height >
-                window.innerHeight
-                  ? spotlightRect.top - 240
-                  : spotlightRect.bottom + 20,
-              left: Math.max(
-                20,
-                Math.min(
-                  window.innerWidth - 340,
-                  spotlightRect.left + spotlightRect.width / 2 - 160
-                )
-              ),
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
             }}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -106,21 +140,21 @@ export function ProductTutorial() {
               </div>
               <button
                 onClick={exitTutorial}
-                className="rounded-full p-1 text-neutral-400 hover:bg-white/10 transition-colors"
+                className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/10 transition-colors"
                 title="Skip Tour"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <h3 className="mb-2 text-lg font-bold text-neutral-900 dark:text-neutral-100">
+            <h3 className="mb-2 text-lg font-bold text-neutral-900 dark:text-neutral-50">
               {currentStep.title}
             </h3>
-            <p className="mb-6 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+            <p className="mb-6 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
               {currentStep.description}
             </p>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-t border-neutral-100 pt-5 dark:border-neutral-800">
               <button
                 onClick={prevStep}
                 disabled={currentStepIndex === 0}
@@ -151,21 +185,21 @@ export function ProductTutorial() {
             </div>
 
             {/* Progress dots */}
-            <div className="mt-6 flex justify-center gap-1.5">
+            <div className="mt-5 flex justify-center gap-1.5">
               {TUTORIAL_STEPS.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1 w-4 rounded-full transition-all duration-300 ${
+                  className={`h-1 rounded-full transition-all duration-300 ${
                     i === currentStepIndex
                       ? 'bg-brand-500 w-8'
-                      : 'bg-neutral-200 dark:bg-neutral-800'
+                      : 'bg-neutral-200 dark:bg-neutral-800 w-4'
                   }`}
                 />
               ))}
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -14,6 +14,8 @@ import { HistoryScreen } from './features/pairing/components/HistoryScreen';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
 import { useThemeStore } from './store/useThemeStore';
 import { PublicView } from './features/pairing/components/PublicView';
+import { AdminPortal } from './features/admin/components/AdminPortal';
+import { AdminShortcutListener } from './features/admin/components/AdminShortcutListener';
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -78,6 +80,7 @@ function App() {
   return (
     <>
       <BrowserRouter>
+        <AdminShortcutListener />
         <Routes>
           {/* ── Public routes (no login required) ── */}
           <Route element={<PublicLayout />}>
@@ -87,6 +90,7 @@ function App() {
             />
             <Route path="/about" element={<AboutScreen />} />
             <Route path="/view/:userId" element={<PublicView />} />
+            <Route path="/admin" element={<AdminPortal />} />
             <Route
               path="/login"
               element={user ? <Navigate to="/app" replace /> : <AuthScreen />}

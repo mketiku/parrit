@@ -39,18 +39,6 @@ const BUILTIN_TEMPLATES: {
       { name: 'OOO', isExempt: true },
     ],
   },
-  {
-    name: '5-Board + OOO',
-    description: 'Boards 1–5 + OOO exempt (larger teams)',
-    boards: [
-      { name: 'Board 1', isExempt: false },
-      { name: 'Board 2', isExempt: false },
-      { name: 'Board 3', isExempt: false },
-      { name: 'Board 4', isExempt: false },
-      { name: 'Board 5', isExempt: false },
-      { name: 'OOO', isExempt: true },
-    ],
-  },
 ];
 
 interface TemplateBoard {

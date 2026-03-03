@@ -61,7 +61,41 @@ export function HistoryScreen() {
   const [details, setDetails] = useState<HistoryDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isEditingDate, setIsEditingDate] = useState(false);
+  const [editDateValue, setEditDateValue] = useState('');
+  const [editTimeValue, setEditTimeValue] = useState('');
   const { addToast } = useToastStore();
+
+  const handleUpdateDate = async () => {
+    if (!selectedSessionId || !editDateValue || !editTimeValue) return;
+
+    // Combine date and time and convert to ISO string for precise DB storage
+    const newTimestamp = new Date(
+      `${editDateValue}T${editTimeValue}:00`
+    ).toISOString();
+
+    const { error } = await supabase
+      .from('pairing_sessions')
+      .update({
+        session_date: editDateValue,
+        created_at: newTimestamp,
+      })
+      .eq('id', selectedSessionId);
+
+    if (error) {
+      addToast('Failed to update session', 'error');
+    } else {
+      addToast('Session updated', 'success');
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === selectedSessionId
+            ? { ...s, session_date: editDateValue, created_at: newTimestamp }
+            : s
+        )
+      );
+      setIsEditingDate(false);
+    }
+  };
 
   const deleteSession = async (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
@@ -90,6 +124,7 @@ export function HistoryScreen() {
       .from('pairing_sessions')
       .select('id, session_date, created_at')
       .order('session_date', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(20);
 
     if (!error && data) {
@@ -351,24 +386,100 @@ export function HistoryScreen() {
                           Workspace Snapshot
                         </span>
                       </div>
-                      <h2 className="text-4xl font-black tracking-tight leading-none mb-2">
-                        {format(
-                          parseInputDate(
-                            sessions.find((s) => s.id === selectedSessionId)
-                              ?.session_date || null
-                          ),
-                          'EEEE'
+                      <div className="flex items-center gap-3">
+                        {isEditingDate ? (
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-white/60 uppercase">
+                                Date
+                              </span>
+                              <input
+                                type="date"
+                                value={editDateValue}
+                                onChange={(e) =>
+                                  setEditDateValue(e.target.value)
+                                }
+                                className="bg-white/20 border border-white/30 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-white/60 uppercase">
+                                Time
+                              </span>
+                              <input
+                                type="time"
+                                value={editTimeValue}
+                                onChange={(e) =>
+                                  setEditTimeValue(e.target.value)
+                                }
+                                className="bg-white/20 border border-white/30 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+                              />
+                            </div>
+                            <div className="flex gap-2 self-end mt-4 sm:mt-0">
+                              <button
+                                onClick={handleUpdateDate}
+                                className="text-[10px] font-black uppercase tracking-widest bg-white text-brand-500 px-3 py-1.5 rounded-lg hover:bg-brand-50 transition-colors"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => setIsEditingDate(false)}
+                                className="text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <h2 className="text-4xl font-black tracking-tight leading-none mb-2">
+                              {format(
+                                parseInputDate(
+                                  sessions.find(
+                                    (s) => s.id === selectedSessionId
+                                  )?.session_date || null
+                                ),
+                                'EEEE'
+                              )}
+                            </h2>
+                            <button
+                              onClick={() => {
+                                const session = sessions.find(
+                                  (s) => s.id === selectedSessionId
+                                );
+                                if (session) {
+                                  setEditDateValue(session.session_date);
+                                  // Extract time in HH:mm format for the input
+                                  const date = new Date(session.created_at);
+                                  const hours = String(
+                                    date.getHours()
+                                  ).padStart(2, '0');
+                                  const minutes = String(
+                                    date.getMinutes()
+                                  ).padStart(2, '0');
+                                  setEditTimeValue(`${hours}:${minutes}`);
+                                  setIsEditingDate(true);
+                                }
+                              }}
+                              className="ml-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-all border border-white/10"
+                              title="Edit Date/Time"
+                            >
+                              <Calendar className="h-4 w-4" />
+                            </button>
+                          </>
                         )}
-                      </h2>
-                      <p className="text-lg font-bold text-brand-100 opacity-90">
-                        {format(
-                          parseInputDate(
-                            sessions.find((s) => s.id === selectedSessionId)
-                              ?.session_date || null
-                          ),
-                          'MMMM do, yyyy'
-                        )}
-                      </p>
+                      </div>
+                      {!isEditingDate && (
+                        <p className="text-lg font-bold text-brand-100 opacity-90">
+                          {format(
+                            parseInputDate(
+                              sessions.find((s) => s.id === selectedSessionId)
+                                ?.session_date || null
+                            ),
+                            'MMMM do, yyyy'
+                          )}
+                        </p>
+                      )}
                     </div>
                     <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-md border border-white/20">
                       <Bird className="h-10 w-10" />

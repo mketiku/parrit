@@ -30,13 +30,6 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     placement: 'bottom',
   },
   {
-    targetId: 'share-link-btn',
-    title: 'Share the View',
-    description:
-      'Copy a read-only link to share your pairings with stakeholders instantly.',
-    placement: 'bottom',
-  },
-  {
     targetId: 'save-session-btn',
     title: 'Finalize & Save',
     description:

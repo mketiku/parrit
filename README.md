@@ -1,12 +1,14 @@
 # Parrit 🦜
 
-A modern pairing tool built to fill the gap left when the original `parrit.io` was taken down in 2025.
+Professional-grade pairing for modern teams. A ground-up rebuild of the collaborative pairing board workflow.
 
 Created and maintained by **Michael Ketiku**.
 
-## Overview
+## The Story
 
-Parrit provides a fast, beautiful, and maintenance-free home for engineering teams to manage their daily pairing sessions. Built on the spirit of the original with modern real-time collaboration and workspace isolation baked in from day one.
+When the original `parrit.io` was taken down in 2025, it left a void for many engineering teams (including mine). I've been pairing for about two years now and have seen the professional benefits firsthand—it increases code quality, eliminates silos, and makes engineering more human.
+
+I wanted to build a modern successor that felt "alive"—using real-time sync, a good-looking interface, and a modern architecture. Parrit was built to ensure that simple rotation logic remains accessible to the community.
 
 ## Features
 
@@ -20,7 +22,6 @@ Parrit provides a fast, beautiful, and maintenance-free home for engineering tea
 - **Advanced Drag & Drop**: Multi-select (Shift+Click) and bulk drag to move people between boards.
 - **Session History**: Save daily snapshots of your pairing configuration and delete old ones.
 - **Premium UI/UX**: Light/dark mode, hover tooltips, smooth animations.
-- **Architecture Records**: Key decisions documented as ADRs in `docs/adr/`.
 
 ## Tech Stack
 
@@ -36,7 +37,7 @@ Parrit provides a fast, beautiful, and maintenance-free home for engineering tea
 ### Prerequisites
 
 - Node.js (v18+)
-- A free [Supabase](https://supabase.com/) project
+- A [Supabase](https://supabase.com/) project
 
 ### 1. Clone and install
 
@@ -61,36 +62,10 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 ### 3. Set up the database
 
-Run the full schema in **Supabase → SQL Editor → New Query**:
+Database setup files are located in the `supabase/` directory.
 
-```
-supabase/schema.sql
-```
-
-This creates both tables, indexes, and row-level security policies. It is safe to re-run — it drops and recreates from scratch.
-
-### 🧩 Database Migration (Existing Users)
-
-If you are updating an existing database and don't want to wipe your data, run these SQL commands in your Supabase SQL Editor:
-
-```sql
--- Step 1: Update boards for multiple goals
-ALTER TABLE public.pairing_boards DROP COLUMN IF EXISTS goal_text;
-ALTER TABLE public.pairing_boards ADD COLUMN IF NOT EXISTS goals jsonb NOT NULL DEFAULT '[]'::jsonb;
-
--- Step 2: Create templates table
-CREATE TABLE IF NOT EXISTS public.pairing_templates (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  name text NOT NULL,
-  boards jsonb NOT NULL,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- Step 3: Enable RLS for templates
-ALTER TABLE public.pairing_templates ENABLE ROW LEVEL SECURITY;
--- (Add policies manually or re-run schema.sql)
-```
+- **Primary Setup**: Run `supabase/schema.sql` in your Supabase SQL Editor.
+- **Admin Setup**: Run `supabase/admin_setup.sql` to enable the admin role and audit logging.
 
 Then in **Supabase → Authentication → Providers → Email**, disable:
 
@@ -103,13 +78,6 @@ Then in **Supabase → Authentication → Providers → Email**, disable:
 npm run dev
 ```
 
-### Running Tests
-
-```bash
-npm run test        # unit tests (Vitest)
-# npx playwright test # E2E tests (Playwright)
-```
-
 ## Project Structure
 
 ```
@@ -120,18 +88,15 @@ src/
     team/       # Team member management
     settings/   # Workspace settings
     static/     # About page
+    admin/      # Admin portal core
   components/
     layout/     # AppLayout, header, footer
-    ui/         # Toaster, shared UI primitives
+    ui/         # Shared UI primitives
   lib/          # Supabase client
-  store/        # Global stores (toasts)
 
 supabase/
-  schema.sql    # Full database setup (run once in Supabase SQL editor)
-
-docs/
-  adr/          # Architecture Decision Records
-  context/      # Architecture, requirements, implementation plan
+  schema.sql       # Full database setup
+  admin_setup.sql  # RBAC and audit logging setup
 ```
 
 ## Deployment
@@ -148,7 +113,6 @@ git push -u origin main
 ```
 
 **2. Import to Vercel**
-
 Go to [vercel.com/new](https://vercel.com/new), import the GitHub repository.
 
 - Framework: **Vite** (auto-detected)
@@ -156,23 +120,14 @@ Go to [vercel.com/new](https://vercel.com/new), import the GitHub repository.
 - Output directory: `dist`
 
 **3. Set environment variables**
-
 In **Vercel → Settings → Environment Variables**, add:
-
-| Variable                 | Value                     |
-| ------------------------ | ------------------------- |
-| `VITE_SUPABASE_URL`      | Your Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon key    |
+| Variable | Value |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon key |
 
 **4. Add redirect URL in Supabase**
-
 In **Supabase → Authentication → URL Configuration → Redirect URLs**, add your Vercel deployment URL (e.g. `https://parrit.vercel.app`).
-
-> ⚠️ Skipping step 4 is the most common cause of login failures after deployment.
-
-After the initial import, every `git push` to `main` triggers an automatic production deploy. Pull requests get isolated preview URLs automatically.
-
----
 
 ## Architecture Decisions
 
@@ -180,6 +135,14 @@ See `docs/adr/` for documented decisions:
 
 - [ADR-0001](docs/adr/0001-workspace-pseudonym-authentication.md) — Workspace pseudonym authentication strategy
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get involved.
+
+## Acknowledgements
+
+This project is a spiritual successor to the original [Parrit](https://github.com/Parrit/Parrit). We are grateful for the inspiration provided by the original creators.
+
 ## License
 
-This project is private and maintained by Michael Ketiku.
+This project is maintained by Michael Ketiku.

@@ -14,6 +14,8 @@ interface WorkspacePrefsState {
   setPublicViewEnabled: (enabled: boolean) => void;
   onboardingCompleted: boolean;
   setOnboardingCompleted: (completed: boolean) => void;
+  stalePairThreshold: number;
+  setStalePairThreshold: (threshold: number) => void;
 }
 
 export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
@@ -29,6 +31,9 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
       onboardingCompleted: false,
       setOnboardingCompleted: (completed) =>
         set({ onboardingCompleted: completed }),
+      stalePairThreshold: 3,
+      setStalePairThreshold: (threshold) =>
+        set({ stalePairThreshold: threshold }),
     }),
     {
       name: 'parrit-workspace-prefs',

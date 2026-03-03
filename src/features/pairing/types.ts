@@ -19,3 +19,22 @@ export interface DragItem {
   person: Person;
   sourceId: string; // The ID of the board (or 'unpaired' pool) they came from
 }
+export interface PersonRecord {
+  id: string;
+  name: string;
+  avatar_color_hex: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface BoardRecord {
+  id: string;
+  user_id: string;
+  name: string;
+  is_exempt: boolean;
+  goals: string[];
+  meeting_link: string | null;
+  sort_order: number;
+  assigned_person_ids: string[];
+  created_at: string;
+}

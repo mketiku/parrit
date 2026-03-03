@@ -17,7 +17,7 @@ Standard authentication (individual emails) presents several challenges in an en
 We will use a **Workspace Name** as the primary identifier instead of a personal email.
 
 - The UI asks for a "Workspace Name" and "Password."
-- The application internally transforms the workspace name (e.g., `omega-squad`) into a pseudo-email format (`omega-squad@parrit.com`) to interface with Supabase's standard email/password authentication engine.
+- The application internally transforms the workspace name (e.g., `apollo-team`) into a pseudo-email format (`apollo-team@parrit.com`) to interface with Supabase's standard email/password authentication engine.
 - This pseudo-email is never exposed to the user.
 
 ## Consequences

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import type { Person, PairingBoard } from '../types';
+import type { Person, PairingBoard, PersonRecord, BoardRecord } from '../types';
 import { supabase } from '../../../lib/supabase';
 import { useToastStore } from '../../../store/useToastStore';
+import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 
 export const AVATAR_COLORS = [
   '#6366f1',
@@ -17,34 +18,44 @@ export const AVATAR_COLORS = [
 ];
 
 // ---- DB row types ----
-interface PersonRow {
-  id: string;
-  name: string;
-  avatar_color_hex: string;
-}
-
-interface BoardRow {
-  id: string;
-  name: string;
-  is_exempt: boolean;
-  goals: string[] | null;
-  meeting_link: string | null;
-  sort_order: number;
-  assigned_person_ids: string[];
-}
 
 interface HistoryRow {
   user_id: string;
   session_id: string;
   person_id: string;
   board_id: string;
+  created_at?: string;
 }
 
-function rowToPerson(row: PersonRow): Person {
+interface ExportedSession {
+  session_date: string;
+  created_at: string;
+  history: {
+    personName: string;
+    boardName: string;
+    createdAt: string;
+  }[];
+}
+
+interface WorkspaceSnapshot {
+  version: number;
+  exportedAt: string;
+  people: { name: string; avatarColorHex: string }[];
+  boards: {
+    name: string;
+    isExempt: boolean;
+    goals: string[];
+    meetingLink: string | null;
+    assignedPersonNames: string[];
+  }[];
+  sessions?: ExportedSession[];
+}
+
+function rowToPerson(row: PersonRecord): Person {
   return { id: row.id, name: row.name, avatarColorHex: row.avatar_color_hex };
 }
 
-function rowToBoard(row: BoardRow): PairingBoard {
+function rowToBoard(row: BoardRecord): PairingBoard {
   return {
     id: row.id,
     name: row.name,
@@ -103,7 +114,7 @@ interface PairingStore {
   rotateBoardPair: (boardId: string) => Promise<void>;
 
   // Export / Import
-  exportWorkspace: () => Promise<string>; // returns JSON string
+  exportWorkspace: (includeHistory?: boolean) => Promise<string>; // returns JSON string
   importWorkspace: (json: string) => Promise<void>;
 }
 
@@ -126,7 +137,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       return;
     }
 
-    const [peopleRes, boardsRes] = await Promise.all([
+    const [peopleRes, boardsRes, settingsRes] = await Promise.all([
       supabase
         .from('people')
         .select('*')
@@ -137,6 +148,11 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         .select('*')
         .eq('user_id', user.id)
         .order('sort_order', { ascending: true }),
+      supabase
+        .from('workspace_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle(),
     ]);
 
     if (peopleRes.error) {
@@ -150,8 +166,18 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       return;
     }
 
-    const people = (peopleRes.data as PersonRow[]).map(rowToPerson);
-    const boards = (boardsRes.data as BoardRow[]).map(rowToBoard);
+    const people = (peopleRes.data as unknown as PersonRecord[]).map(
+      rowToPerson
+    );
+    const boards = (boardsRes.data as unknown as BoardRecord[]).map(rowToBoard);
+
+    // Sync settings to store
+    if (settingsRes.data) {
+      const { public_view_enabled, onboarding_completed } = settingsRes.data;
+      const prefs = useWorkspacePrefsStore.getState();
+      prefs.setPublicViewEnabled(public_view_enabled);
+      prefs.setOnboardingCompleted(onboarding_completed);
+    }
 
     // Seed defaults only for completely empty workspaces
     if (boards.length === 0 && people.length === 0) {
@@ -176,9 +202,9 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         },
       ];
       const defaultPeople = [
-        { name: 'Alice Anderson', avatar_color_hex: AVATAR_COLORS[0] },
-        { name: 'Bob Brooks', avatar_color_hex: AVATAR_COLORS[1] },
-        { name: 'Charles Carter', avatar_color_hex: AVATAR_COLORS[2] },
+        { name: 'Alice', avatar_color_hex: AVATAR_COLORS[0] },
+        { name: 'Bob', avatar_color_hex: AVATAR_COLORS[1] },
+        { name: 'Charlie', avatar_color_hex: AVATAR_COLORS[2] },
       ];
 
       const [boardRes, peopleRes2] = await Promise.all([
@@ -196,10 +222,10 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
 
       set({
         boards: boardRes.data
-          ? (boardRes.data as BoardRow[]).map(rowToBoard)
+          ? (boardRes.data as unknown as BoardRecord[]).map(rowToBoard)
           : [],
         people: peopleRes2.data
-          ? (peopleRes2.data as PersonRow[]).map(rowToPerson)
+          ? (peopleRes2.data as unknown as PersonRecord[]).map(rowToPerson)
           : people,
         isLoading: false,
       });
@@ -221,18 +247,18 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             if (eventType === 'INSERT') {
               // Only add if not already in state (could be our own insert)
               const exists = state.people.some(
-                (p) => p.id === (newRow as PersonRow).id
+                (p) => p.id === (newRow as PersonRecord).id
               );
               if (exists) return state;
               return {
-                people: [...state.people, rowToPerson(newRow as PersonRow)],
+                people: [...state.people, rowToPerson(newRow as PersonRecord)],
               };
             }
             if (eventType === 'UPDATE') {
               return {
                 people: state.people.map((p) =>
-                  p.id === (newRow as PersonRow).id
-                    ? rowToPerson(newRow as PersonRow)
+                  p.id === (newRow as PersonRecord).id
+                    ? rowToPerson(newRow as PersonRecord)
                     : p
                 ),
               };
@@ -240,7 +266,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             if (eventType === 'DELETE') {
               return {
                 people: state.people.filter(
-                  (p) => p.id !== (oldRow as PersonRow).id
+                  (p) => p.id !== (oldRow as PersonRecord).id
                 ),
               };
             }
@@ -256,18 +282,18 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           set((state) => {
             if (eventType === 'INSERT') {
               const exists = state.boards.some(
-                (b) => b.id === (newRow as BoardRow).id
+                (b) => b.id === (newRow as BoardRecord).id
               );
               if (exists) return state;
               return {
-                boards: [...state.boards, rowToBoard(newRow as BoardRow)],
+                boards: [...state.boards, rowToBoard(newRow as BoardRecord)],
               };
             }
             if (eventType === 'UPDATE') {
               return {
                 boards: state.boards.map((b) =>
-                  b.id === (newRow as BoardRow).id
-                    ? rowToBoard(newRow as BoardRow)
+                  b.id === (newRow as BoardRecord).id
+                    ? rowToBoard(newRow as BoardRecord)
                     : b
                 ),
               };
@@ -275,7 +301,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             if (eventType === 'DELETE') {
               return {
                 boards: state.boards.filter(
-                  (b) => b.id !== (oldRow as BoardRow).id
+                  (b) => b.id !== (oldRow as BoardRecord).id
                 ),
               };
             }
@@ -317,7 +343,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       return;
     }
     set((state) => ({
-      people: [...state.people, rowToPerson(data as PersonRow)],
+      people: [...state.people, rowToPerson(data as PersonRecord)],
     }));
     toast().addToast(`${name.trim()} added to the team.`, 'success');
   },
@@ -329,7 +355,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       people: state.people.map((p) => (p.id === id ? { ...p, ...updates } : p)),
     }));
 
-    const dbUpdates: Partial<PersonRow> = {};
+    const dbUpdates: Partial<PersonRecord> = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
     if (updates.avatarColorHex !== undefined)
       dbUpdates.avatar_color_hex = updates.avatarColorHex;
@@ -437,7 +463,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       return;
     }
     set((state) => ({
-      boards: [...state.boards, rowToBoard(data as BoardRow)],
+      boards: [...state.boards, rowToBoard(data as BoardRecord)],
     }));
     toast().addToast(`"${name.trim()}" board created.`, 'success');
   },
@@ -558,54 +584,53 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     set({ isLoading: true });
 
     try {
-      // 1. Fetch recent history to build a "pairing friction" map
+      // 1. Fetch recent history to determine last time people paired
       const { data: history, error: historyErr } = await supabase
         .from('pairing_history')
-        .select('person_id, board_id, session_id')
+        .select('person_id, board_id, session_id, created_at')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(400);
 
       if (historyErr) throw historyErr;
 
-      // Map of personId -> Map of otherPersonId -> count (how many times they paired)
-      const friction: Record<string, Record<string, number>> = {};
-      people.forEach((p1) => {
-        friction[p1.id] = {};
-        people.forEach((p2) => {
-          if (p1.id !== p2.id) friction[p1.id][p2.id] = 0;
+      // lastPairedAt[p1][p2] = most recent timestamp they were on a board together
+      const lastPairedAt: Record<string, Record<string, string>> = {};
+
+      // Group history by session + board to identify pairs
+      const sessionMap: Record<
+        string,
+        Record<string, { pid: string; time: string }[]>
+      > = {};
+      (history as unknown as HistoryRow[])?.forEach((row) => {
+        if (!sessionMap[row.session_id]) sessionMap[row.session_id] = {};
+        if (!sessionMap[row.session_id][row.board_id])
+          sessionMap[row.session_id][row.board_id] = [];
+        sessionMap[row.session_id][row.board_id].push({
+          pid: row.person_id,
+          time: row.created_at || '',
         });
       });
 
-      // Group history by session and board to find pairs
-      const sessions: Record<string, Record<string, string[]>> = {};
-      (
-        history as { session_id: string; board_id: string; person_id: string }[]
-      )?.forEach((row) => {
-        if (!sessions[row.session_id]) {
-          sessions[row.session_id] = {} as Record<string, string[]>;
-        }
-        if (!sessions[row.session_id][row.board_id]) {
-          sessions[row.session_id][row.board_id] = [] as string[];
-        }
-        sessions[row.session_id][row.board_id].push(row.person_id);
-      });
+      Object.values(sessionMap).forEach((boardsInSession) => {
+        Object.values(boardsInSession).forEach((peopleOnBoard) => {
+          for (let i = 0; i < peopleOnBoard.length; i++) {
+            for (let j = i + 1; j < peopleOnBoard.length; j++) {
+              const p1 = peopleOnBoard[i].pid;
+              const p2 = peopleOnBoard[j].pid;
+              const time = peopleOnBoard[i].time;
 
-      Object.values(sessions).forEach((boardsMap) => {
-        Object.values(boardsMap).forEach((pIds) => {
-          for (let i = 0; i < pIds.length; i++) {
-            for (let j = i + 1; j < pIds.length; j++) {
-              const p1 = pIds[i];
-              const p2 = pIds[j];
-              if (friction[p1] && friction[p1][p2] !== undefined) {
-                friction[p1][p2]++;
-                friction[p2][p1]++;
-              }
+              if (!lastPairedAt[p1]) lastPairedAt[p1] = {};
+              if (!lastPairedAt[p2]) lastPairedAt[p2] = {};
+
+              // Since we ordered by created_at DESC, the first one we find is the most recent
+              if (!lastPairedAt[p1][p2]) lastPairedAt[p1][p2] = time;
+              if (!lastPairedAt[p2][p1]) lastPairedAt[p2][p1] = time;
             }
           }
         });
       });
 
-      // 2. Greedy assignment
+      // 2. Identify who needs assigning
       const exemptPersonIds = new Set<string>();
       boards
         .filter((b) => b.isExempt)
@@ -615,7 +640,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
 
       const unassigned = people
         .filter((p) => !exemptPersonIds.has(p.id))
-        .sort(() => Math.random() - 0.5);
+        .sort(() => Math.random() - 0.5); // Randomize initial pool
 
       const newBoards = boards.map((b) => ({
         ...b,
@@ -623,35 +648,66 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           ? [...(b.assignedPersonIds || [])]
           : ([] as string[]),
       }));
-      const activeBoards = newBoards.filter((b) => !b.isExempt);
 
+      const activeBoards = newBoards.filter((b) => !b.isExempt);
       if (activeBoards.length === 0) {
         set({ isLoading: false });
         return;
       }
 
-      while (unassigned.length > 0) {
-        const p1 = unassigned.pop()!;
+      // 3. Smart Assignment Logic
+      // Strategy:
+      // - First, try to put 2 people on every available board using Least Recent logic.
+      // - Then, fill the rest on the least-filled boards.
 
-        // Find the board with the least people (copy array to avoid mutating activeBoards if needed)
-        const targetBoard = [...activeBoards].sort(
+      // Phase A: Create Core Pairs
+      for (const board of activeBoards) {
+        if (unassigned.length === 0) break;
+
+        // Pick p1 (first person for the board)
+        const p1 = unassigned.pop()!;
+        board.assignedPersonIds.push(p1.id);
+
+        if (unassigned.length > 0) {
+          // Find p2 (the person who hasn't paired with p1 in the longest time)
+          let bestP2Index = -1;
+          let oldestTime = '9999-12-31'; // Future date for "never paired" logic
+
+          unassigned.forEach((candidate, idx) => {
+            const lastTime =
+              lastPairedAt[p1.id]?.[candidate.id] || '0000-01-01';
+            if (lastTime < oldestTime) {
+              oldestTime = lastTime;
+              bestP2Index = idx;
+            }
+          });
+
+          if (bestP2Index !== -1) {
+            const p2 = unassigned.splice(bestP2Index, 1)[0];
+            board.assignedPersonIds.push(p2.id);
+          }
+        }
+      }
+
+      // Phase B: Overflow (if people left, distribute to least filled boards)
+      while (unassigned.length > 0) {
+        const pNext = unassigned.pop()!;
+        const targetBoard = activeBoards.sort(
           (a, b) =>
             (a.assignedPersonIds?.length || 0) -
             (b.assignedPersonIds?.length || 0)
         )[0];
-
-        if (!targetBoard.assignedPersonIds) {
-          targetBoard.assignedPersonIds = [];
-        }
-
-        targetBoard.assignedPersonIds.push(p1.id);
+        targetBoard.assignedPersonIds.push(pNext.id);
       }
 
       set({ boards: newBoards });
       get().persistBoardAssignments(newBoards);
-      toast().addToast('Smart-Pair rotation suggested!', 'success');
+      toast().addToast(
+        'Data-driven "Least Recent" rotation suggested!',
+        'success'
+      );
     } catch (err) {
-      console.error(err);
+      console.error('Recommendation Error:', err);
       toast().addToast('Algorithm failed to load history data.', 'error');
     } finally {
       set({ isLoading: false });
@@ -730,7 +786,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       if (createErr) throw createErr;
 
       set({
-        boards: (created as BoardRow[]).map(rowToBoard),
+        boards: (created as BoardRecord[]).map(rowToBoard),
         isLoading: false,
       });
       toast().addToast(`Applied template "${data.name}"`, 'success');
@@ -772,7 +828,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       if (createErr) throw createErr;
 
       set({
-        boards: (created as BoardRow[]).map(rowToBoard),
+        boards: (created as BoardRecord[]).map(rowToBoard),
         isLoading: false,
       });
       toast().addToast(`Applied preset "${name}" ✓`, 'success');
@@ -831,12 +887,17 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     toast().addToast('Pair rotated ⟳', 'success');
   },
 
-  exportWorkspace: async () => {
+  exportWorkspace: async (includeHistory = true) => {
     const { people, boards } = get();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return '';
+
     // Build a portable snapshot — IDs are NOT included (they're workspace-specific).
     // We store person names + colors so they can be re-created on import.
-    const snapshot = {
-      version: 1,
+    const snapshot: WorkspaceSnapshot = {
+      version: 2,
       exportedAt: new Date().toISOString(),
       people: people.map((p) => ({
         name: p.name,
@@ -849,26 +910,60 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         meetingLink: b.meetingLink ?? null,
         assignedPersonNames: (b.assignedPersonIds ?? [])
           .map((id) => people.find((p) => p.id === id)?.name ?? null)
-          .filter(Boolean),
+          .filter((n): n is string => !!n),
       })),
     };
+
+    if (includeHistory) {
+      const { data: sessionsData } = await supabase
+        .from('pairing_sessions')
+        .select(
+          `
+          id,
+          session_date,
+          created_at,
+          pairing_history (
+            person_id,
+            board_id,
+            created_at,
+            people (name),
+            pairing_boards (name)
+          )
+        `
+        )
+        .eq('user_id', user.id)
+        .order('session_date', { ascending: true });
+
+      if (sessionsData) {
+        snapshot.sessions = (
+          sessionsData as unknown as Array<{
+            session_date: string;
+            created_at: string;
+            pairing_history: Array<{
+              people: { name: string };
+              pairing_boards: { name: string };
+              created_at: string;
+            }>;
+          }>
+        ).map((s) => ({
+          session_date: s.session_date,
+          created_at: s.created_at,
+          history: (s.pairing_history || []).map((h) => ({
+            personName: h.people?.name || 'Unknown Person',
+            boardName: h.pairing_boards?.name || 'Unknown Board',
+            createdAt: h.created_at,
+          })),
+        }));
+      }
+    }
+
     return JSON.stringify(snapshot, null, 2);
   },
 
   importWorkspace: async (json: string) => {
     set({ isLoading: true });
     try {
-      const snapshot = JSON.parse(json) as {
-        version: number;
-        people: { name: string; avatarColorHex: string }[];
-        boards: {
-          name: string;
-          isExempt: boolean;
-          goals: string[];
-          meetingLink: string | null;
-          assignedPersonNames: string[];
-        }[];
-      };
+      const snapshot = JSON.parse(json) as WorkspaceSnapshot;
 
       if (
         !snapshot.version ||
@@ -883,10 +978,11 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated.');
 
-      // 1. Delete all existing people and boards
+      // 1. Delete all existing people, boards, and sessions (cascades to history)
       await Promise.all([
         supabase.from('people').delete().eq('user_id', user.id),
         supabase.from('pairing_boards').delete().eq('user_id', user.id),
+        supabase.from('pairing_sessions').delete().eq('user_id', user.id),
       ]);
 
       // 2. Create new people
@@ -902,13 +998,13 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         .select();
       if (peopleErr) throw peopleErr;
 
-      // Build name → new ID map for wiring up board assignments
+      // Build name → new ID map
       const nameToId: Record<string, string> = {};
-      (createdPeople as PersonRow[]).forEach((row) => {
+      (createdPeople as PersonRecord[]).forEach((row) => {
         nameToId[row.name] = row.id;
       });
 
-      // 3. Create new boards with re-mapped person IDs
+      // 3. Create new boards
       const boardRows = snapshot.boards.map((b, i) => ({
         user_id: user.id,
         name: b.name,
@@ -927,9 +1023,46 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         .select();
       if (boardsErr) throw boardsErr;
 
+      // Build board name → id map
+      const boardNameToId: Record<string, string> = {};
+      (createdBoards as BoardRecord[]).forEach((row) => {
+        boardNameToId[row.name] = row.id;
+      });
+
+      // 4. Restore Sessions & History if present
+      if (snapshot.sessions && Array.isArray(snapshot.sessions)) {
+        for (const s of snapshot.sessions) {
+          const { data: session, error: sErr } = await supabase
+            .from('pairing_sessions')
+            .insert({
+              user_id: user.id,
+              session_date: s.session_date,
+              created_at: s.created_at,
+            })
+            .select()
+            .single();
+
+          if (sErr || !session) continue;
+
+          const historyRows = (s.history || [])
+            .map((h) => ({
+              user_id: user.id,
+              session_id: session.id,
+              person_id: nameToId[h.personName],
+              board_id: boardNameToId[h.boardName],
+              created_at: h.createdAt,
+            }))
+            .filter((h) => h.person_id && h.board_id);
+
+          if (historyRows.length > 0) {
+            await supabase.from('pairing_history').insert(historyRows);
+          }
+        }
+      }
+
       set({
-        people: (createdPeople as PersonRow[]).map(rowToPerson),
-        boards: (createdBoards as BoardRow[]).map(rowToBoard),
+        people: (createdPeople as PersonRecord[]).map(rowToPerson),
+        boards: (createdBoards as BoardRecord[]).map(rowToBoard),
         isLoading: false,
       });
       toast().addToast('Workspace imported successfully! 🎉', 'success');

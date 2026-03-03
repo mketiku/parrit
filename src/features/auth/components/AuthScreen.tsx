@@ -88,7 +88,7 @@ export function AuthScreen() {
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-black dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-brand-400"
-              placeholder="e.g. omega-team"
+              placeholder="e.g. apollo-team"
             />
           </div>
 

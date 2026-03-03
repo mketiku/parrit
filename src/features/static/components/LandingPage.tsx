@@ -4,9 +4,6 @@ import { motion, Variants } from 'framer-motion';
 import {
   Bird,
   Zap,
-  Users,
-  History,
-  ShieldCheck,
   ArrowRight,
   LayoutDashboard,
   Wifi,
@@ -21,49 +18,25 @@ const features = [
     icon: LayoutDashboard,
     title: 'Dynamic Boards',
     description:
-      'Create, rename, and delete pairing boards on the fly. Boards auto-save every change — no manual syncing required.',
+      'Create and rename pairing boards on the fly. Auto-saves every change instantly.',
   },
   {
     icon: MousePointerClick,
     title: 'Drag & Drop',
     description:
-      'Move people between boards with a natural drag-and-drop experience. Multi-select and bulk-move entire groups in one gesture.',
-  },
-  {
-    icon: RefreshCw,
-    title: 'Click-to-Rotate',
-    description:
-      'Feeling stuck? One click swaps teammates between boards or back into the pool, keeping your rotation fresh and organic.',
+      'Move people between boards with a natural, lag-free experience. Bulk-move groups with ease.',
   },
   {
     icon: Wifi,
     title: 'Real-time Sync',
     description:
-      'Every move updates instantly across all open tabs and teammates in the same workspace. Powered by Supabase Realtime.',
+      'Updates instantly across all teammates in the workspace. No manual refreshing required.',
   },
   {
     icon: Share2,
     title: 'Public View Links',
     description:
-      'Share a read-only live dashboard of current pairings with stakeholders. Perfect for TV displays or Slack updates.',
-  },
-  {
-    icon: History,
-    title: 'Pairing History',
-    description:
-      "Save your daily configurations and review past sessions. See who paired when and track your team's rotation over time.",
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Privacy First',
-    description:
-      'No personal emails required. Workspace IDs keep your team data private and protected without the sign-up friction.',
-  },
-  {
-    icon: Users,
-    title: 'Team Management',
-    description:
-      'Add team members with auto-generated colour avatars. Mark boards as OOO exempt to keep recommendations clean.',
+      'Share a read-only live dashboard of current pairings with stakeholders or TV displays.',
   },
 ];
 
@@ -128,7 +101,7 @@ export function LandingPage() {
             ) : (
               <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 mb-8">
                 <Zap className="h-3.5 w-3.5" />
-                The modern replacement for parrit.io
+                Professional-grade pairing for modern teams
               </div>
             )}
 

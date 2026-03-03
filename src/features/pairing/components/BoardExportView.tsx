@@ -38,14 +38,17 @@ export function BoardExportView({
       style={{
         position: 'absolute',
         top: 0,
-        left: 0,
+        left: '-10000px',
         width: '1200px',
-        opacity: 0,
+        minHeight: '1200px',
+        visibility: 'visible',
+        opacity: 1,
         pointerEvents: 'none',
-        zIndex: -50,
-        fontFamily: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
-        backgroundColor: '#f9fafb',
-        padding: '48px',
+        zIndex: -500,
+        fontFamily:
+          'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+        backgroundColor: 'white',
+        padding: '80px',
         boxSizing: 'border-box',
       }}
     >

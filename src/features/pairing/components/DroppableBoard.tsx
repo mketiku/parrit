@@ -18,7 +18,7 @@ import {
   RefreshCcw,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
-import { useStalePairsDetector } from './useStaleParisDetector';
+import { useStalePairsDetector } from './useStalePairsDetector';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { AlertTriangle } from 'lucide-react';
 
@@ -42,7 +42,7 @@ export function DroppableBoard({
 
   const { removeBoard, updateBoard, rotateBoardPair } = usePairingStore();
   const { stalePairHighlightingEnabled } = useWorkspacePrefsStore();
-  const { isRecentPair } = useStalePairsDetector(3);
+  const { isRecentPair } = useStalePairsDetector();
 
   const hasStalePairs =
     stalePairHighlightingEnabled &&

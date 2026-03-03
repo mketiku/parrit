@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 
 /**
  * Returns a map of `personId1:personId2` → session recency index (lower = more recent).
  * 0 means paired in the most recent session.
  * undefined means never paired (or no history).
  *
- * A pair is considered "stale" if they haven't paired in the last N sessions.
+ * A pair is considered "stale" if they have paired in the last N sessions.
  */
-export function useStalePairsDetector(staleSessions: number = 3) {
+export function useStalePairsDetector() {
+  const { stalePairThreshold } = useWorkspacePrefsStore();
   const [pairRecency, setPairRecency] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,7 +84,7 @@ export function useStalePairsDetector(staleSessions: number = 3) {
   const isRecentPair = (p1: string, p2: string): boolean => {
     const key = buildPairKey(p1, p2);
     const recencyIdx = pairRecency[key];
-    return recencyIdx !== undefined && recencyIdx < staleSessions;
+    return recencyIdx !== undefined && recencyIdx < stalePairThreshold;
   };
 
   /**

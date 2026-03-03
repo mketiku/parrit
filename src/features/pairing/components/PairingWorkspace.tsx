@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   closestCenter,
   DndContext,
@@ -14,14 +14,12 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { AnimatePresence } from 'framer-motion';
-import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import { TemplateManager } from './TemplateManager';
-import { BoardExportView } from './BoardExportView';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
-import { useAuthStore } from '../../auth/store/useAuthStore';
+
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import {
   Users,
@@ -31,9 +29,6 @@ import {
   Sparkles,
   History,
   Loader2,
-  ImageDown,
-  Share2,
-  Check,
   HelpCircle,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
@@ -50,8 +45,6 @@ export function PairingWorkspace() {
     recommendPairs,
     isLoading: isStoreLoading,
   } = usePairingStore();
-  const { workspaceName } = useAuthStore();
-  const { showFullName } = useWorkspacePrefsStore();
 
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -60,8 +53,6 @@ export function PairingWorkspace() {
   const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
     new Set()
   );
-  const [isExporting, setIsExporting] = useState(false);
-  const [justCopied, setJustCopied] = useState(false);
 
   const { startTutorial } = useTutorialStore();
   const { onboardingCompleted } = useWorkspacePrefsStore();
@@ -72,38 +63,6 @@ export function PairingWorkspace() {
       startTutorial();
     }
   }, [onboardingCompleted, people.length, isStoreLoading, startTutorial]);
-  const { user } = useAuthStore();
-  const exportViewRef = useRef<HTMLDivElement>(null);
-
-  const handleCopyShareLink = async () => {
-    if (!user) return;
-    const shareUrl = `${window.location.origin}/view/${user.id}`;
-    await navigator.clipboard.writeText(shareUrl);
-    setJustCopied(true);
-    setTimeout(() => setJustCopied(false), 2000);
-  };
-
-  const handleExportPng = async () => {
-    if (!exportViewRef.current) return;
-    setIsExporting(true);
-    try {
-      // Give the browser a moment to ensure the off-screen view is rendered
-      await new Promise((r) => setTimeout(r, 500));
-
-      const dataUrl = await toPng(exportViewRef.current, {
-        cacheBust: true,
-        backgroundColor: '#f9fafb',
-        pixelRatio: 2,
-      });
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `parrit-boards-${new Date().toISOString().split('T')[0]}.png`;
-      a.click();
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -262,35 +221,6 @@ export function PairingWorkspace() {
                     <Sparkles className="h-4 w-4 text-amber-500" />
                   )}
                   Recommend Pairs
-                </button>
-
-                <button
-                  onClick={handleExportPng}
-                  disabled={isStoreLoading || isExporting}
-                  title="Export as PNG"
-                  className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-                >
-                  {isExporting ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
-                  ) : (
-                    <ImageDown className="h-4 w-4 text-brand-500" />
-                  )}
-                  Export PNG
-                </button>
-
-                <button
-                  id="share-link-btn"
-                  onClick={handleCopyShareLink}
-                  disabled={isStoreLoading}
-                  title="Copy read-only share link"
-                  className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-                >
-                  {justCopied ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Share2 className="h-4 w-4 text-purple-500" />
-                  )}
-                  Share Link
                 </button>
 
                 <button
@@ -475,14 +405,7 @@ export function PairingWorkspace() {
         )}
       </DndContext>
 
-      {/* Hidden clean export view — off-screen, captured for PNG */}
-      <BoardExportView
-        boards={boards}
-        people={people}
-        workspaceName={workspaceName ?? 'Parrit'}
-        exportRef={exportViewRef}
-        showFullName={showFullName}
-      />
+      <ProductTutorial />
     </>
   );
 }
