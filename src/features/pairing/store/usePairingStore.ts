@@ -1001,7 +1001,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       // Build name → new ID map
       const nameToId: Record<string, string> = {};
       (createdPeople as PersonRecord[]).forEach((row) => {
-        nameToId[row.name] = row.id;
+        nameToId[row.name.trim()] = row.id;
       });
 
       // 3. Create new boards
@@ -1013,7 +1013,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         meeting_link: b.meetingLink ?? null,
         sort_order: i,
         assigned_person_ids: (b.assignedPersonNames ?? [])
-          .map((name) => nameToId[name])
+          .map((name) => nameToId[name.trim()])
           .filter(Boolean),
       }));
 
@@ -1026,8 +1026,19 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       // Build board name → id map
       const boardNameToId: Record<string, string> = {};
       (createdBoards as BoardRecord[]).forEach((row) => {
-        boardNameToId[row.name] = row.id;
+        boardNameToId[row.name.trim()] = row.id;
       });
+
+      const normalizeDate = (d: string | undefined): string | undefined => {
+        if (!d) return d;
+        if (!isNaN(new Date(d).getTime())) return d;
+        // Fix 15:37:37:12.675 -> 15:37:37.12675
+        let fixed = d.replace(/:(\d+)\.(\d+)/, '.$1$2');
+        // Fix 15:37:37:12 -> 15:37:37.12
+        fixed = fixed.replace(/(\d{2}:\d{2}:\d{2}):(\d+)/, '$1.$2');
+        if (!isNaN(new Date(fixed).getTime())) return fixed;
+        return d;
+      };
 
       // 4. Restore Sessions & History if present
       if (snapshot.sessions && Array.isArray(snapshot.sessions)) {
@@ -1037,25 +1048,33 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             .insert({
               user_id: user.id,
               session_date: s.session_date,
-              created_at: s.created_at,
+              created_at: normalizeDate(s.created_at),
             })
             .select()
             .single();
 
-          if (sErr || !session) continue;
+          if (sErr || !session) {
+            console.error('Session import error:', sErr);
+            continue;
+          }
 
           const historyRows = (s.history || [])
             .map((h) => ({
               user_id: user.id,
               session_id: session.id,
-              person_id: nameToId[h.personName],
-              board_id: boardNameToId[h.boardName],
-              created_at: h.createdAt,
+              person_id: nameToId[h.personName.trim()],
+              board_id: boardNameToId[h.boardName.trim()],
+              created_at: normalizeDate(h.createdAt),
             }))
             .filter((h) => h.person_id && h.board_id);
 
           if (historyRows.length > 0) {
-            await supabase.from('pairing_history').insert(historyRows);
+            const { error: hErr } = await supabase
+              .from('pairing_history')
+              .insert(historyRows);
+            if (hErr) {
+              console.error('History insert error:', hErr);
+            }
           }
         }
       }
