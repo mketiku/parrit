@@ -19,6 +19,7 @@ export const createBoard = (
   id: crypto.randomUUID(),
   name: 'Test Board',
   isExempt: false,
+  isLocked: false,
   sortOrder: 0,
   goals: [],
   assignedPersonIds: [],
