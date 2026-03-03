@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toPng } from 'html-to-image';
+// import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import { TemplateManager } from './TemplateManager';
@@ -22,7 +22,7 @@ import { BoardExportView } from './BoardExportView';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-import { useToastStore } from '../../../store/useToastStore';
+// import { useToastStore } from '../../../store/useToastStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import {
   Users,
@@ -34,10 +34,13 @@ import {
   HelpCircle,
   ChevronDown,
   ArrowRight,
-  Download,
+  // Download,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
+import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
+import { PairingMatrixView } from './PairingMatrixView';
+import { BarChart3 } from 'lucide-react';
 
 export function PairingWorkspace() {
   const {
@@ -64,7 +67,9 @@ export function PairingWorkspace() {
   );
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [isMoveMenuOpen, setIsMoveMenuOpen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  // const [isDownloading, setIsDownloading] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const { matrix, isLoading: isAnalyzing } = useHistoryAnalytics(people);
 
   const { startTutorial } = useTutorialStore();
   const { onboardingCompleted } = useWorkspacePrefsStore();
@@ -194,6 +199,7 @@ export function PairingWorkspace() {
     setIsMoveMenuOpen(false);
   };
 
+  /*
   const handleDownloadScreenshot = async () => {
     if (!exportRef.current) return;
     setIsDownloading(true);
@@ -221,6 +227,7 @@ export function PairingWorkspace() {
       setIsDownloading(false);
     }
   };
+  */
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -321,6 +328,20 @@ export function PairingWorkspace() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowHeatmap(!showHeatmap)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all
+                    ${
+                      showHeatmap
+                        ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20'
+                        : 'bg-white border-neutral-200 text-neutral-400 hover:border-brand-500 hover:text-brand-500 dark:bg-neutral-900 dark:border-neutral-800'
+                    }
+                  `}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  {showHeatmap ? 'Hide Heatmap' : 'Heatmap'}
+                </button>
+
                 <TemplateManager />
 
                 <button
@@ -352,6 +373,33 @@ export function PairingWorkspace() {
                 </button>
               </div>
             </div>
+
+            <AnimatePresence>
+              {showHeatmap && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden mb-8"
+                >
+                  <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 overflow-x-auto">
+                    <div className="flex items-center gap-2 mb-8">
+                      <BarChart3 className="h-4 w-4 text-brand-500" />
+                      <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
+                        Pairing Heatmap
+                      </h3>
+                    </div>
+                    {isAnalyzing ? (
+                      <div className="h-48 flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+                      </div>
+                    ) : (
+                      <PairingMatrixView matrix={matrix} />
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Main grid region */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -466,6 +514,7 @@ export function PairingWorkspace() {
       </DndContext>
 
       <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+        {/* Temporarily hidden as it's not working correctly
         <button
           onClick={handleDownloadScreenshot}
           disabled={isDownloading || isStoreLoading}
@@ -478,6 +527,7 @@ export function PairingWorkspace() {
             <Download className="h-5 w-5" />
           )}
         </button>
+        */}
 
         <button
           onClick={() => startTutorial()}

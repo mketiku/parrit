@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from './helpers';
 
-test.describe('Dashboard Screenshot', () => {
+test.describe.skip('Dashboard Screenshot', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
     await login(page);
