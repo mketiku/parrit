@@ -1,39 +1,101 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import { DndContext } from '@dnd-kit/core';
+import React from 'react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DraggablePerson } from './DraggablePerson';
 import type { Person } from '../types';
-import React from 'react';
 
-const mockPerson: Person = {
-  id: 'user-1',
-  name: 'Peter Parker ',
-  avatarColorHex: '#6366f1',
-};
+// Mock dnd-kit
+vi.mock('@dnd-kit/core', () => ({
+  useDraggable: () => ({
+    attributes: { 'aria-roledescription': 'draggable' },
+    listeners: { onPointerDown: vi.fn() },
+    setNodeRef: vi.fn(),
+    isDragging: false,
+  }),
+}));
+
+// Mock workspace prefs
+vi.mock('../../../store/useWorkspacePrefsStore', () => ({
+  useWorkspacePrefsStore: () => ({ showFullName: false }),
+}));
+
+// Mock framer-motion
+vi.mock('framer-motion', () => {
+  const ActualFramer = vi.importActual('framer-motion');
+  return {
+    ...ActualFramer,
+    motion: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+      div: ({
+        children,
+        className,
+        layout,
+        initial,
+        animate,
+        exit,
+        transition,
+        ...rest
+      }: any) => (
+        <div className={className} {...rest}>
+          {children}
+        </div>
+      ),
+    },
+  };
+});
 
 describe('DraggablePerson Component', () => {
-  it('renders the person initials correctly', () => {
-    render(
-      <DndContext>
-        <DraggablePerson person={mockPerson} sourceId="unpaired" />
-      </DndContext>
-    );
+  const mockPerson: Person = {
+    id: 'p1',
+    name: 'Ada Lovelace',
+    avatarColorHex: '#f00',
+  };
 
-    // Should render PP for Peter Parker
-    expect(screen.getByText('PP')).toBeInTheDocument();
+  beforeEach(() => {
+    vi.useFakeTimers();
   });
 
-  it('renders a tooltip/title with the full name', () => {
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
+  });
+
+  it('renders the person initials correctly initially', () => {
+    render(<DraggablePerson person={mockPerson} sourceId="board1" />);
+    // With showFullName mocked to false, initials "AL" should render.
+    expect(screen.getByText('AL')).toBeInTheDocument();
+  });
+
+  it('triggers onClick handler when clicked', () => {
+    const handleClick = vi.fn();
     render(
-      <DndContext>
-        <DraggablePerson person={mockPerson} sourceId="unpaired" />
-      </DndContext>
+      <DraggablePerson
+        person={mockPerson}
+        sourceId="board1"
+        onClick={handleClick}
+      />
     );
 
-    // The button or container should have the full name as accessible title or aria-label
-    expect(screen.getByRole('button')).toHaveAttribute(
-      'aria-label',
-      'Peter Parker'
-    );
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows tooltip on mouse enter after delay', () => {
+    render(<DraggablePerson person={mockPerson} sourceId="board1" />);
+
+    const button = screen.getByRole('button');
+
+    act(() => {
+      fireEvent.mouseEnter(button);
+    });
+
+    // Fast forward enough for tooltip to appear (600ms)
+    act(() => {
+      vi.advanceTimersByTime(650);
+    });
+
+    // Tooltip has role="tooltip" containing the full name
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Ada Lovelace');
   });
 });

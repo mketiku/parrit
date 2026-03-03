@@ -1,13 +1,20 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DndContext } from '@dnd-kit/core';
 import { DroppableBoard } from './DroppableBoard';
 import type { PairingBoard, Person } from '../types';
 import React from 'react';
 import { usePairingStore } from '../store/usePairingStore';
+import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 
+// Mocks
 vi.mock('../store/usePairingStore');
-vi.mocked(usePairingStore).mockReturnValue({
+vi.mock('../../../store/useWorkspacePrefsStore');
+
+const mockUsePairingStore = vi.mocked(usePairingStore);
+const mockUseWorkspacePrefsStore = vi.mocked(useWorkspacePrefsStore);
+
+const defaultStoreValues = {
   people: [],
   boards: [],
   isLoading: false,
@@ -25,8 +32,18 @@ vi.mocked(usePairingStore).mockReturnValue({
   recommendPairs: vi.fn(),
   saveCurrentAsTemplate: vi.fn(),
   applyTemplate: vi.fn(),
+  rotateBoardPair: vi.fn(),
   subscribeToRealtime: vi.fn().mockReturnValue(vi.fn()),
-} as unknown as ReturnType<typeof usePairingStore>);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any;
+
+const defaultPrefsValues = {
+  stalePairHighlightingEnabled: false,
+};
+
+mockUsePairingStore.mockReturnValue(defaultStoreValues);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+mockUseWorkspacePrefsStore.mockReturnValue(defaultPrefsValues as any);
 
 const mockBoard: PairingBoard = {
   id: 'board-1',
@@ -49,9 +66,7 @@ describe('DroppableBoard Component', () => {
       </DndContext>
     );
 
-    // Board Name
     expect(screen.getByText('Phoenix')).toBeInTheDocument();
-    // Board Goal
     expect(screen.getByText('Ship the board logic')).toBeInTheDocument();
   });
 
@@ -62,8 +77,32 @@ describe('DroppableBoard Component', () => {
       </DndContext>
     );
 
-    // Initials should be present
     expect(screen.getByText('AB')).toBeInTheDocument();
     expect(screen.getByText('CD')).toBeInTheDocument();
+  });
+
+  it('shows Off-Duty label when exempt', () => {
+    const exemptBoard = { ...mockBoard, isExempt: true };
+    render(
+      <DndContext>
+        <DroppableBoard board={exemptBoard} people={[]} />
+      </DndContext>
+    );
+
+    expect(screen.getByText('Off-Duty')).toBeInTheDocument();
+  });
+
+  it('triggers rotateBoardPair when rotate button is clicked', () => {
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={mockPeople} />
+      </DndContext>
+    );
+
+    const rotateBtn = screen.getByTitle(/Rotate pair/i);
+    fireEvent.click(rotateBtn);
+    expect(defaultStoreValues.rotateBoardPair).toHaveBeenCalledWith(
+      mockBoard.id
+    );
   });
 });

@@ -211,14 +211,14 @@ export function DroppableBoard({
             </h3>
 
             {board.isExempt && (
-              <span className="flex items-center gap-1 rounded-full bg-neutral-200 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500 border border-neutral-300 dark:border-neutral-700">
+              <span className="flex items-center gap-1 rounded-full bg-neutral-200 px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500 border border-neutral-300 dark:border-neutral-700 whitespace-nowrap">
                 <ShieldX className="h-2.5 w-2.5" />
-                Off-Duty
+                <span className="hidden sm:inline">Off-Duty</span>
               </span>
             )}
 
-            {/* Board actions — visible on hover */}
-            <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Board actions — visible on hover on desktop, always visible on mobile */}
+            <div className="ml-auto flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() => rotateBoardPair(board.id)}
                 disabled={people.length === 0}
@@ -397,7 +397,7 @@ export function DroppableBoard({
                 onClick={() => setIsEditingExtra(true)}
                 className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-950/50"
               >
-                {board.goals.length > 0 ? (
+                {(board.goals || []).length > 0 ? (
                   <div className="space-y-3">
                     <ul className="space-y-1">
                       {board.goals.map((g, i) => (

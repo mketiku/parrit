@@ -17,8 +17,15 @@ const mockBoards = [
     name: 'Phoenix',
     isExempt: false,
     assignedPersonIds: ['1', '2'],
+    goals: [],
   },
-  { id: 'board-2', name: 'Macaw', isExempt: false, assignedPersonIds: [] },
+  {
+    id: 'board-2',
+    name: 'Macaw',
+    isExempt: false,
+    assignedPersonIds: [],
+    goals: [],
+  },
 ];
 
 describe('PairingWorkspace Component', () => {

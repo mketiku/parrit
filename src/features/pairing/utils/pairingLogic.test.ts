@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { calculateRecommendations } from '../../src/features/pairing/utils/pairingLogic';
-import type { Person, PairingBoard } from '../../src/features/pairing/types';
+import { calculateRecommendations } from './pairingLogic';
+import type { Person, PairingBoard } from '../types';
 
 describe('Pairing Recommendation Algorithm', () => {
   const people: Person[] = [
