@@ -25,17 +25,15 @@ vi.mock('framer-motion', () => {
   return {
     ...ActualFramer,
     motion: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
       div: ({
         children,
         className,
-        layout,
-        initial,
-        animate,
-        exit,
-        transition,
         ...rest
-      }: any) => (
+      }: {
+        children: React.ReactNode;
+        className?: string;
+        [key: string]: unknown;
+      }) => (
         <div className={className} {...rest}>
           {children}
         </div>
