@@ -61,6 +61,7 @@ function rowToBoard(row: BoardRecord): PairingBoard {
     id: row.id,
     name: row.name,
     isExempt: row.is_exempt,
+    isLocked: row.is_locked || false,
     sortOrder: row.sort_order,
     goals: row.goals ?? [],
     meetingLink: row.meeting_link ?? undefined,
@@ -104,7 +105,10 @@ export interface PairingStore {
   updateBoard: (
     id: string,
     updates: Partial<
-      Pick<PairingBoard, 'name' | 'goals' | 'meetingLink' | 'isExempt'>
+      Pick<
+        PairingBoard,
+        'name' | 'goals' | 'meetingLink' | 'isExempt' | 'isLocked'
+      >
     >
   ) => Promise<void>;
   removeBoard: (id: string) => Promise<void>;
@@ -450,6 +454,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       user_id: user.id,
       name: b.name,
       is_exempt: b.isExempt,
+      is_locked: b.isLocked,
       sort_order: b.sortOrder,
       goals: b.goals ?? [],
       assigned_person_ids: b.assignedPersonIds ?? [],
@@ -479,6 +484,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .insert({
         name: name.trim(),
         is_exempt: isExempt,
+        is_locked: false,
         sort_order: sortOrder,
         assigned_person_ids: [],
         user_id: user.id,
@@ -512,6 +518,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     if (updates.meetingLink !== undefined)
       dbUpdates.meeting_link = updates.meetingLink;
     if (updates.isExempt !== undefined) dbUpdates.is_exempt = updates.isExempt;
+    if (updates.isLocked !== undefined) dbUpdates.is_locked = updates.isLocked;
 
     const { error } = await supabase
       .from('pairing_boards')
@@ -659,6 +666,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       name: b.name,
       goals: b.goals,
       isExempt: b.isExempt,
+      isLocked: false,
     }));
 
     const { error } = await supabase.from('pairing_templates').insert({
@@ -708,6 +716,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         name: tb.name,
         goals: tb.goals ?? [],
         is_exempt: tb.isExempt,
+        is_locked: false,
         sort_order: i,
         assigned_person_ids: [] as string[],
       }));
@@ -750,6 +759,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         name: b.name,
         goals: [] as string[],
         is_exempt: b.isExempt,
+        is_locked: false,
         sort_order: i,
         assigned_person_ids: [] as string[],
       }));
@@ -838,6 +848,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       boards: boards.map((b) => ({
         name: b.name,
         isExempt: b.isExempt,
+        isLocked: b.isLocked,
         goals: b.goals,
         meetingLink: b.meetingLink ?? null,
         assignedPersonNames: (b.assignedPersonIds ?? [])

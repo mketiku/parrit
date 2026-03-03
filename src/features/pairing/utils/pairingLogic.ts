@@ -66,11 +66,13 @@ export function calculateRecommendations(
   });
 
   // 2. Identify who needs assigning
-  const exemptPersonIds = new Set<string>();
+  const exemptOrLockedPersonIds = new Set<string>();
   boards
-    .filter((b) => b.isExempt)
+    .filter((b) => b.isExempt || b.isLocked)
     .forEach((b) => {
-      (b.assignedPersonIds || []).forEach((id) => exemptPersonIds.add(id));
+      (b.assignedPersonIds || []).forEach((id) =>
+        exemptOrLockedPersonIds.add(id)
+      );
     });
 
   // Calculate continuity for active boards
@@ -96,11 +98,11 @@ export function calculateRecommendations(
   const boardKeepMap = new Map<string, string>(); // boardId -> personId kept
   const unassigned: Person[] = [];
 
-  const activeBoardsOriginal = boards.filter((b) => !b.isExempt);
+  const activeBoardsOriginal = boards.filter((b) => !b.isExempt && !b.isLocked);
 
   activeBoardsOriginal.forEach((board) => {
     const assignedIds = (board.assignedPersonIds || []).filter(
-      (id) => !exemptPersonIds.has(id)
+      (id) => !exemptOrLockedPersonIds.has(id)
     );
 
     if (assignedIds.length === 0) return;
@@ -125,7 +127,7 @@ export function calculateRecommendations(
 
   // Collect unassigned people
   people.forEach((p) => {
-    if (exemptPersonIds.has(p.id)) return;
+    if (exemptOrLockedPersonIds.has(p.id)) return;
 
     // If they aren't on any board, or they are on an active board but NOT the kept person
     let isKept = false;
@@ -146,8 +148,9 @@ export function calculateRecommendations(
   unassigned.sort(() => Math.random() - 0.5); // Randomize pool
 
   const newBoards = boards.map((b) => {
-    const assigned = b.isExempt ? [...(b.assignedPersonIds || [])] : [];
-    if (!b.isExempt && boardKeepMap.has(b.id)) {
+    const assigned =
+      b.isExempt || b.isLocked ? [...(b.assignedPersonIds || [])] : [];
+    if (!b.isExempt && !b.isLocked && boardKeepMap.has(b.id)) {
       assigned.push(boardKeepMap.get(b.id)!);
     }
     return {
@@ -156,7 +159,7 @@ export function calculateRecommendations(
     };
   });
 
-  const activeBoards = newBoards.filter((b) => !b.isExempt);
+  const activeBoards = newBoards.filter((b) => !b.isExempt && !b.isLocked);
   if (activeBoards.length === 0) return boards;
 
   // 3. Smart Assignment Logic (Least Recent Pair First)

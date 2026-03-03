@@ -11,6 +11,8 @@ import {
   Check,
   X,
   Plus,
+  Lock,
+  Unlock,
   Link as LinkIcon,
   RefreshCcw,
 } from 'lucide-react';
@@ -187,6 +189,12 @@ export function DroppableBoard({
                   Off-Duty
                 </span>
               )}
+              {board.isLocked && !board.isExempt && (
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-brand-500 dark:text-brand-400 mt-0.5">
+                  <Lock className="h-2 w-2" />
+                  Locked
+                </span>
+              )}
             </div>
 
             {/* Board actions — visible on hover on desktop, always visible on mobile */}
@@ -222,6 +230,28 @@ export function DroppableBoard({
                 }
               >
                 <ShieldX className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() =>
+                  updateBoard(board.id, { isLocked: !board.isLocked })
+                }
+                disabled={board.isExempt}
+                className={`rounded-md p-1 transition-colors disabled:opacity-30 ${
+                  board.isLocked
+                    ? 'text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20'
+                    : 'text-neutral-400 hover:bg-neutral-100 hover:text-brand-500 dark:hover:bg-neutral-800'
+                }`}
+                title={
+                  board.isLocked
+                    ? 'Unlock board (Allow rotation)'
+                    : 'Lock board (Prevent rotation)'
+                }
+              >
+                {board.isLocked ? (
+                  <Lock className="h-3.5 w-3.5" />
+                ) : (
+                  <Unlock className="h-3.5 w-3.5" />
+                )}
               </button>
               <button
                 onClick={() => removeBoard(board.id)}

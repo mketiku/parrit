@@ -8,6 +8,7 @@ export interface PairingBoard {
   id: string;
   name: string;
   isExempt: boolean;
+  isLocked: boolean;
   sortOrder: number;
   goals: string[];
   meetingLink?: string;
@@ -32,6 +33,7 @@ export interface BoardRecord {
   user_id: string;
   name: string;
   is_exempt: boolean;
+  is_locked: boolean;
   goals: string[];
   meeting_link: string | null;
   sort_order: number;

@@ -36,11 +36,13 @@ create table public.people (
 -- Note: If updating an existing DB, run: 
 -- ALTER TABLE public.pairing_boards DROP COLUMN goal_text;
 -- ALTER TABLE public.pairing_boards ADD COLUMN goals jsonb NOT NULL DEFAULT '[]'::jsonb;
+-- ALTER TABLE public.pairing_boards ADD COLUMN is_locked boolean NOT NULL DEFAULT false;
 create table public.pairing_boards (
   id                  uuid         primary key default gen_random_uuid(),
   user_id             uuid         not null,
   name                text         not null,
   is_exempt           boolean      not null default false,
+  is_locked           boolean      not null default false,
   goals               jsonb        not null default '[]'::jsonb,
   meeting_link        text,
   sort_order          integer      not null default 0,
