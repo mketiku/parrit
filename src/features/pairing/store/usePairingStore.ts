@@ -73,11 +73,17 @@ interface PairingStore {
   boards: PairingBoard[];
   isLoading: boolean;
   isSaving: boolean;
+  isRecommending: boolean;
   error: string | null;
+  _delay: (ms: number) => Promise<void>;
+  previousBoards: PairingBoard[] | null;
 
   // Lifecycle
   loadWorkspaceData: () => Promise<void>;
   subscribeToRealtime: () => () => void; // returns unsubscribe fn
+
+  // Undo system
+  undo: () => void;
 
   // People actions
   addPerson: (name: string) => Promise<void>;
@@ -89,7 +95,8 @@ interface PairingStore {
 
   // Board actions
   setBoards: (
-    boards: PairingBoard[] | ((prev: PairingBoard[]) => PairingBoard[])
+    boards: PairingBoard[] | ((prev: PairingBoard[]) => PairingBoard[]),
+    undoable?: boolean
   ) => void;
   persistBoardAssignments: (boards: PairingBoard[]) => Promise<void>;
   addBoard: (name: string, isExempt?: boolean) => Promise<void>;
@@ -126,7 +133,11 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   boards: [],
   isLoading: false,
   isSaving: false,
+  isRecommending: false,
   error: null,
+
+  _delay: (ms: number) => new Promise((res) => setTimeout(res, ms)),
+  previousBoards: null,
 
   loadWorkspaceData: async () => {
     set({ isLoading: true, error: null });
@@ -401,12 +412,29 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     get().persistBoardAssignments(updatedBoards);
   },
 
-  setBoards: (boards) => {
-    set((state) => {
-      const next = typeof boards === 'function' ? boards(state.boards) : boards;
-      get().persistBoardAssignments(next);
-      return { boards: next };
-    });
+  undo: () => {
+    const { previousBoards } = get();
+    if (previousBoards) {
+      set({ boards: previousBoards, previousBoards: null });
+      get().persistBoardAssignments(previousBoards);
+      toast().addToast('Action undone.', 'success');
+    }
+  },
+
+  setBoards: (boards, undoable = false) => {
+    const currentBoards = get().boards;
+    const next = typeof boards === 'function' ? boards(currentBoards) : boards;
+
+    if (undoable) {
+      set({ previousBoards: currentBoards });
+      toast().addToast('Boards updated.', 'info', {
+        label: 'Undo',
+        onClick: () => get().undo(),
+      });
+    }
+
+    set({ boards: next });
+    get().persistBoardAssignments(next);
   },
 
   persistBoardAssignments: async (boards) => {
@@ -562,10 +590,13 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       });
     });
 
-    // 3. Insert history
+    // Insert history
     const { error: historyErr } = await supabase
       .from('pairing_history')
       .insert(historyRows);
+
+    // Artificial delay for calmness
+    await get()._delay(800);
 
     set({ isSaving: false });
 
@@ -583,7 +614,8 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     const { people, boards } = get();
     if (people.length < 2) return;
 
-    set({ isLoading: true });
+    set({ isRecommending: true });
+    await get()._delay(1200); // Artificial delay for calmness
 
     try {
       // 1. Fetch recent history to determine last time people paired
@@ -653,7 +685,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
 
       const activeBoards = newBoards.filter((b) => !b.isExempt);
       if (activeBoards.length === 0) {
-        set({ isLoading: false });
+        set({ isRecommending: false });
         return;
       }
 
@@ -712,7 +744,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       console.error('Recommendation Error:', err);
       toast().addToast('Algorithm failed to load history data.', 'error');
     } finally {
-      set({ isLoading: false });
+      set({ isRecommending: false });
     }
   },
 

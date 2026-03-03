@@ -33,9 +33,22 @@ function ToastItem({ toast }: { toast: Toast }) {
       <p className="flex-1 text-sm font-medium text-neutral-800 dark:text-neutral-100 leading-snug">
         {toast.message}
       </p>
+
+      {toast.action && (
+        <button
+          onClick={() => {
+            toast.action?.onClick();
+            removeToast(toast.id);
+          }}
+          className="shrink-0 rounded-md bg-neutral-100 px-2 py-1 text-[10px] font-black uppercase tracking-tight text-neutral-600 hover:bg-brand-500 hover:text-white dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-brand-500 dark:hover:text-white transition-all shadow-sm active:scale-95"
+        >
+          {toast.action.label}
+        </button>
+      )}
+
       <button
         onClick={() => removeToast(toast.id)}
-        className="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+        className="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors mt-0.5"
       >
         <X className="h-3.5 w-3.5" />
       </button>

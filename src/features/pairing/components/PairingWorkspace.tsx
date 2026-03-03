@@ -31,7 +31,8 @@ import {
   History,
   Loader2,
   HelpCircle,
-  LayoutDashboard,
+  ChevronDown,
+  ArrowRight,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
@@ -46,6 +47,7 @@ export function PairingWorkspace() {
     recommendPairs,
     isLoading: isStoreLoading,
     isSaving,
+    isRecommending,
   } = usePairingStore();
   const { user } = useAuthStore();
   const dashboardRef = useRef<HTMLDivElement>(null);
@@ -131,7 +133,7 @@ export function PairingWorkspace() {
           assignedPersonIds: newAssigned,
         } as PairingBoard;
       });
-    });
+    }, true);
 
     // Clear selection after moving
     setSelectedPersonIds(new Set());
@@ -179,7 +181,7 @@ export function PairingWorkspace() {
 
         return { ...board, assignedPersonIds: nextAssigned } as PairingBoard;
       });
-    });
+    }, true);
   };
 
   const handleDragCancel = () => {
@@ -246,15 +248,15 @@ export function PairingWorkspace() {
                 <button
                   id="recommend-btn"
                   onClick={() => recommendPairs()}
-                  disabled={isStoreLoading}
+                  disabled={isStoreLoading || isRecommending}
                   className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
                 >
-                  {isStoreLoading ? (
+                  {isRecommending ? (
                     <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
                   ) : (
                     <Sparkles className="h-4 w-4 text-amber-500" />
                   )}
-                  Recommend Pairs
+                  {isRecommending ? 'Recommending...' : 'Recommend Pairs'}
                 </button>
 
                 <button
@@ -273,10 +275,8 @@ export function PairingWorkspace() {
               </div>
             </div>
 
-            <div
-              id="board-list"
-              className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
-            >
+            {/* Main grid region */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {/* Loading State: Skeleton Screens */}
               {isStoreLoading && (
                 <>
@@ -286,30 +286,6 @@ export function PairingWorkspace() {
                 </>
               )}
 
-              {boards.length === 0 && !isAddingBoard && !isStoreLoading && (
-                <div className="col-span-full py-20 flex flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 animate-in fade-in zoom-in-95 duration-700">
-                  <div className="relative mb-6">
-                    <div className="absolute inset-0 animate-ping rounded-full bg-brand-500/10" />
-                    <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-white shadow-2xl dark:bg-neutral-800">
-                      <LayoutDashboard className="h-10 w-10 text-brand-500" />
-                    </div>
-                  </div>
-                  <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100">
-                    Your Workspace is Ready
-                  </h2>
-                  <p className="mt-2 text-neutral-500 dark:text-neutral-400 max-w-xs text-center font-medium">
-                    Start by creating your first pairing board. Drag people onto
-                    boards to build your team.
-                  </p>
-                  <button
-                    onClick={() => setIsAddingBoard(true)}
-                    className="mt-8 flex items-center gap-2 rounded-2xl bg-brand-500 px-6 py-3 font-bold text-white shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] transition-all hover:bg-brand-600 active:scale-95"
-                  >
-                    <Plus className="h-5 w-5" />
-                    Create First Board
-                  </button>
-                </div>
-              )}
               {!isStoreLoading &&
                 boards.map((board) => {
                   const assignedPeople = (board.assignedPersonIds || [])
@@ -328,7 +304,7 @@ export function PairingWorkspace() {
                 })}
 
               {/* Add Board Trigger */}
-              {boards.length > 0 && !isAddingBoard && !isStoreLoading && (
+              {!isStoreLoading && !isAddingBoard && (
                 <button
                   onClick={() => setIsAddingBoard(true)}
                   className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10"
@@ -388,55 +364,94 @@ export function PairingWorkspace() {
             </div>
           </div>
 
-          {/* Sidebar Pool Column */}
-          <DroppableUnpairedPool
-            people={unpairedPeople}
-            selectedPersonIds={selectedPersonIds}
-            onPersonClick={handlePersonClick}
-            isLoading={isStoreLoading}
-          />
-
-          {/* Manual Tutorial Trigger */}
-          <button
-            onClick={() => startTutorial()}
-            className="fixed bottom-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 z-40 dark:bg-neutral-900 dark:border-neutral-800"
-            title="Help & Tutorial"
-          >
-            <HelpCircle className="h-6 w-6" />
-          </button>
-
-          {selectedPersonIds.size > 0 && (
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-neutral-900 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 border border-white/10 dark:bg-neutral-800">
-              <span className="text-sm font-bold flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse" />
-                {selectedPersonIds.size} teammate
-                {selectedPersonIds.size > 1 ? 's' : ''} selected
-              </span>
-              <div className="h-4 w-px bg-white/20 mx-2" />
-              <button
-                onClick={() => setSelectedPersonIds(new Set())}
-                className="shrink-0 p-1 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-                aria-label="Clear selection"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          )}
+          {/* Unpaired Sidebar */}
+          <div className="xl:sticky xl:top-6 w-[340px] shrink-0">
+            <DroppableUnpairedPool
+              people={unpairedPeople}
+              selectedPersonIds={selectedPersonIds}
+              onPersonClick={handlePersonClick}
+              isLoading={isStoreLoading}
+            />
+          </div>
         </div>
+
+        {/* Global Drag Overlay */}
+        <DragOverlay dropAnimation={null}>
+          {activeDragItem ? (
+            <DraggablePerson
+              person={activeDragItem.person}
+              sourceId={activeDragItem.sourceId}
+              isOverlay
+            />
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
-      <ProductTutorial />
+      <button
+        onClick={() => startTutorial()}
+        className="fixed bottom-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 z-40 dark:bg-neutral-900 dark:border-neutral-800"
+        title="Help & Tutorial"
+      >
+        <HelpCircle className="h-6 w-6" />
+      </button>
 
-      {/* Global Drag Overlay */}
-      <DragOverlay dropAnimation={null}>
-        {activeDragItem ? (
-          <DraggablePerson
-            person={activeDragItem.person}
-            sourceId={activeDragItem.sourceId}
-            isOverlay
-          />
-        ) : null}
-      </DragOverlay>
+      {selectedPersonIds.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-neutral-900 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 border border-white/10 dark:bg-neutral-800">
+          <span className="text-sm font-bold flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse" />
+            {selectedPersonIds.size} teammate
+            {selectedPersonIds.size > 1 ? 's' : ''} selected
+          </span>
+
+          <div className="h-4 w-px bg-white/20 mx-2" />
+
+          {/* Move to Board Menu (Simple Version) */}
+          <div className="relative group/menu">
+            <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold bg-white/10 hover:bg-white/20 transition-colors">
+              Move to...
+              <ChevronDown className="h-3 w-3" />
+            </button>
+
+            <div className="absolute bottom-full left-0 mb-2 w-48 hidden group-hover/menu:block bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800 py-2 animate-in fade-in slide-in-from-bottom-2">
+              <p className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                Board List
+              </p>
+              <div className="max-h-60 overflow-y-auto">
+                {boards.map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => handleBulkMove(b.id)}
+                    className="w-full text-left px-3 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between group/item"
+                  >
+                    <span className="truncate">{b.name}</span>
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+                <div className="h-px bg-neutral-100 dark:bg-neutral-800 my-1" />
+                <button
+                  onClick={() => handleBulkMove('unpaired')}
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 flex items-center justify-between group/item"
+                >
+                  Unpair All
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-4 w-px bg-white/20 mx-2" />
+
+          <button
+            onClick={() => setSelectedPersonIds(new Set())}
+            className="shrink-0 p-1 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            aria-label="Clear selection"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+
+      <ProductTutorial />
     </>
   );
 }
