@@ -110,15 +110,16 @@ export function HistoryScreen() {
       `${editDateValue}T${editTimeValue}:00`
     ).toISOString();
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('pairing_sessions')
       .update({
         session_date: editDateValue,
         created_at: newTimestamp,
       })
-      .eq('id', selectedSessionId);
+      .eq('id', selectedSessionId)
+      .select();
 
-    if (error) {
+    if (error || !data || data.length === 0) {
       addToast('Failed to update session', 'error');
     } else {
       addToast('Session updated', 'success');
