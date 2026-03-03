@@ -405,7 +405,10 @@ export function PairingWorkspace() {
             </AnimatePresence>
 
             {/* Main grid region */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div
+              id="board-list"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+            >
               {/* Loading State: Skeleton Screens */}
               {isStoreLoading && (
                 <>
@@ -638,6 +641,7 @@ function DroppableUnpairedPool({
   return (
     <div
       ref={setNodeRef}
+      id="unpaired-pool"
       className={`
         xl:sticky xl:top-6 flex xl:min-h-[400px] flex-col rounded-2xl border p-3 sm:p-4 xl:p-5 shadow-xs transition-colors
         ${
