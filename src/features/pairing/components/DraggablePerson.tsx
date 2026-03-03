@@ -100,13 +100,9 @@ export function DraggablePerson({
             <Moon className="h-2.5 w-2.5 text-white dark:text-neutral-900" />
           </div>
         )}
-        {showFullName ? (
-          <span className="px-2 text-[11px] font-bold tracking-tight whitespace-nowrap">
-            {trimmedName.split(' ')[0]}
-          </span>
-        ) : (
-          initials
-        )}
+        <span className={showFullName ? 'whitespace-nowrap px-1' : ''}>
+          {showFullName ? trimmedName : initials}
+        </span>
       </button>
 
       {/* Hover Tooltip */}

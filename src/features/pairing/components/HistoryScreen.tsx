@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Bird,
   Loader2,
+  Workflow,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -51,6 +52,16 @@ interface DbHistoryRow {
   pairing_boards: { name: string } | null;
 }
 
+interface HistoryRowData {
+  person_id: string;
+  session_id: string;
+  pairing_boards: { name: string }[] | { name: string } | null;
+  people:
+    | { name: string; avatar_color_hex: string }[]
+    | { name: string; avatar_color_hex: string }
+    | null;
+}
+
 export function HistoryScreen() {
   const { user } = useAuthStore();
   const { people: storePeople, boards: storeBoards } = usePairingStore();
@@ -59,6 +70,7 @@ export function HistoryScreen() {
     null
   );
   const [details, setDetails] = useState<HistoryDetail[]>([]);
+  const [fullHistory, setFullHistory] = useState<HistoryRowData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
@@ -120,15 +132,36 @@ export function HistoryScreen() {
   };
 
   const loadSessions = useCallback(async () => {
-    const { data, error } = await supabase
+    const { data: sessionData, error: sessionErr } = await supabase
       .from('pairing_sessions')
       .select('id, session_date, created_at')
       .order('session_date', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(10); // Limit to top 10 for performance
 
-    if (!error && data) {
-      setSessions(data);
+    if (!sessionErr && sessionData) {
+      setSessions(sessionData);
+
+      // Load assignment summary for flow visualization
+      const { data: historyData } = await supabase
+        .from('pairing_history')
+        .select(
+          `
+          person_id,
+          board_id,
+          session_id,
+          people (name, avatar_color_hex),
+          pairing_boards (name)
+        `
+        )
+        .in(
+          'session_id',
+          sessionData.map((s) => s.id)
+        );
+
+      if (historyData) {
+        setFullHistory(historyData);
+      }
     }
     setIsLoading(false);
   }, []);
@@ -238,6 +271,29 @@ export function HistoryScreen() {
           Back to Workspace
         </Link>
       </header>
+
+      {/* Team Evolution Flow */}
+      {sessions.length > 1 && (
+        <section className="mb-12">
+          <div className="flex items-center gap-2 mb-6 px-1">
+            <Workflow className="h-4 w-4 text-brand-500" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+              Team Evolution Flow
+            </h2>
+          </div>
+          <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+              <Workflow className="h-64 w-64 rotate-12" />
+            </div>
+            <TeamFlowVisualizer
+              sessions={[...sessions].reverse()}
+              history={fullHistory}
+              onSessionSelect={loadSessionDetails}
+              currentSessionId={selectedSessionId}
+            />
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Sessions List */}
@@ -548,6 +604,112 @@ export function HistoryScreen() {
           </AnimatePresence>
         </div>
       </div>
+    </div>
+  );
+}
+interface TeamFlowProps {
+  sessions: HistorySession[];
+  history: HistoryRowData[];
+  onSessionSelect: (id: string) => void;
+  currentSessionId: string | null;
+}
+
+function TeamFlowVisualizer({
+  sessions,
+  history,
+  onSessionSelect,
+  currentSessionId,
+}: TeamFlowProps) {
+  // Aggregate history by session
+  const sessionData = sessions.map((s) => {
+    const assignments = history.filter((h) => h.session_id === s.id);
+    const boards: Record<
+      string,
+      { id: string; name: string; color: string }[]
+    > = {};
+    assignments.forEach((a) => {
+      const bNode = a.pairing_boards;
+      const bData = Array.isArray(bNode) ? bNode[0] : bNode;
+      const bName = bData?.name || 'Unknown';
+
+      if (!boards[bName]) boards[bName] = [];
+
+      const pNode = a.people;
+      const pData = Array.isArray(pNode) ? pNode[0] : pNode;
+
+      boards[bName].push({
+        id: a.person_id,
+        name: pData?.name || 'Unknown',
+        color: pData?.avatar_color_hex || '#000000',
+      });
+    });
+    return { ...s, boards };
+  });
+
+  return (
+    <div className="flex gap-12 overflow-x-auto no-scrollbar pb-6">
+      {sessionData.map(
+        (
+          s: {
+            id: string;
+            session_date: string;
+            created_at: string;
+            boards: Record<
+              string,
+              { id: string; name: string; color: string }[]
+            >;
+          },
+          sIdx: number
+        ) => (
+          <div key={s.id} className="flex-1 min-w-[200px] relative group/col">
+            <button
+              onClick={() => onSessionSelect(s.id)}
+              className={`w-full mb-6 py-2 px-4 rounded-xl border text-left transition-all ${
+                currentSessionId === s.id
+                  ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-500/10'
+                  : 'border-transparent hover:border-neutral-200 dark:hover:border-neutral-800'
+              }`}
+            >
+              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                {format(parseInputDate(s.session_date), 'MMM d')}
+              </p>
+              <p className="text-[9px] font-bold text-neutral-300 dark:text-neutral-600 mt-0.5">
+                {format(new Date(s.created_at), 'h:mm a')}
+              </p>
+            </button>
+
+            <div className="space-y-6">
+              {Object.entries(s.boards).map(([bName, people]) => (
+                <div key={bName} className="relative">
+                  <p className="text-[9px] font-black uppercase tracking-tight text-neutral-400 mb-2 truncate">
+                    {bName}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {people.map(
+                      (p: { id: string; color: string; name: string }) => (
+                        <motion.div
+                          key={p.id}
+                          layoutId={`flow-${p.id}`}
+                          className="h-6 w-6 rounded-full border-2 border-white dark:border-neutral-900 shadow-sm"
+                          style={{ backgroundColor: p.color }}
+                          title={p.name}
+                        />
+                      )
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Connection Lines (Visual Polish) */}
+            {sIdx < sessionData.length - 1 && (
+              <div className="absolute top-[60px] -right-[24px] z-0 pointer-events-none opacity-20 group-hover/col:opacity-100 transition-opacity">
+                <ChevronRight className="h-6 w-6 text-neutral-200 dark:text-neutral-800" />
+              </div>
+            )}
+          </div>
+        )
+      )}
     </div>
   );
 }

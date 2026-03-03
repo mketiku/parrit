@@ -72,6 +72,7 @@ interface PairingStore {
   people: Person[];
   boards: PairingBoard[];
   isLoading: boolean;
+  isSaving: boolean;
   error: string | null;
 
   // Lifecycle
@@ -124,6 +125,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   people: [],
   boards: [],
   isLoading: false,
+  isSaving: false,
   error: null,
 
   loadWorkspaceData: async () => {
@@ -529,7 +531,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       return;
     }
 
-    set({ isLoading: true });
+    set({ isSaving: true });
 
     // 1. Create a session
     const { data: session, error: sessionErr } = await supabase
@@ -539,7 +541,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .single();
 
     if (sessionErr || !session) {
-      set({ isLoading: false });
+      set({ isSaving: false });
       toast().addToast(
         `Failed to create session: ${sessionErr?.message}`,
         'error'
@@ -565,7 +567,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .from('pairing_history')
       .insert(historyRows);
 
-    set({ isLoading: false });
+    set({ isSaving: false });
 
     if (historyErr) {
       toast().addToast(
