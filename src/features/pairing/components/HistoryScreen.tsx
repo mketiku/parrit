@@ -16,6 +16,7 @@ import {
   CheckSquare,
   Square,
   BarChart3,
+  HelpCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -25,6 +26,11 @@ import type { PairingBoard, Person } from '../types';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { PairingMatrixView } from './PairingMatrixView';
 import { PersonInsightsSidebar } from './PersonInsightsSidebar';
+import { ProductTutorial } from './ProductTutorial';
+import {
+  useTutorialStore,
+  HISTORY_TUTORIAL_STEPS,
+} from '../store/useTutorialStore';
 
 /**
  * Robust date parsing that treats YYYY-MM-DD as LOCAL time
@@ -94,6 +100,7 @@ export function HistoryScreen() {
   } = useHistoryAnalytics(storePeople);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [showInsights, setShowInsights] = useState(false);
+  const { startTutorial } = useTutorialStore();
 
   const handleUpdateDate = async () => {
     if (!selectedSessionId || !editDateValue || !editTimeValue) return;
@@ -407,7 +414,7 @@ export function HistoryScreen() {
 
       {/* Team Evolution Flow */}
       {sessions.length > 1 && (
-        <section className="mb-12">
+        <section id="history-timeline" className="mb-12">
           <div className="flex items-center justify-between mb-6 px-1">
             <div className="flex items-center gap-2">
               <Workflow className="h-4 w-4 text-brand-500" />
@@ -416,6 +423,7 @@ export function HistoryScreen() {
               </h2>
             </div>
             <button
+              id="history-insights"
               onClick={() => setShowInsights(!showInsights)}
               className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all
                 ${
@@ -439,7 +447,10 @@ export function HistoryScreen() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 mb-8 overflow-x-auto">
+                  <div
+                    id="history-matrix"
+                    className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 mb-8 overflow-x-auto"
+                  >
                     <div className="flex items-center gap-2 mb-8">
                       <BarChart3 className="h-4 w-4 text-brand-500" />
                       <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
@@ -838,6 +849,22 @@ export function HistoryScreen() {
         stats={selectedPersonId ? personStats[selectedPersonId] : null}
         onClose={() => setSelectedPersonId(null)}
       />
+
+      {/* Floating Action Button for Help/Tutorial (Only if history exists to target) */}
+      {sessions.length > 1 && (
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40 [html[data-exporting='true']_&]:hidden">
+          <button
+            id="help-btn"
+            onClick={() => startTutorial(HISTORY_TUTORIAL_STEPS)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 dark:bg-neutral-900 dark:border-neutral-800"
+            title="Help & Tutorial"
+          >
+            <HelpCircle className="h-6 w-6" />
+          </button>
+        </div>
+      )}
+
+      <ProductTutorial />
     </div>
   );
 }

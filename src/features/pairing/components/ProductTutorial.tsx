@@ -7,20 +7,26 @@ import {
   flip,
   shift,
 } from '@floating-ui/react-dom';
-import { TUTORIAL_STEPS, useTutorialStore } from '../store/useTutorialStore';
+import { useTutorialStore } from '../store/useTutorialStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { supabase } from '../../../lib/supabase';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { X, ChevronRight, ChevronLeft, Bird } from 'lucide-react';
 
 export function ProductTutorial() {
-  const { isActive, currentStepIndex, nextStep, prevStep, exitTutorial } =
-    useTutorialStore();
+  const {
+    isActive,
+    currentStepIndex,
+    nextStep,
+    prevStep,
+    exitTutorial,
+    steps,
+  } = useTutorialStore();
   const { setOnboardingCompleted } = useWorkspacePrefsStore();
   const { user } = useAuthStore();
   const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
 
-  const currentStep = TUTORIAL_STEPS[currentStepIndex];
+  const currentStep = steps[currentStepIndex];
 
   // Industry standard positioning logic
   const { x, y, refs, strategy } = useFloating({
@@ -61,7 +67,7 @@ export function ProductTutorial() {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') exitTutorial();
         if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
-          if (currentStepIndex < TUTORIAL_STEPS.length - 1) nextStep();
+          if (currentStepIndex < steps.length - 1) nextStep();
           else handleFinish();
         }
         if (e.key === 'ArrowLeft') prevStep();
@@ -87,9 +93,10 @@ export function ProductTutorial() {
     prevStep,
     exitTutorial,
     handleFinish,
+    steps.length,
   ]);
 
-  const isLastStep = currentStepIndex === TUTORIAL_STEPS.length - 1;
+  const isLastStep = currentStepIndex === steps.length - 1;
 
   // We only render when we know the coordinates and the rect.
   const isReady = isActive && x != null && y != null && spotlightRect != null;
@@ -135,7 +142,7 @@ export function ProductTutorial() {
                   <Bird className="h-4 w-4" />
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-brand-500">
-                  Step {currentStepIndex + 1} of {TUTORIAL_STEPS.length}
+                  Step {currentStepIndex + 1} of {steps.length}
                 </span>
               </div>
               <button
@@ -186,7 +193,7 @@ export function ProductTutorial() {
 
             {/* Progress dots */}
             <div className="mt-5 flex justify-center gap-1.5">
-              {TUTORIAL_STEPS.map((_, i) => (
+              {steps.map((_, i) => (
                 <div
                   key={i}
                   className={`h-1 rounded-full transition-all duration-300 ${

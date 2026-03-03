@@ -7,7 +7,7 @@ export interface TutorialStep {
   placement?: 'top' | 'bottom' | 'left' | 'right';
 }
 
-export const TUTORIAL_STEPS: TutorialStep[] = [
+export const DASHBOARD_TUTORIAL_STEPS: TutorialStep[] = [
   {
     targetId: 'unpaired-pool',
     title: 'Teammate Pool',
@@ -58,10 +58,35 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+export const HISTORY_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    targetId: 'history-timeline',
+    title: 'Pairing Timeline',
+    description:
+      'Browse through all your past pairing sessions. You can delete or modify past records from here.',
+    placement: 'bottom',
+  },
+  {
+    targetId: 'history-insights',
+    title: 'Personal Insights',
+    description:
+      'Click on any person to see their individual pairing history, favorite partners, and stats.',
+    placement: 'left',
+  },
+  {
+    targetId: 'history-matrix',
+    title: 'Full Heatmap',
+    description:
+      'View the complete pairing matrix for your entire team. Perfect for finding isolated or siloed team members.',
+    placement: 'bottom',
+  },
+];
+
 interface TutorialState {
   isActive: boolean;
   currentStepIndex: number;
-  startTutorial: () => void;
+  steps: TutorialStep[];
+  startTutorial: (steps?: TutorialStep[]) => void;
   nextStep: () => void;
   prevStep: () => void;
   exitTutorial: () => void;
@@ -70,12 +95,14 @@ interface TutorialState {
 export const useTutorialStore = create<TutorialState>((set) => ({
   isActive: false,
   currentStepIndex: 0,
-  startTutorial: () => set({ isActive: true, currentStepIndex: 0 }),
+  steps: DASHBOARD_TUTORIAL_STEPS,
+  startTutorial: (steps = DASHBOARD_TUTORIAL_STEPS) =>
+    set({ isActive: true, currentStepIndex: 0, steps }),
   nextStep: () =>
     set((state) => ({
       currentStepIndex: Math.min(
         state.currentStepIndex + 1,
-        TUTORIAL_STEPS.length - 1
+        state.steps.length - 1
       ),
     })),
   prevStep: () =>
