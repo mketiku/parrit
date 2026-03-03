@@ -28,7 +28,7 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
       setShowFullName: (enabled) => set({ showFullName: enabled }),
       publicViewEnabled: false,
       setPublicViewEnabled: (enabled) => set({ publicViewEnabled: enabled }),
-      onboardingCompleted: false,
+      onboardingCompleted: true,
       setOnboardingCompleted: (completed) =>
         set({ onboardingCompleted: completed }),
       stalePairThreshold: 3,

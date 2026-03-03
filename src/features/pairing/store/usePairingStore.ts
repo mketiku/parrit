@@ -894,8 +894,6 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     } = await supabase.auth.getUser();
     if (!user) return '';
 
-    // Build a portable snapshot — IDs are NOT included (they're workspace-specific).
-    // We store person names + colors so they can be re-created on import.
     const snapshot: WorkspaceSnapshot = {
       version: 2,
       exportedAt: new Date().toISOString(),

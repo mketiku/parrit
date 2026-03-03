@@ -155,500 +155,534 @@ export function SettingsScreen() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState<
+    'general' | 'pairing' | 'sharing' | 'security'
+  >('general');
+
+  const TABS = [
+    {
+      id: 'general',
+      label: 'General',
+      icon: Palette,
+      description: 'Branding & UI',
+    },
+    {
+      id: 'pairing',
+      label: 'Pairing',
+      icon: Zap,
+      description: 'Logic & History',
+    },
+    {
+      id: 'sharing',
+      label: 'Sharing',
+      icon: Share2,
+      description: 'Public Access',
+    },
+    {
+      id: 'security',
+      label: 'Security',
+      icon: ShieldCheck,
+      description: 'Data & Access',
+    },
+  ] as const;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pb-12">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          Workspace Settings
+    <div className="mx-auto max-w-6xl pb-24 px-4 sm:px-6">
+      {/* Page Header */}
+      <header className="mb-10 pt-8">
+        <h1 className="text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+          Settings
         </h1>
         <p className="mt-2 text-neutral-500 dark:text-neutral-400">
-          Manage your security credentials and team configurations here.
+          Manage your {workspaceName} environment and team preferences.
         </p>
-      </div>
+      </header>
 
-      {/* Appearance Section */}
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex items-center gap-3 border-b border-neutral-100 bg-neutral-50 px-6 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
-          <Palette className="h-5 w-5 text-brand-500 dark:text-brand-400" />
-          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">
-            Appearance & Theme
-          </h2>
-        </div>
-        <div className="p-6">
-          <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
-            Choose a flavor that suits your team's vibe.
-          </p>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {THEMES.map((t) => (
+      <div className="flex flex-col lg:flex-row gap-12">
+        {/* Sidebar / Navigation */}
+        <aside className="lg:w-64 shrink-0">
+          <nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide sticky lg:top-8 z-10 bg-neutral-50 dark:bg-neutral-950 -mx-4 px-4 lg:mx-0 lg:px-0">
+            {TABS.map((tab) => (
               <button
-                key={t.id}
-                onClick={() => setTheme(t.id)}
-                className={`group relative flex flex-col items-start gap-3 rounded-2xl border-2 p-5 transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                  theme === t.id
-                    ? 'border-brand-500 bg-brand-50/30 dark:border-brand-500 dark:bg-brand-500/5'
-                    : 'border-neutral-100 bg-white hover:border-neutral-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all shrink-0 lg:w-full ${
+                  activeTab === tab.id
+                    ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
+                    : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }`}
               >
-                <div className="flex w-full items-center justify-between">
-                  <div className="flex gap-2">
-                    <div
-                      className="h-5 w-5 rounded-full shadow-inner ring-2 ring-white dark:ring-neutral-800"
-                      style={{ backgroundColor: t.color }}
-                    />
-                    <div
-                      className="h-5 w-5 rounded-full shadow-inner ring-2 ring-white dark:ring-neutral-800"
-                      style={{ backgroundColor: t.accent }}
-                    />
-                  </div>
-                  {theme === t.id && (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/30">
-                      <Check className="h-3.5 w-3.5" />
-                    </div>
-                  )}
-                </div>
-                <div className="text-left">
-                  <h3
-                    className={`font-bold ${theme === t.id ? 'text-brand-900 dark:text-brand-100' : 'text-neutral-900 dark:text-neutral-100'}`}
-                  >
-                    {t.name}
-                  </h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {t.id === 'macaw-elite' && 'Azure Blue & Gold Amber'}
-                    {t.id === 'night-parrot' && 'Midnight Slate & Rose'}
-                  </p>
-                </div>
-
-                {t.id === 'macaw-elite' && (
-                  <span className="absolute -right-1 -top-1 flex items-center gap-1 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-lg">
-                    <Zap className="h-2.5 w-2.5" />
-                    DEFAULT
+                <tab.icon
+                  className={`h-5 w-5 ${activeTab === tab.id ? 'text-white' : 'text-neutral-400'}`}
+                />
+                <div className="text-left hidden sm:block">
+                  <span className="block text-sm font-black whitespace-nowrap">
+                    {tab.label}
                   </span>
-                )}
+                  <span
+                    className={`hidden lg:block text-[10px] font-medium opacity-70 ${activeTab === tab.id ? 'text-brand-50' : 'text-neutral-400'}`}
+                  >
+                    {tab.description}
+                  </span>
+                </div>
+                <span className="sm:hidden text-sm font-black">
+                  {tab.label}
+                </span>
               </button>
             ))}
-          </div>
+          </nav>
+        </aside>
 
-          {/* Show Full Name toggle */}
-          <div className="mx-6 mb-4 flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
-            <div className="flex items-start gap-3">
-              <Tag className="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
-              <div>
-                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
-                  Show Full Name on Avatars
-                </p>
-                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                  Display first names instead of initials on person chips.
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0 max-w-3xl space-y-12 animate-in fade-in slide-in-from-right-4 duration-500">
+          {activeTab === 'general' && (
+            <section className="space-y-8">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
+                  General Appearance
+                </h2>
+                <p className="text-sm text-neutral-500">
+                  Global visual preferences for your workspace.
                 </p>
               </div>
-            </div>
-            <button
-              role="switch"
-              aria-checked={showFullName}
-              onClick={() => setShowFullName(!showFullName)}
-              className={`relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                showFullName
-                  ? 'bg-brand-500'
-                  : 'bg-neutral-200 dark:bg-neutral-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
-                  showFullName ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
 
-          {/* Stale Pair Highlighting toggle */}
-          <div className="mx-6 mb-6 flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
-            <div className="flex items-start gap-3">
-              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
-              <div>
-                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
-                  Stale Pair Highlighting
+              <div className="rounded-3xl border border-neutral-200 bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {THEMES.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setTheme(t.id)}
+                      className={`group relative flex flex-col items-start gap-4 rounded-2xl border-2 p-6 transition-all ${
+                        theme === t.id
+                          ? 'border-brand-500 bg-brand-50/30 dark:border-brand-500 dark:bg-brand-500/5'
+                          : 'border-transparent bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-950/50 dark:hover:bg-neutral-950'
+                      }`}
+                    >
+                      <div className="flex w-full items-center justify-between">
+                        <div className="flex -space-x-2">
+                          <div
+                            className="h-8 w-8 rounded-full border-4 border-white dark:border-neutral-800"
+                            style={{ backgroundColor: t.color }}
+                          />
+                          <div
+                            className="h-8 w-8 rounded-full border-4 border-white dark:border-neutral-800"
+                            style={{ backgroundColor: t.accent }}
+                          />
+                        </div>
+                        {theme === t.id && (
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg">
+                            <Check className="h-3.5 w-3.5" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-sm font-black text-neutral-900 dark:text-neutral-100">
+                          {t.name}
+                        </h3>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                          {t.id === 'macaw-elite'
+                            ? 'Azure & Gold'
+                            : 'Slate & Rose'}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-2 divide-y divide-neutral-100 dark:divide-neutral-800">
+                  <SettingToggle
+                    icon={<Tag className="h-5 w-5 text-neutral-400" />}
+                    title="Display Names"
+                    description="Show first names instead of initials on avatars."
+                    checked={showFullName}
+                    onChange={setShowFullName}
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'pairing' && (
+            <section className="space-y-8">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
+                  Pairing Intelligence
+                </h2>
+                <p className="text-sm text-neutral-500">
+                  Configure thresholds and onboarding flow.
                 </p>
-                <div className="mt-1 flex flex-col gap-2">
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    Show a warning on boards where teammates have paired in the
-                    last{' '}
-                    <span className="font-bold text-neutral-900 dark:text-neutral-100">
-                      {stalePairThreshold} sessions
-                    </span>
-                    , prompting rotation.
-                  </p>
-                  {stalePairHighlightingEnabled && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase text-neutral-400">
-                        Threshold:
-                      </span>
-                      <div className="flex items-center gap-1">
+              </div>
+
+              <div className="rounded-3xl border border-neutral-200 bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/20 text-amber-500">
+                      <Clock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
+                        Stale Pair Warning
+                      </h3>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                        Alert when a pair has been together recently.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 pl-14 sm:pl-0">
+                    {stalePairHighlightingEnabled && (
+                      <div className="flex items-center gap-1.5 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
                         {[2, 3, 5].map((val) => (
                           <button
                             key={val}
                             onClick={() => setStalePairThreshold(val)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                            className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${
                               stalePairThreshold === val
-                                ? 'bg-amber-500 text-white shadow-sm'
-                                : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700'
+                                ? 'bg-amber-500 text-white shadow-md'
+                                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                             }`}
                           >
                             {val}
                           </button>
                         ))}
                       </div>
+                    )}
+                    <ToggleSwitch
+                      checked={stalePairHighlightingEnabled}
+                      onChange={setStalePairHighlighting}
+                      color="amber"
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-100 dark:border-neutral-800">
+                  <SettingToggle
+                    icon={<HelpCircle className="h-5 w-5 text-neutral-400" />}
+                    title="Product Tutorial"
+                    description="Guided tour for new users (disabled by default)."
+                    checked={!onboardingCompleted}
+                    onChange={async (val) => {
+                      const completed = !val;
+                      setOnboardingCompleted(completed);
+                      if (user) {
+                        await supabase.from('workspace_settings').upsert({
+                          user_id: user.id,
+                          onboarding_completed: completed,
+                          public_view_enabled: publicViewEnabled,
+                        });
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'sharing' && (
+            <section className="space-y-8">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
+                  Sharing
+                </h2>
+                <p className="text-sm text-neutral-500">
+                  Manage public access and live collaboration.
+                </p>
+              </div>
+
+              <div className="rounded-3xl border border-neutral-200 bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                <SettingToggle
+                  icon={<ExternalLink className="h-5 w-5 text-neutral-400" />}
+                  title="Share Live Dashboard"
+                  description="Public read-only link for stakeholders."
+                  checked={publicViewEnabled}
+                  onChange={async (val) => {
+                    setPublicViewEnabled(val);
+                    if (user) {
+                      await supabase.from('workspace_settings').upsert({
+                        user_id: user.id,
+                        public_view_enabled: val,
+                        onboarding_completed: onboardingCompleted,
+                      });
+                    }
+                  }}
+                />
+
+                {publicViewEnabled && user && (
+                  <div className="m-4 mt-0 overflow-hidden rounded-2xl bg-neutral-50 p-6 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800">
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                      <div className="flex-1 space-y-1 text-center sm:text-left min-w-0">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">
+                          Public Link
+                        </span>
+                        <p className="font-mono text-xs text-neutral-500 truncate">
+                          {window.location.origin}/view/{user.id}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(
+                              `${window.location.origin}/view/${user.id}`
+                            );
+                            setJustCopied(true);
+                            setTimeout(() => setJustCopied(false), 2000);
+                          }}
+                          className="flex h-10 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-xs font-bold transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                        >
+                          {justCopied ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4 text-neutral-400" />
+                          )}
+                          {justCopied ? 'Copied' : 'Copy'}
+                        </button>
+                        <a
+                          href={`/view/${user.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex h-10 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-xs font-bold text-white transition-all hover:bg-neutral-800 dark:bg-brand-500 dark:hover:bg-brand-600"
+                        >
+                          Visit
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'security' && (
+            <section className="space-y-12">
+              <div className="space-y-8">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
+                    Security & Backups
+                  </h2>
+                  <p className="text-sm text-neutral-500">
+                    Manage your data and access credentials.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                    <div className="mb-6 flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-50 dark:bg-neutral-950 text-neutral-400">
+                        <KeyRound className="h-4 w-4" />
+                      </div>
+                      <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
+                        Password
+                      </h3>
+                    </div>
+                    <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                      {message && (
+                        <div
+                          className={`rounded-xl p-3 text-[11px] font-bold ${message.type === 'error' ? 'bg-red-50 text-red-600 dark:bg-red-500/10' : 'bg-green-50 text-green-600 dark:bg-green-500/10'}`}
+                        >
+                          {message.text}
+                        </div>
+                      )}
+                      <div className="space-y-1.5">
+                        <input
+                          type="password"
+                          required
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-950"
+                          placeholder="New"
+                        />
+                        <input
+                          type="password"
+                          required
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-950"
+                          placeholder="Confirm"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isLoading || !newPassword}
+                        className="w-full rounded-xl bg-neutral-900 py-2.5 text-xs font-black uppercase tracking-widest text-white dark:bg-white dark:text-neutral-900"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                        ) : (
+                          'Save'
+                        )}
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-50 dark:bg-neutral-950 text-neutral-400">
+                        <Download className="h-4 w-4" />
+                      </div>
+                      <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
+                        Backup
+                      </h3>
+                    </div>
+                    <p className="mb-6 text-xs text-neutral-500">
+                      Download your workspace JSON.
+                    </p>
+                    <div className="space-y-4">
+                      <button
+                        onClick={() =>
+                          setIncludeHistoryInExport(!includeHistoryInExport)
+                        }
+                        className="flex w-full items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:bg-neutral-950"
+                      >
+                        <span>History</span>
+                        <div
+                          className={`h-4 w-8 rounded-full transition-colors ${includeHistoryInExport ? 'bg-brand-500' : 'bg-neutral-300'}`}
+                        >
+                          <div
+                            className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${includeHistoryInExport ? 'translate-x-4' : 'translate-x-0'}`}
+                          />
+                        </div>
+                      </button>
+                      <button
+                        onClick={handleExport}
+                        className="w-full rounded-xl border border-neutral-200 py-3 text-xs font-black uppercase tracking-widest text-neutral-700 dark:border-neutral-800 dark:text-white"
+                      >
+                        Run Export
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-8 space-y-6">
+                <div className="flex items-center gap-3 text-red-600 dark:text-red-500">
+                  <AlertTriangle className="h-5 w-5" />
+                  <h2 className="text-xl font-black uppercase tracking-tight">
+                    Danger Zone
+                  </h2>
+                </div>
+                <div className="rounded-3xl border-2 border-dashed border-red-200 bg-red-50/20 p-8 dark:border-red-900/10">
+                  <div className="flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
+                    <div className="flex-1 space-y-2">
+                      <h3 className="font-black text-red-600">
+                        Import Workspace
+                      </h3>
+                      <p className="text-xs text-red-700/60 dark:text-red-400/60 leading-relaxed max-w-sm">
+                        This will replace all current data.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="rounded-2xl bg-red-600 px-6 py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all"
+                    >
+                      Import JSON
+                    </button>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  {importConfirm && (
+                    <div className="mt-8 rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-950 animate-in zoom-in-95">
+                      <h4 className="flex items-center gap-2 font-black text-neutral-900 dark:text-white">
+                        <ShieldCheck className="h-5 w-5 text-red-600" />
+                        Destructive Action
+                      </h4>
+                      <p className="mt-2 text-sm text-neutral-500">
+                        Are you sure? This cannot be undone.
+                      </p>
+                      <div className="mt-6 flex gap-3">
+                        <button
+                          onClick={confirmImport}
+                          className="flex-1 rounded-xl bg-red-600 py-3 text-xs font-black uppercase tracking-widest text-white"
+                        >
+                          {isImporting
+                            ? 'Importing...'
+                            : 'Yes, Replace Everything'}
+                        </button>
+                        <button
+                          onClick={() => setImportConfirm(false)}
+                          className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-            <button
-              role="switch"
-              aria-checked={stalePairHighlightingEnabled}
-              onClick={() =>
-                setStalePairHighlighting(!stalePairHighlightingEnabled)
-              }
-              className={`relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                stalePairHighlightingEnabled
-                  ? 'bg-amber-500'
-                  : 'bg-neutral-200 dark:bg-neutral-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
-                  stalePairHighlightingEnabled
-                    ? 'translate-x-5'
-                    : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          <div className="mx-6 mb-6 flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
-            <div className="flex items-start gap-3">
-              <Share2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
-              <div>
-                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
-                  Public View-Only Access
-                </p>
-                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                  Allow anyone with the link to see your current boards
-                  (read-only).
-                </p>
-              </div>
-            </div>
-            <button
-              role="switch"
-              aria-checked={publicViewEnabled}
-              onClick={async () => {
-                const nextVal = !publicViewEnabled;
-                setPublicViewEnabled(nextVal);
-                if (user) {
-                  await supabase.from('workspace_settings').upsert({
-                    user_id: user.id,
-                    public_view_enabled: nextVal,
-                    onboarding_completed: onboardingCompleted,
-                  });
-                }
-              }}
-              className={`relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                publicViewEnabled
-                  ? 'bg-brand-500'
-                  : 'bg-neutral-200 dark:bg-neutral-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
-                  publicViewEnabled ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          {publicViewEnabled && user && (
-            <div className="mx-6 mb-6 overflow-hidden rounded-2xl border border-brand-100 bg-brand-50/30 dark:border-brand-900/30 dark:bg-brand-950/20">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 py-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-500 mb-1">
-                    Your Public Dashboard
-                  </p>
-                  <p className="text-xs font-mono text-neutral-600 dark:text-neutral-400 truncate">
-                    {window.location.origin}/view/{user.id}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(
-                        `${window.location.origin}/view/${user.id}`
-                      );
-                      setJustCopied(true);
-                      setTimeout(() => setJustCopied(false), 2000);
-                    }}
-                    className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-bold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300"
-                  >
-                    {justCopied ? (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                    {justCopied ? 'Copied!' : 'Copy Link'}
-                  </button>
-                  <a
-                    href={`/view/${user.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-2 text-xs font-bold text-white shadow-md hover:bg-brand-600 transition-all"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    Open
-                  </a>
-                </div>
-              </div>
-            </div>
+            </section>
           )}
-
-          <div className="mx-6 mb-6 flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
-            <div className="flex items-start gap-3">
-              <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
-              <div>
-                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
-                  Product Tutorial Completed
-                </p>
-                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                  If disabled, the guided tour will reappear on your next visit
-                  to the workspace.
-                </p>
-              </div>
-            </div>
-            <button
-              role="switch"
-              aria-checked={onboardingCompleted}
-              onClick={async () => {
-                const nextVal = !onboardingCompleted;
-                setOnboardingCompleted(nextVal);
-                if (user) {
-                  await supabase.from('workspace_settings').upsert({
-                    user_id: user.id,
-                    onboarding_completed: nextVal,
-                    public_view_enabled: publicViewEnabled,
-                  });
-                }
-              }}
-              className={`relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                onboardingCompleted
-                  ? 'bg-brand-500'
-                  : 'bg-neutral-200 dark:bg-neutral-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
-                  onboardingCompleted ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Export / Import Section */}
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex items-center gap-3 border-b border-neutral-100 bg-neutral-50 px-6 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
-          <Package className="h-5 w-5 text-brand-500 dark:text-brand-400" />
-          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">
-            Workspace Export / Import
-          </h2>
-        </div>
-        <div className="p-6 space-y-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Export your workspace configuration as JSON — people, boards, goals,
-            and assignments. Import it into any workspace to restore or
-            duplicate.
-          </p>
-
-          {/* History Toggle */}
-          <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3 dark:bg-neutral-950/30 border border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center gap-3">
-              <Clock className="h-4 w-4 text-brand-500" />
-              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                Include Session History
-              </span>
-            </div>
-            <button
-              role="switch"
-              aria-checked={includeHistoryInExport}
-              onClick={() => setIncludeHistoryInExport(!includeHistoryInExport)}
-              className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                includeHistoryInExport
-                  ? 'bg-brand-500'
-                  : 'bg-neutral-200 dark:bg-neutral-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
-                  includeHistoryInExport ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Export */}
-            <button
-              onClick={handleExport}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
-              <Download className="h-4 w-4 text-brand-500" />
-              Export as JSON
-            </button>
-
-            {/* Import */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isImporting}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600 disabled:opacity-50"
-            >
-              {isImporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
-              )}
-              Import from JSON
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
-
-          {/* Import confirmation modal */}
-          {importConfirm && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-800/50 dark:bg-amber-900/20">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
-                <div className="flex-1">
-                  <p className="font-semibold text-amber-900 dark:text-amber-300">
-                    This will replace your entire workspace
-                  </p>
-                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
-                    All current people and boards will be deleted and replaced
-                    with the imported data. This cannot be undone.
-                  </p>
-                  <div className="mt-4 flex gap-3">
-                    <button
-                      onClick={confirmImport}
-                      disabled={isImporting}
-                      className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-amber-700 disabled:opacity-50"
-                    >
-                      {isImporting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : null}
-                      Yes, replace workspace
-                    </button>
-                    <button
-                      onClick={() => {
-                        setImportConfirm(false);
-                        setPendingImportJson(null);
-                      }}
-                      className="rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 transition-all hover:bg-amber-100 dark:border-amber-700 dark:text-amber-400"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Security Section */}
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex items-center gap-3 border-b border-neutral-100 bg-neutral-50 px-6 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
-          <ShieldCheck className="h-5 w-5 text-brand-500 dark:text-brand-400" />
-          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">
-            Account Security
-          </h2>
-        </div>
-
-        <div className="p-6">
-          <div className="mb-8">
-            <h3 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-              Current Authenticated Workspace
-            </h3>
-            <p className="mt-1 flex items-center gap-2 font-mono text-lg font-bold text-neutral-900 dark:text-neutral-100">
-              {workspaceName}
-              <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-green-700 dark:bg-green-500/20 dark:text-green-400">
-                Active
-              </span>
-            </p>
-          </div>
-
-          <form onSubmit={handlePasswordUpdate} className="max-w-md space-y-5">
-            <div className="mb-4 flex items-center gap-2">
-              <KeyRound className="h-4 w-4 text-neutral-400" />
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
-                Update Workspace Password
-              </h3>
-            </div>
-
-            {message && (
-              <div
-                className={`mb-6 rounded-xl p-4 text-sm ${
-                  message.type === 'error'
-                    ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'
-                    : 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400'
-                }`}
-              >
-                {message.text}
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                New Password
-              </label>
-              <input
-                type="password"
-                required
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full rounded-xl border border-neutral-300 bg-neutral-50/50 px-4 py-2.5 text-sm outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-neutral-950/50 dark:focus:border-brand-400 dark:focus:bg-neutral-900"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full rounded-xl border border-neutral-300 bg-neutral-50/50 px-4 py-2.5 text-sm outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700 dark:bg-neutral-950/50 dark:focus:border-brand-400 dark:focus:bg-neutral-900"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading || !newPassword || !confirmPassword}
-              className="mt-4 flex w-full items-center justify-center rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 dark:focus:ring-white dark:focus:ring-offset-neutral-900"
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                'Save New Password'
-              )}
-            </button>
-          </form>
-        </div>
+        </main>
       </div>
     </div>
+  );
+}
+
+// ── UX HELPER COMPONENTS ───────────────────────────────────────────────────
+
+function SettingToggle({
+  icon,
+  title,
+  description,
+  checked,
+  onChange,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: (val: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between p-6 transition-all hover:bg-neutral-50/50 dark:hover:bg-neutral-950/20">
+      <div className="flex items-start gap-4">
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-neutral-50 dark:bg-neutral-950">
+          {icon}
+        </div>
+        <div>
+          <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
+            {title}
+          </h3>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            {description}
+          </p>
+        </div>
+      </div>
+      <ToggleSwitch checked={checked} onChange={onChange} />
+    </div>
+  );
+}
+
+function ToggleSwitch({
+  checked,
+  onChange,
+  color = 'brand',
+}: {
+  checked: boolean;
+  onChange: (val: boolean) => void;
+  color?: 'brand' | 'amber';
+}) {
+  const bgClass =
+    color === 'brand'
+      ? checked
+        ? 'bg-brand-500'
+        : 'bg-neutral-200 dark:bg-neutral-700'
+      : checked
+        ? 'bg-amber-500'
+        : 'bg-neutral-200 dark:bg-neutral-700';
+
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${bgClass}`}
+    >
+      <span
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
+          checked ? 'translate-x-5' : 'translate-x-0'
+        }`}
+      />
+    </button>
   );
 }

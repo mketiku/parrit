@@ -146,14 +146,18 @@ export function DroppableBoard({
     <div
       ref={setNodeRef}
       className={`
-        group flex min-h-[120px] sm:min-h-[160px] flex-col rounded-2xl border bg-white p-3 sm:p-5 shadow-xs transition-colors
-        dark:bg-neutral-900 
+        group flex min-h-[200px] sm:min-h-[240px] flex-col rounded-3xl border p-4 sm:p-6 shadow-xs transition-all duration-300
+        ${
+          board.isExempt
+            ? 'bg-neutral-50 dark:bg-neutral-900/40 border-neutral-200 dark:border-neutral-800 grayscale-[0.5]'
+            : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'
+        }
         ${
           isOver
-            ? 'border-brand-400 bg-brand-50/50 dark:border-brand-500/50 dark:bg-brand-950/20'
+            ? '!border-brand-500 !bg-brand-50/50 dark:!border-brand-500/10 !scale-[1.02] shadow-[0_20px_50px_-12px_rgba(59,130,246,0.25)] ring-4 ring-brand-500/10 !grayscale-0'
             : hasStalePairs
               ? 'border-amber-300 dark:border-amber-700/60'
-              : 'border-neutral-200 dark:border-neutral-800'
+              : ''
         }
       `}
     >
@@ -207,8 +211,9 @@ export function DroppableBoard({
             </h3>
 
             {board.isExempt && (
-              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-                Exempt
+              <span className="flex items-center gap-1 rounded-full bg-neutral-200 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500 border border-neutral-300 dark:border-neutral-700">
+                <ShieldX className="h-2.5 w-2.5" />
+                Off-Duty
               </span>
             )}
 
@@ -439,7 +444,9 @@ export function DroppableBoard({
           ${
             isOver
               ? 'bg-brand-100/30 border-brand-300 border-dashed dark:bg-brand-900/10 dark:border-brand-700'
-              : 'bg-neutral-50 dark:bg-neutral-950'
+              : board.isExempt
+                ? 'bg-neutral-100/50 dark:bg-neutral-950/20 border-neutral-200/50 dark:border-neutral-800/50'
+                : 'bg-neutral-50 dark:bg-neutral-950'
           }
           ${
             people.length === 0 && !isOver
@@ -459,6 +466,7 @@ export function DroppableBoard({
                 key={person.id}
                 person={person}
                 sourceId={board.id}
+                isExempt={board.isExempt}
                 isSelected={selectedPersonIds?.has(person.id)}
                 onClick={(e) => onPersonClick?.(person.id, e)}
               />

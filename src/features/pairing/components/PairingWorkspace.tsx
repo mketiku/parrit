@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   closestCenter,
   DndContext,
@@ -19,6 +19,8 @@ import { DraggablePerson } from './DraggablePerson';
 import { TemplateManager } from './TemplateManager';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
+import { useAuthStore } from '../../auth/store/useAuthStore';
+import { toPng } from 'html-to-image';
 
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import {
@@ -30,10 +32,11 @@ import {
   History,
   Loader2,
   HelpCircle,
+  Camera,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
-import { useEffect } from 'react';
 
 export function PairingWorkspace() {
   const {
@@ -45,6 +48,10 @@ export function PairingWorkspace() {
     recommendPairs,
     isLoading: isStoreLoading,
   } = usePairingStore();
+  const { user } = useAuthStore();
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showShutter, setShowShutter] = useState(false);
 
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -63,6 +70,51 @@ export function PairingWorkspace() {
       startTutorial();
     }
   }, [onboardingCompleted, people.length, isStoreLoading, startTutorial]);
+
+  const username = user?.email?.split('@')[0] || 'Workspace';
+  const workspaceTitle =
+    username.charAt(0).toUpperCase() + username.slice(1) + ' Workspace';
+
+  const exportAsImage = useCallback(async () => {
+    if (dashboardRef.current === null) return;
+
+    try {
+      setIsExporting(true);
+      setShowShutter(true);
+      document.documentElement.setAttribute('data-exporting', 'true');
+
+      // Wait for the shutter flash to peak before capturing
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const dataUrl = await toPng(dashboardRef.current, {
+        cacheBust: true,
+        width: dashboardRef.current.scrollWidth + 96,
+        height: dashboardRef.current.scrollHeight + 96,
+        backgroundColor: document.documentElement.classList.contains('dark')
+          ? '#0a0a0a'
+          : '#ffffff',
+        style: {
+          padding: '48px',
+          margin: '0',
+          borderRadius: '24px',
+          width: `${dashboardRef.current.scrollWidth}px`,
+          height: `${dashboardRef.current.scrollHeight}px`,
+        },
+      });
+
+      const link = document.createElement('a');
+      link.download = `parrit-${username}-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to export image:', err);
+    } finally {
+      document.documentElement.removeAttribute('data-exporting');
+      setIsExporting(false);
+      // Fade out the shutter after the work is done
+      setTimeout(() => setShowShutter(false), 300);
+    }
+  }, [username]);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -200,11 +252,33 @@ export function PairingWorkspace() {
       >
         <div className="flex flex-col gap-6 xl:flex-row xl:items-start pb-24 sm:pb-0">
           {/* Main Workspaces Column */}
-          <div className="flex-1 min-w-0 space-y-4 sm:space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                Pairing Boards
+          <div
+            ref={dashboardRef}
+            className="flex-1 min-w-0 space-y-4 sm:space-y-6"
+          >
+            {/* 
+              Visible only in Screenshot: Show full workspace identity 
+              Hidden in App: Prevents repetition with the page-level H1
+            */}
+            <div className="hidden [html[data-exporting='true']_&]:block mb-8">
+              <h2 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+                {workspaceTitle}
               </h2>
+              <div className="h-1 w-20 bg-brand-500 mt-2" />
+            </div>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
+              <div className="flex flex-col">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                  Active Pairing Boards
+                </h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                    Live Session
+                  </span>
+                </div>
+              </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 <TemplateManager />
@@ -241,8 +315,32 @@ export function PairingWorkspace() {
 
             <div
               id="board-list"
-              className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
             >
+              {boards.length === 0 && !isAddingBoard && (
+                <div className="col-span-full py-20 flex flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 animate-in fade-in zoom-in-95 duration-700">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 animate-ping rounded-full bg-brand-500/10" />
+                    <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-white shadow-2xl dark:bg-neutral-800">
+                      <LayoutDashboard className="h-10 w-10 text-brand-500" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100">
+                    Your Workspace is Ready
+                  </h2>
+                  <p className="mt-2 text-neutral-500 dark:text-neutral-400 max-w-xs text-center font-medium">
+                    Start by creating your first pairing board. Drag people onto
+                    boards to build your team.
+                  </p>
+                  <button
+                    onClick={() => setIsAddingBoard(true)}
+                    className="mt-8 flex items-center gap-2 rounded-2xl bg-brand-500 px-6 py-3 font-bold text-white shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] transition-all hover:bg-brand-600 active:scale-95"
+                  >
+                    <Plus className="h-5 w-5" />
+                    Create First Board
+                  </button>
+                </div>
+              )}
               {boards.map((board) => {
                 const assignedPeople = (board.assignedPersonIds || [])
                   .map((id) => people.find((p) => p.id === id))
@@ -260,7 +358,7 @@ export function PairingWorkspace() {
               })}
 
               {/* Add Board Trigger */}
-              {!isAddingBoard ? (
+              {boards.length > 0 && !isAddingBoard && (
                 <button
                   onClick={() => setIsAddingBoard(true)}
                   className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10"
@@ -272,7 +370,10 @@ export function PairingWorkspace() {
                     Add Board
                   </span>
                 </button>
-              ) : (
+              )}
+
+              {/* Add Board Form */}
+              {isAddingBoard && (
                 <form
                   onSubmit={handleAddBoard}
                   className="flex min-h-[160px] flex-col rounded-2xl border-2 border-brand-400 bg-white p-5 shadow-lg ring-4 ring-brand-500/10 animate-in zoom-in-95 duration-200 dark:bg-neutral-900 dark:border-brand-500/50"
@@ -346,7 +447,47 @@ export function PairingWorkspace() {
             <HelpCircle className="h-5 w-5" />
           </button>
 
+          {/* Screenshot Utility FAB */}
+          <button
+            id="screenshot-fab"
+            onClick={exportAsImage}
+            disabled={isExporting}
+            className="fixed bottom-36 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-xl border border-neutral-200 text-neutral-500 hover:text-brand-500 hover:border-brand-200 transition-all active:scale-95 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 group"
+            title="Take Screenshot"
+          >
+            {isExporting ? (
+              <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+            ) : (
+              <Camera className="h-5 w-5 text-brand-500" />
+            )}
+            <span className="absolute right-[calc(100%+12px)] rounded-lg bg-neutral-900 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-widest text-white opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 pointer-events-none shadow-xl border border-white/10">
+              Screenshot
+            </span>
+          </button>
+
           <ProductTutorial />
+
+          {/* Luxury Shutter Effect */}
+          <AnimatePresence>
+            {showShutter && (
+              <div
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-white dark:bg-black/80 animate-in fade-in fill-mode-forwards duration-300"
+                style={{
+                  animation: showShutter
+                    ? 'shutter-flash 0.5s ease-out'
+                    : 'none',
+                }}
+              >
+                <style>{`
+                  @keyframes shutter-flash {
+                    0% { opacity: 0; }
+                    20% { opacity: 1; }
+                    100% { opacity: 0; }
+                  }
+                `}</style>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
 
         <DragOverlay dropAnimation={null}>

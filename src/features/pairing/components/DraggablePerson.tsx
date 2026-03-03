@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { motion } from 'framer-motion';
+import { Moon } from 'lucide-react';
 import type { Person, DragItem } from '../types';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 
@@ -9,6 +10,7 @@ interface DraggablePersonProps {
   sourceId: string;
   isOverlay?: boolean;
   isSelected?: boolean;
+  isExempt?: boolean;
   onClick?: (e: React.MouseEvent) => void;
 }
 
@@ -17,6 +19,7 @@ export function DraggablePerson({
   sourceId,
   isOverlay,
   isSelected,
+  isExempt,
   onClick,
 }: DraggablePersonProps) {
   const { showFullName } = useWorkspacePrefsStore();
@@ -89,9 +92,14 @@ export function DraggablePerson({
         }}
         style={{
           backgroundColor: person.avatarColorHex,
-          opacity: isDragging && !isOverlay ? 0 : 1,
+          opacity: isDragging && !isOverlay ? 0 : isExempt ? 0.4 : 1,
         }}
       >
+        {isExempt && !showFullName && (
+          <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 shadow-sm dark:bg-white">
+            <Moon className="h-2.5 w-2.5 text-white dark:text-neutral-900" />
+          </div>
+        )}
         {showFullName ? (
           <span className="px-2 text-[11px] font-bold tracking-tight whitespace-nowrap">
             {trimmedName.split(' ')[0]}
