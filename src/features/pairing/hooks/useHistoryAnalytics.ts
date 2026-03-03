@@ -1,0 +1,153 @@
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '../../../lib/supabase';
+import { useAuthStore } from '../../auth/store/useAuthStore';
+import type { Person } from '../types';
+
+interface HistoryRecord {
+  person_id: string;
+  board_id: string;
+  session_id: string;
+  created_at: string;
+  people: { name: string; avatar_color_hex: string };
+}
+
+export interface PersonStats {
+  id: string;
+  name: string;
+  avatarColor: string;
+  totalPairings: number;
+  partnerCounts: Record<string, { count: number; name: string }>;
+  timeline: { date: string; partnerName: string | null }[];
+}
+
+export interface PairingMatrix {
+  personIds: string[];
+  personNames: Record<string, string>;
+  counts: Record<string, Record<string, number>>;
+}
+
+export function useHistoryAnalytics(people: Person[]) {
+  const { user } = useAuthStore();
+  const [history, setHistory] = useState<HistoryRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAllHistory() {
+      if (!user) return;
+      setIsLoading(true);
+
+      try {
+        const { data, error } = await supabase
+          .from('pairing_history')
+          .select(
+            `
+            person_id,
+            board_id,
+            session_id,
+            created_at,
+            people (name, avatar_color_hex)
+          `
+          )
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setHistory((data as unknown as HistoryRecord[]) || []);
+      } catch (err) {
+        console.error('Error fetching full history:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchAllHistory();
+  }, [user]);
+
+  const analytics = useMemo(() => {
+    const personStats: Record<string, PersonStats> = {};
+    const matrix: Record<string, Record<string, number>> = {};
+    const personNames: Record<string, string> = {};
+
+    // Initialize stats for current people
+    people.forEach((p) => {
+      personStats[p.id] = {
+        id: p.id,
+        name: p.name,
+        avatarColor: p.avatarColorHex,
+        totalPairings: 0,
+        partnerCounts: {},
+        timeline: [],
+      };
+      matrix[p.id] = {};
+      personNames[p.id] = p.name;
+    });
+
+    // Group by session + board
+    const pairs: Record<string, Record<string, string[]>> = {}; // session -> board -> personIds
+
+    history.forEach((row) => {
+      if (!pairs[row.session_id]) pairs[row.session_id] = {};
+      if (!pairs[row.session_id][row.board_id])
+        pairs[row.session_id][row.board_id] = [];
+      pairs[row.session_id][row.board_id].push(row.person_id);
+    });
+
+    // Process pairs
+    Object.keys(pairs).forEach((sessionId) => {
+      const boards = pairs[sessionId];
+      Object.keys(boards).forEach((boardId) => {
+        const peopleOnBoard = boards[boardId];
+
+        peopleOnBoard.forEach((pId) => {
+          if (!personStats[pId]) {
+            // Person might have been deleted but exists in history
+            return;
+          }
+
+          const others = peopleOnBoard.filter((o) => o !== pId);
+          personStats[pId].totalPairings += 1;
+
+          others.forEach((otherId) => {
+            if (!personStats[otherId]) return;
+
+            // Update partner counts
+            if (!personStats[pId].partnerCounts[otherId]) {
+              personStats[pId].partnerCounts[otherId] = {
+                count: 0,
+                name: personStats[otherId].name,
+              };
+            }
+            personStats[pId].partnerCounts[otherId].count += 1;
+
+            // Update matrix
+            if (!matrix[pId]) matrix[pId] = {};
+            matrix[pId][otherId] = (matrix[pId][otherId] || 0) + 1;
+          });
+
+          // Update timeline (simplified example)
+          const firstRow = history.find((r) => r.session_id === sessionId);
+          if (firstRow) {
+            personStats[pId].timeline.push({
+              date: firstRow.created_at,
+              partnerName:
+                others
+                  .map((o) => personStats[o]?.name)
+                  .filter(Boolean)
+                  .join(', ') || 'Solo',
+            });
+          }
+        });
+      });
+    });
+
+    return {
+      personStats,
+      matrix: {
+        personIds: people.map((p) => p.id),
+        personNames,
+        counts: matrix,
+      },
+    };
+  }, [history, people]);
+
+  return { ...analytics, isLoading };
+}

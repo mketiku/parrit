@@ -77,8 +77,8 @@ export function DraggablePerson({
         onMouseLeave={handleMouseLeave}
         className={`
           relative flex shrink-0 cursor-grab items-center justify-center rounded-full 
-          text-[11px] font-bold text-white transition-all shadow-inner
-          ${showFullName ? 'h-7 w-auto min-w-[2rem] px-1' : 'h-10 w-10'}
+          text-xs font-bold text-white transition-all shadow-inner
+          ${showFullName ? 'h-8 w-auto min-w-[2.5rem] px-3' : 'h-10 w-10'}
           ${
             isSelected && !isOverlay
               ? 'ring-4 ring-brand-500 scale-110 shadow-md outline-none'

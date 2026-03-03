@@ -62,6 +62,23 @@ export function DroppableBoard({
   const [editedName, setEditedName] = useState(board.name);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Sync internal state with board props during rendering
+  const [prevBoardProps, setPrevBoardProps] = useState({
+    goals: board.goals,
+    meetingLink: board.meetingLink,
+  });
+
+  if (
+    board.goals !== prevBoardProps.goals ||
+    board.meetingLink !== prevBoardProps.meetingLink
+  ) {
+    setPrevBoardProps({ goals: board.goals, meetingLink: board.meetingLink });
+    setExtraData({
+      goals: board.goals || [],
+      meetingLink: board.meetingLink || '',
+    });
+  }
+
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
   }, [isEditing]);
@@ -206,16 +223,17 @@ export function DroppableBoard({
           </div>
         ) : (
           <>
-            <h3 className="flex-1 font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-              {board.name}
-            </h3>
-
-            {board.isExempt && (
-              <span className="flex items-center gap-1 rounded-full bg-neutral-200 px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500 border border-neutral-300 dark:border-neutral-700 whitespace-nowrap">
-                <ShieldX className="h-2.5 w-2.5" />
-                <span className="hidden sm:inline">Off-Duty</span>
-              </span>
-            )}
+            <div className="flex-1 min-w-0 flex flex-col">
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
+                {board.name}
+              </h3>
+              {board.isExempt && (
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  <ShieldX className="h-2 w-2" />
+                  Off-Duty
+                </span>
+              )}
+            </div>
 
             {/* Board actions — visible on hover on desktop, always visible on mobile */}
             <div className="ml-auto flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">

@@ -13,15 +13,16 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import { TemplateManager } from './TemplateManager';
+import { BoardExportView } from './BoardExportView';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-import { motion } from 'framer-motion';
-
+import { useToastStore } from '../../../store/useToastStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import {
   Users,
@@ -33,6 +34,7 @@ import {
   HelpCircle,
   ChevronDown,
   ArrowRight,
+  Download,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
@@ -51,6 +53,7 @@ export function PairingWorkspace() {
   } = usePairingStore();
   const { user } = useAuthStore();
   const dashboardRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -59,6 +62,9 @@ export function PairingWorkspace() {
   const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(
     new Set()
   );
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
+  const [isMoveMenuOpen, setIsMoveMenuOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { startTutorial } = useTutorialStore();
   const { onboardingCompleted } = useWorkspacePrefsStore();
@@ -69,6 +75,19 @@ export function PairingWorkspace() {
       startTutorial();
     }
   }, [onboardingCompleted, people.length, isStoreLoading, startTutorial]);
+
+  // Keyboard support for clearing selection
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedPersonIds(new Set());
+        setLastClickedId(null);
+        setIsMoveMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const username = user?.email?.split('@')[0] || 'Workspace';
   const workspaceTitle =
@@ -91,6 +110,11 @@ export function PairingWorkspace() {
     })
   );
 
+  const allAssignedIds = new Set(
+    boards.flatMap((b) => b.assignedPersonIds || [])
+  );
+  const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
+
   const handlePersonClick = (personId: string, e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
       setSelectedPersonIds((prev) => {
@@ -102,8 +126,37 @@ export function PairingWorkspace() {
         }
         return next;
       });
+      setLastClickedId(personId);
+    } else if (e.shiftKey && lastClickedId) {
+      // Range selection logic
+      // Flatten all people into the visible order: Unpaired Pool -> Boards
+      const allPeopleOrder = [
+        ...unpairedPeople,
+        ...boards.flatMap((b) =>
+          (b.assignedPersonIds ?? [])
+            .map((id) => people.find((p) => p.id === id))
+            .filter((p): p is Person => !!p)
+        ),
+      ];
+
+      const startIdx = allPeopleOrder.findIndex((p) => p.id === lastClickedId);
+      const endIdx = allPeopleOrder.findIndex((p) => p.id === personId);
+
+      if (startIdx !== -1 && endIdx !== -1) {
+        const min = Math.min(startIdx, endIdx);
+        const max = Math.max(startIdx, endIdx);
+        const range = allPeopleOrder.slice(min, max + 1).map((p) => p.id);
+
+        setSelectedPersonIds((prev) => {
+          const next = new Set(prev);
+          range.forEach((id) => next.add(id));
+          return next;
+        });
+      }
+      setLastClickedId(personId);
     } else {
       setSelectedPersonIds(new Set([personId]));
+      setLastClickedId(personId);
     }
   };
 
@@ -137,6 +190,36 @@ export function PairingWorkspace() {
 
     // Clear selection after moving
     setSelectedPersonIds(new Set());
+    setLastClickedId(null);
+    setIsMoveMenuOpen(false);
+  };
+
+  const handleDownloadScreenshot = async () => {
+    if (!exportRef.current) return;
+    setIsDownloading(true);
+
+    try {
+      // Increase delay to ensure the off-screen element is fully painted
+      await new Promise((r) => setTimeout(r, 300));
+
+      const dataUrl = await toPng(exportRef.current, {
+        quality: 0.95,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+      });
+
+      const link = document.createElement('a');
+      link.download = `parrit-${username}-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = dataUrl;
+      link.click();
+
+      useToastStore.getState().addToast('Screenshot downloaded!', 'success');
+    } catch (err) {
+      console.error('Screenshot error:', err);
+      useToastStore.getState().addToast('Failed to generate image.', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -197,11 +280,6 @@ export function PairingWorkspace() {
     setNewBoardIsExempt(false);
     setIsAddingBoard(false);
   };
-
-  const allAssignedIds = new Set(
-    boards.flatMap((b) => b.assignedPersonIds || [])
-  );
-  const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
 
   return (
     <>
@@ -387,13 +465,28 @@ export function PairingWorkspace() {
         </DragOverlay>
       </DndContext>
 
-      <button
-        onClick={() => startTutorial()}
-        className="fixed bottom-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 z-40 dark:bg-neutral-900 dark:border-neutral-800"
-        title="Help & Tutorial"
-      >
-        <HelpCircle className="h-6 w-6" />
-      </button>
+      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+        <button
+          onClick={handleDownloadScreenshot}
+          disabled={isDownloading || isStoreLoading}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 disabled:opacity-50 dark:bg-neutral-900 dark:border-neutral-800"
+          title="Download Dashboard as Image"
+        >
+          {isDownloading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Download className="h-5 w-5" />
+          )}
+        </button>
+
+        <button
+          onClick={() => startTutorial()}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 dark:bg-neutral-900 dark:border-neutral-800"
+          title="Help & Tutorial"
+        >
+          <HelpCircle className="h-6 w-6" />
+        </button>
+      </div>
 
       {selectedPersonIds.size > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-neutral-900 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 border border-white/10 dark:bg-neutral-800">
@@ -405,45 +498,62 @@ export function PairingWorkspace() {
 
           <div className="h-4 w-px bg-white/20 mx-2" />
 
-          {/* Move to Board Menu (Simple Version) */}
-          <div className="relative group/menu">
-            <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold bg-white/10 hover:bg-white/20 transition-colors">
+          <div className="relative">
+            <button
+              onClick={() => setIsMoveMenuOpen(!isMoveMenuOpen)}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${isMoveMenuOpen ? 'bg-white text-neutral-900 shadow-lg' : 'bg-white/10 hover:bg-white/20'}`}
+            >
               Move to...
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown
+                className={`h-3 w-3 transition-transform ${isMoveMenuOpen ? 'rotate-180' : ''}`}
+              />
             </button>
 
-            <div className="absolute bottom-full left-0 mb-2 w-48 hidden group-hover/menu:block bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800 py-2 animate-in fade-in slide-in-from-bottom-2">
-              <p className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                Board List
-              </p>
-              <div className="max-h-60 overflow-y-auto">
-                {boards.map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => handleBulkMove(b.id)}
-                    className="w-full text-left px-3 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-between group/item"
-                  >
-                    <span className="truncate">{b.name}</span>
-                    <ArrowRight className="h-3 w-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                  </button>
-                ))}
-                <div className="h-px bg-neutral-100 dark:bg-neutral-800 my-1" />
-                <button
-                  onClick={() => handleBulkMove('unpaired')}
-                  className="w-full text-left px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 flex items-center justify-between group/item"
+            <AnimatePresence>
+              {isMoveMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  className="absolute bottom-full left-0 mb-3 w-56 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 py-2.5 z-[100]"
                 >
-                  Unpair All
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            </div>
+                  <p className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-50 dark:border-neutral-800 mb-2">
+                    Select Target Board
+                  </p>
+                  <div className="max-h-64 overflow-y-auto px-2 space-y-1">
+                    {boards.map((b) => (
+                      <button
+                        key={b.id}
+                        onClick={() => handleBulkMove(b.id)}
+                        className="w-full text-left px-3 py-2.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl flex items-center justify-between group/item transition-colors"
+                      >
+                        <span className="truncate">{b.name}</span>
+                        <ArrowRight className="h-3 w-3 opacity-0 group-hover/item:opacity-100 transition-all -translate-x-2 group-hover/item:translate-x-0" />
+                      </button>
+                    ))}
+                    <div className="h-px bg-neutral-100 dark:bg-neutral-800 my-2 mx-2" />
+                    <button
+                      onClick={() => handleBulkMove('unpaired')}
+                      className="w-full text-left px-3 py-2.5 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-xl flex items-center justify-between group/item transition-colors"
+                    >
+                      Unpair All Selected
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="h-4 w-px bg-white/20 mx-2" />
 
           <button
-            onClick={() => setSelectedPersonIds(new Set())}
-            className="shrink-0 p-1 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            onClick={() => {
+              setSelectedPersonIds(new Set());
+              setLastClickedId(null);
+              setIsMoveMenuOpen(false);
+            }}
+            className="shrink-0 p-1 text-neutral-500 hover:text-neutral-900 border-2 border-transparent hover:border-white/20 rounded-lg transition-all"
             aria-label="Clear selection"
           >
             <X className="h-5 w-5" />
@@ -452,11 +562,19 @@ export function PairingWorkspace() {
       )}
 
       <ProductTutorial />
+
+      {/* Hidden Export View for Screenshots */}
+      <BoardExportView
+        boards={boards}
+        people={people}
+        workspaceName={workspaceTitle}
+        exportRef={exportRef}
+        showFullName={useWorkspacePrefsStore.getState().showFullName}
+      />
     </>
   );
 }
 
-// A slightly different droppable region for "Unpaired"
 function DroppableUnpairedPool({
   people,
   selectedPersonIds,
@@ -534,7 +652,7 @@ function BoardSkeleton({ index }: { index: number }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="flex min-h-[240px] flex-col rounded-[2rem] border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/50"
+      className="flex min-h-[240px] flex-col rounded-[2.5rem] border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/50"
     >
       <div className="flex items-center gap-3 mb-6">
         <div className="h-10 w-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />

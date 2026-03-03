@@ -639,10 +639,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       set({ boards: newBoards });
       await get().persistBoardAssignments(newBoards);
 
-      toast().addToast(
-        'Data-driven "Least Recent" rotation suggested!',
-        'success'
-      );
+      toast().addToast('Rotation recommended!', 'success');
     } catch (err) {
       console.error('Recommendation Error:', err);
       toast().addToast('Algorithm failed to load history data.', 'error');
@@ -768,7 +765,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         boards: (created as BoardRecord[]).map(rowToBoard),
         isLoading: false,
       });
-      toast().addToast(`Applied preset "${name}" ✓`, 'success');
+      toast().addToast(`Applied preset "${name}"`, 'success');
     } catch {
       set({ isLoading: false });
       toast().addToast('Failed to apply preset template.', 'error');
@@ -821,7 +818,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     // 5. Update and Persist
     set({ boards: updatedBoards });
     await get().persistBoardAssignments(updatedBoards);
-    toast().addToast('Pair rotated ⟳', 'success');
+    toast().addToast('Pair rotated', 'success');
   },
 
   exportWorkspace: async (includeHistory = true) => {
@@ -1019,7 +1016,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         boards: (createdBoards as BoardRecord[]).map(rowToBoard),
         isLoading: false,
       });
-      toast().addToast('Workspace imported successfully! 🎉', 'success');
+      toast().addToast('Workspace imported successfully!', 'success');
     } catch (err: unknown) {
       set({ isLoading: false });
       const msg = err instanceof Error ? err.message : 'Import failed.';

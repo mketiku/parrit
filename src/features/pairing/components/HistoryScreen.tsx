@@ -12,12 +12,19 @@ import {
   Bird,
   Loader2,
   Workflow,
+  Copy,
+  CheckSquare,
+  Square,
+  BarChart3,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useToastStore } from '../../../store/useToastStore';
 import { usePairingStore } from '../store/usePairingStore';
 import type { PairingBoard, Person } from '../types';
+import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
+import { PairingMatrixView } from './PairingMatrixView';
+import { PersonInsightsSidebar } from './PersonInsightsSidebar';
 
 /**
  * Robust date parsing that treats YYYY-MM-DD as LOCAL time
@@ -76,7 +83,17 @@ export function HistoryScreen() {
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [editDateValue, setEditDateValue] = useState('');
   const [editTimeValue, setEditTimeValue] = useState('');
+  const [selectedBulkIds, setSelectedBulkIds] = useState<Set<string>>(
+    new Set()
+  );
   const { addToast } = useToastStore();
+  const {
+    personStats,
+    matrix,
+    isLoading: isAnalyzing,
+  } = useHistoryAnalytics(storePeople);
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+  const [showInsights, setShowInsights] = useState(false);
 
   const handleUpdateDate = async () => {
     if (!selectedSessionId || !editDateValue || !editTimeValue) return;
@@ -222,10 +239,126 @@ export function HistoryScreen() {
     [addToast, storePeople, storeBoards]
   );
 
+  const handleCloneSession = async () => {
+    if (!selectedSessionId || details.length === 0) return;
+
+    const confirmClone = confirm(
+      'This will replace your current workspace boards with the configuration from this snapshot. People will be reassigned where possible. Continue?'
+    );
+    if (!confirmClone) return;
+
+    try {
+      // 1. Group details by board
+      const boardGroups = details.reduce(
+        (acc, curr) => {
+          if (!acc[curr.board_name]) acc[curr.board_name] = [];
+          acc[curr.board_name].push(curr.person_name);
+          return acc;
+        },
+        {} as Record<string, string[]>
+      );
+
+      // 2. Prepare boards and map people by name
+      const {
+        people: storePeople,
+        applyBuiltinTemplate,
+        setBoards,
+      } = usePairingStore.getState();
+
+      const newBoards = Object.entries(boardGroups).map(([name, pNames]) => {
+        const assignedIds = pNames
+          .map((name) => storePeople.find((p) => p.name === name)?.id)
+          .filter((id): id is string => !!id);
+
+        return {
+          name,
+          isExempt: false,
+          assignedPersonIds: assignedIds,
+        };
+      });
+
+      // 3. Apply via store (using applyBuiltinTemplate as a base for clean replacement)
+      await applyBuiltinTemplate(
+        `Clone of ${format(parseInputDate(sessions.find((s) => s.id === selectedSessionId)?.session_date || null), 'MMM d')}`,
+        newBoards.map((nb) => ({ name: nb.name, isExempt: nb.isExempt }))
+      );
+
+      // 4. Re-assign people (applyBuiltinTemplate doesn't handle people)
+      const { boards: createdBoards } = usePairingStore.getState();
+      const remappedBoards = createdBoards.map((cb) => {
+        const originalPeople = boardGroups[cb.name] || [];
+        const newIds = originalPeople
+          .map((name) => storePeople.find((p) => p.name === name)?.id)
+          .filter((id): id is string => !!id);
+
+        return { ...cb, assignedPersonIds: newIds };
+      });
+
+      setBoards(remappedBoards);
+      addToast('Snapshot cloned to workspace!', 'success');
+    } catch (err) {
+      console.error('Clone error:', err);
+      addToast('Failed to clone snapshot.', 'error');
+    }
+  };
+
+  const deleteBulkSessions = async () => {
+    if (selectedBulkIds.size === 0) return;
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedBulkIds.size} session snapshots?`
+      )
+    )
+      return;
+
+    const ids = Array.from(selectedBulkIds);
+    const { error } = await supabase
+      .from('pairing_sessions')
+      .delete()
+      .in('id', ids);
+
+    if (error) {
+      addToast('Failed to delete sessions', 'error');
+    } else {
+      addToast(`${selectedBulkIds.size} sessions deleted`, 'success');
+      setSessions((prev) => prev.filter((s) => !selectedBulkIds.has(s.id)));
+      if (selectedSessionId && selectedBulkIds.has(selectedSessionId)) {
+        setSelectedSessionId(null);
+        setDetails([]);
+      }
+      setSelectedBulkIds(new Set());
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
     loadSessions();
   }, [user, loadSessions]);
+
+  // Keyboard Navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (sessions.length === 0) return;
+
+      const currentIndex = sessions.findIndex(
+        (s) => s.id === selectedSessionId
+      );
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIdx = (currentIndex + 1) % sessions.length;
+        loadSessionDetails(sessions[nextIdx].id);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIdx =
+          currentIndex <= 0 ? sessions.length - 1 : currentIndex - 1;
+        loadSessionDetails(sessions[prevIdx].id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [sessions, selectedSessionId, loadSessionDetails]);
 
   if (isLoading) {
     return (
@@ -275,22 +408,68 @@ export function HistoryScreen() {
       {/* Team Evolution Flow */}
       {sessions.length > 1 && (
         <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6 px-1">
-            <Workflow className="h-4 w-4 text-brand-500" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
-              Team Evolution Flow
-            </h2>
-          </div>
-          <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-              <Workflow className="h-64 w-64 rotate-12" />
+          <div className="flex items-center justify-between mb-6 px-1">
+            <div className="flex items-center gap-2">
+              <Workflow className="h-4 w-4 text-brand-500" />
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+                Team Evolution Flow
+              </h2>
             </div>
-            <TeamFlowVisualizer
-              sessions={[...sessions].reverse()}
-              history={fullHistory}
-              onSessionSelect={loadSessionDetails}
-              currentSessionId={selectedSessionId}
-            />
+            <button
+              onClick={() => setShowInsights(!showInsights)}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all
+                ${
+                  showInsights
+                    ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20'
+                    : 'bg-white border-neutral-200 text-neutral-400 hover:border-brand-500 hover:text-brand-500 dark:bg-neutral-900 dark:border-neutral-800'
+                }
+              `}
+            >
+              <BarChart3 className="h-3 w-3" />
+              {showInsights ? 'Hide Insights' : 'Show Insights'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8">
+            <AnimatePresence>
+              {showInsights && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 mb-8 overflow-x-auto">
+                    <div className="flex items-center gap-2 mb-8">
+                      <BarChart3 className="h-4 w-4 text-brand-500" />
+                      <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
+                        Pairing Frequency Matrix
+                      </h3>
+                    </div>
+                    {isAnalyzing ? (
+                      <div className="h-48 flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+                      </div>
+                    ) : (
+                      <PairingMatrixView matrix={matrix} />
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+                <Workflow className="h-64 w-64 rotate-12" />
+              </div>
+              <TeamFlowVisualizer
+                sessions={[...sessions].reverse()}
+                history={fullHistory}
+                onSessionSelect={loadSessionDetails}
+                currentSessionId={selectedSessionId}
+                onPersonClick={setSelectedPersonId}
+              />
+            </div>
           </div>
         </section>
       )}
@@ -299,9 +478,20 @@ export function HistoryScreen() {
         {/* Sessions List */}
         <div className="lg:col-span-4 space-y-4">
           <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
-              Recent Snapshots
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+                Recent Snapshots
+              </h2>
+              {selectedBulkIds.size > 0 && (
+                <button
+                  onClick={deleteBulkSessions}
+                  className="text-[10px] font-black uppercase text-red-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded-lg"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Delete ({selectedBulkIds.size})
+                </button>
+              )}
+            </div>
             <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-neutral-500 font-bold">
               {sessions.length} TOTAL
             </span>
@@ -338,43 +528,64 @@ export function HistoryScreen() {
                     transition={{ delay: idx * 0.05 }}
                     className="group relative"
                   >
-                    <button
-                      onClick={() => loadSessionDetails(session.id)}
-                      className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
-                        selectedSessionId === session.id
-                          ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20 shadow-lg shadow-brand-500/5'
-                          : 'border-neutral-200 bg-white hover:border-brand-200 dark:border-neutral-800 dark:bg-neutral-900/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors ${
-                            selectedSessionId === session.id
-                              ? 'bg-brand-500 text-white'
-                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
-                          }`}
-                        >
-                          <Calendar className="h-5 w-5" />
-                        </div>
-                        <div className="text-left">
-                          <p
-                            className={`font-black tracking-tight ${selectedSessionId === session.id ? 'text-brand-900 dark:text-white' : 'text-neutral-900 dark:text-neutral-100'}`}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedBulkIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(session.id)) next.delete(session.id);
+                            else next.add(session.id);
+                            return next;
+                          });
+                        }}
+                        className={`p-1 rounded-md transition-colors ${selectedBulkIds.has(session.id) ? 'text-brand-500' : 'text-neutral-300 hover:text-neutral-400'}`}
+                        title="Select for bulk action"
+                      >
+                        {selectedBulkIds.has(session.id) ? (
+                          <CheckSquare className="h-5 w-5" />
+                        ) : (
+                          <Square className="h-5 w-5" />
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => loadSessionDetails(session.id)}
+                        className={`flex-1 flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                          selectedSessionId === session.id
+                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20 shadow-lg shadow-brand-500/5'
+                            : 'border-neutral-200 bg-white hover:border-brand-200 dark:border-neutral-800 dark:bg-neutral-900/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors ${
+                              selectedSessionId === session.id
+                                ? 'bg-brand-500 text-white'
+                                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
+                            }`}
                           >
-                            {format(
-                              parseInputDate(session.session_date),
-                              'MMM do, yyyy'
-                            )}
-                          </p>
-                          <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-                            {format(new Date(session.created_at), 'h:mm a')} •
-                            snapshot
-                          </p>
+                            <Calendar className="h-5 w-5" />
+                          </div>
+                          <div className="text-left">
+                            <p
+                              className={`font-black tracking-tight ${selectedSessionId === session.id ? 'text-brand-900 dark:text-white' : 'text-neutral-900 dark:text-neutral-100'}`}
+                            >
+                              {format(
+                                parseInputDate(session.session_date),
+                                'MMM do, yyyy'
+                              )}
+                            </p>
+                            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                              {format(new Date(session.created_at), 'h:mm a')} •
+                              snapshot
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <ChevronRight
-                        className={`h-4 w-4 transition-all ${selectedSessionId === session.id ? 'text-brand-500 translate-x-1' : 'text-neutral-300'}`}
-                      />
-                    </button>
+                        <ChevronRight
+                          className={`h-4 w-4 transition-all ${selectedSessionId === session.id ? 'text-brand-500 translate-x-1' : 'text-neutral-300'}`}
+                        />
+                      </button>
+                    </div>
                     <button
                       onClick={(e) => deleteSession(e, session.id)}
                       className="absolute -right-2 -top-2 flex h-8 w-8 scale-0 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-xl border border-neutral-100 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 group-hover:scale-100 active:scale-90"
@@ -537,8 +748,17 @@ export function HistoryScreen() {
                         </p>
                       )}
                     </div>
-                    <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-md border border-white/20">
-                      <Bird className="h-10 w-10" />
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={handleCloneSession}
+                        className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all group/clone"
+                      >
+                        <Copy className="h-4 w-4 group-hover/clone:scale-110 transition-transform" />
+                        Clone Snapshot
+                      </button>
+                      <div className="mt-auto self-end flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
+                        <Bird className="h-7 w-7" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -564,22 +784,31 @@ export function HistoryScreen() {
                         </div>
 
                         <div className="flex flex-wrap gap-3">
-                          {people.map((p, pIdx) => (
-                            <div
-                              key={pIdx}
-                              className="flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border border-neutral-100/50 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all active:scale-95"
-                            >
-                              <div
-                                className="flex h-8 w-8 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl shadow-black/5"
-                                style={{ backgroundColor: p.avatar_color }}
+                          {people.map((p, pIdx) => {
+                            const personInStore = storePeople.find(
+                              (sp) => sp.name === p.person_name
+                            );
+                            return (
+                              <button
+                                key={pIdx}
+                                onClick={() =>
+                                  personInStore &&
+                                  setSelectedPersonId(personInStore.id)
+                                }
+                                className="flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border border-neutral-100/50 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all active:scale-95 group/person"
                               >
-                                {p.person_name.charAt(0).toUpperCase()}
-                              </div>
-                              <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
-                                {p.person_name}
-                              </span>
-                            </div>
-                          ))}
+                                <div
+                                  className="flex h-8 w-8 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl shadow-black/5 group-hover/person:scale-110 transition-transform"
+                                  style={{ backgroundColor: p.avatar_color }}
+                                >
+                                  {p.person_name.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+                                  {p.person_name}
+                                </span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </motion.div>
                     )
@@ -604,6 +833,11 @@ export function HistoryScreen() {
           </AnimatePresence>
         </div>
       </div>
+      {/* Person Insights Sidebar */}
+      <PersonInsightsSidebar
+        stats={selectedPersonId ? personStats[selectedPersonId] : null}
+        onClose={() => setSelectedPersonId(null)}
+      />
     </div>
   );
 }
@@ -612,6 +846,7 @@ interface TeamFlowProps {
   history: HistoryRowData[];
   onSessionSelect: (id: string) => void;
   currentSessionId: string | null;
+  onPersonClick: (id: string) => void;
 }
 
 function TeamFlowVisualizer({
@@ -619,6 +854,7 @@ function TeamFlowVisualizer({
   history,
   onSessionSelect,
   currentSessionId,
+  onPersonClick,
 }: TeamFlowProps) {
   // Aggregate history by session
   const sessionData = sessions.map((s) => {
@@ -687,10 +923,11 @@ function TeamFlowVisualizer({
                   <div className="flex flex-wrap gap-1">
                     {people.map(
                       (p: { id: string; color: string; name: string }) => (
-                        <motion.div
+                        <motion.button
                           key={p.id}
                           layoutId={`flow-${p.id}`}
-                          className="h-6 w-6 rounded-full border-2 border-white dark:border-neutral-900 shadow-sm"
+                          onClick={() => onPersonClick(p.id)}
+                          className="h-6 w-6 rounded-full border-2 border-white dark:border-neutral-900 shadow-sm transition-transform hover:scale-125 hover:z-10"
                           style={{ backgroundColor: p.color }}
                           title={p.name}
                         />

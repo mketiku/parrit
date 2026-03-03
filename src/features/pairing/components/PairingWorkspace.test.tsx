@@ -39,7 +39,8 @@ describe('PairingWorkspace Component', () => {
 
     // Check Unpaired pool
     expect(screen.getByText('Unpaired Pool')).toBeInTheDocument();
-    expect(screen.getByText('Phoenix')).toBeInTheDocument();
-    expect(screen.getByText('Macaw')).toBeInTheDocument();
+    // Names might appear twice due to the hidden BoardExportView
+    expect(screen.getAllByText('Phoenix')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Macaw')[0]).toBeInTheDocument();
   });
 });

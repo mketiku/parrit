@@ -36,15 +36,15 @@ export function BoardExportView({
     <div
       ref={exportRef}
       style={{
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
-        left: '-10000px',
+        left: '-2000px', // Moderate offset to keep it in the "active" render zone
         width: '1200px',
         minHeight: '1200px',
         visibility: 'visible',
         opacity: 1,
         pointerEvents: 'none',
-        zIndex: -500,
+        zIndex: -5000,
         fontFamily:
           'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
         backgroundColor: 'white',
@@ -106,12 +106,12 @@ export function BoardExportView({
         </div>
       </div>
 
-      {/* Board Grid */}
+      {/* Board Layout */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '20px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '24px',
         }}
       >
         {boards.map((board) => {
@@ -122,11 +122,16 @@ export function BoardExportView({
               style={{
                 backgroundColor: 'white',
                 borderRadius: '16px',
-                padding: '20px',
+                padding: '24px',
+                width: 'calc(33.333% - 16px)',
+                minHeight: '200px',
                 border: board.isExempt
                   ? '1.5px solid #fde68a'
                   : '1.5px solid #e5e7eb',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
               {/* Board header */}
