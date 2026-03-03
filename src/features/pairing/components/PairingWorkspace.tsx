@@ -14,15 +14,14 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
-// import { toPng } from 'html-to-image';
+import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
 import { TemplateManager } from './TemplateManager';
-import { BoardExportView } from './BoardExportView';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-// import { useToastStore } from '../../../store/useToastStore';
+import { useToastStore } from '../../../store/useToastStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import {
   Users,
@@ -34,7 +33,7 @@ import {
   HelpCircle,
   ChevronDown,
   ArrowRight,
-  // Download,
+  Download,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
@@ -56,7 +55,6 @@ export function PairingWorkspace() {
   } = usePairingStore();
   const { user } = useAuthStore();
   const dashboardRef = useRef<HTMLDivElement>(null);
-  const exportRef = useRef<HTMLDivElement>(null);
 
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
@@ -67,7 +65,7 @@ export function PairingWorkspace() {
   );
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [isMoveMenuOpen, setIsMoveMenuOpen] = useState(false);
-  // const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const { matrix, isLoading: isAnalyzing } = useHistoryAnalytics(people);
 
@@ -199,22 +197,26 @@ export function PairingWorkspace() {
     setIsMoveMenuOpen(false);
   };
 
-  /*
   const handleDownloadScreenshot = async () => {
-    if (!exportRef.current) return;
+    if (!dashboardRef.current) return;
     setIsDownloading(true);
 
     try {
-      // Increase delay to ensure the off-screen element is fully painted
-      await new Promise((r) => setTimeout(r, 300));
+      // Trigger the export mode styles
+      document.documentElement.setAttribute('data-exporting', 'true');
 
-      const dataUrl = await toPng(exportRef.current, {
+      // Wait for React and Tailwind to apply the hidden classes and re-layout
+      await new Promise((r) => setTimeout(r, 150));
+
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const dataUrl = await toPng(dashboardRef.current, {
         quality: 0.95,
         pixelRatio: 2,
-        backgroundColor: '#ffffff',
+        backgroundColor: isDarkMode ? '#171717' : '#ffffff',
       });
 
       const link = document.createElement('a');
+      const username = user?.email?.split('@')[0] || 'team';
       link.download = `parrit-${username}-${new Date().toISOString().split('T')[0]}.png`;
       link.href = dataUrl;
       link.click();
@@ -224,10 +226,10 @@ export function PairingWorkspace() {
       console.error('Screenshot error:', err);
       useToastStore.getState().addToast('Failed to generate image.', 'error');
     } finally {
+      document.documentElement.removeAttribute('data-exporting');
       setIsDownloading(false);
     }
   };
-  */
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -327,7 +329,7 @@ export function PairingWorkspace() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 [html[data-exporting='true']_&]:hidden">
                 <button
                   onClick={() => setShowHeatmap(!showHeatmap)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all
@@ -433,7 +435,7 @@ export function PairingWorkspace() {
               {!isStoreLoading && !isAddingBoard && (
                 <button
                   onClick={() => setIsAddingBoard(true)}
-                  className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10"
+                  className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10 [html[data-exporting='true']_&]:hidden"
                 >
                   <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-brand-100 group-hover:text-brand-500 dark:bg-neutral-800 dark:group-hover:bg-brand-900/40">
                     <Plus className="h-6 w-6" />
@@ -491,7 +493,7 @@ export function PairingWorkspace() {
           </div>
 
           {/* Unpaired Sidebar */}
-          <div className="xl:sticky xl:top-6 w-[340px] shrink-0">
+          <div className="xl:sticky xl:top-6 w-[340px] shrink-0 [html[data-exporting='true']_&]:hidden">
             <DroppableUnpairedPool
               people={unpairedPeople}
               selectedPersonIds={selectedPersonIds}
@@ -513,8 +515,7 @@ export function PairingWorkspace() {
         </DragOverlay>
       </DndContext>
 
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
-        {/* Temporarily hidden as it's not working correctly
+      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40 [html[data-exporting='true']_&]:hidden">
         <button
           onClick={handleDownloadScreenshot}
           disabled={isDownloading || isStoreLoading}
@@ -527,7 +528,6 @@ export function PairingWorkspace() {
             <Download className="h-5 w-5" />
           )}
         </button>
-        */}
 
         <button
           onClick={() => startTutorial()}
@@ -539,7 +539,7 @@ export function PairingWorkspace() {
       </div>
 
       {selectedPersonIds.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-neutral-900 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 border border-white/10 dark:bg-neutral-800">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-neutral-900 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 border border-white/10 dark:bg-neutral-800 [html[data-exporting='true']_&]:hidden">
           <span className="text-sm font-bold flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-brand-500 animate-pulse" />
             {selectedPersonIds.size} teammate
@@ -612,15 +612,6 @@ export function PairingWorkspace() {
       )}
 
       <ProductTutorial />
-
-      {/* Hidden Export View for Screenshots */}
-      <BoardExportView
-        boards={boards}
-        people={people}
-        workspaceName={workspaceTitle}
-        exportRef={exportRef}
-        showFullName={useWorkspacePrefsStore.getState().showFullName}
-      />
     </>
   );
 }

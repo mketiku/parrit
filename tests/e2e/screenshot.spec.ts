@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from './helpers';
 
-test.describe.skip('Dashboard Screenshot', () => {
+test.describe('Dashboard Screenshot', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
     await login(page);
@@ -42,21 +42,17 @@ test.describe.skip('Dashboard Screenshot', () => {
     await expect(toast).toBeVisible({ timeout: 10000 });
   });
 
-  test('should ensure the export view is present but hidden during normal view', async ({
+  test('should temporarily apply data-exporting state to document', async ({
     page,
   }) => {
-    // The export view has an ID or we can find it by its hidden nature
-    // It's a div with position: fixed and left: -2000px
-    const exportView = page.locator('div[style*="left: -2000px"]');
-    await expect(exportView).toBeAttached();
+    const downloadBtn = page.getByTitle('Download Dashboard as Image');
 
-    // It should not be visible to the user (outside viewport)
-    // In Playwright, isVisible check if it's rendered and not display:none etc.
-    // An element at -2000px might still return true for isVisible if it's not display:none.
-    // But we can check its bounding box.
-    const box = await exportView.boundingBox();
-    if (box) {
-      expect(box.x).toBeLessThan(0);
-    }
+    // Trigger download
+    await downloadBtn.click();
+
+    // Verify the data-exporting attribute is temporarily added to the html document
+    // We expect the html element to have data-exporting="true"
+    const htmlExporting = page.locator('html[data-exporting="true"]');
+    await expect(htmlExporting).toBeAttached({ timeout: 2000 });
   });
 });

@@ -236,7 +236,7 @@ export function DroppableBoard({
             </div>
 
             {/* Board actions — visible on hover on desktop, always visible on mobile */}
-            <div className="ml-auto flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+            <div className="ml-auto flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
               <button
                 onClick={() => rotateBoardPair(board.id)}
                 disabled={people.length === 0}
@@ -442,7 +442,7 @@ export function DroppableBoard({
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1.5 opacity-0 group-hover/extra:opacity-100 transition-opacity"
+                      className="flex items-center gap-1.5 opacity-0 group-hover/extra:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden"
                     >
                       <Plus className="h-3 w-3 text-neutral-400" />
                       <input
