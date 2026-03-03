@@ -12,9 +12,6 @@ import {
   X,
   Plus,
   Link as LinkIcon,
-  Target,
-  ChevronUp,
-  ChevronDown,
   RefreshCcw,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
@@ -55,10 +52,9 @@ export function DroppableBoard({
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingExtra, setIsEditingExtra] = useState(false);
   const [extraData, setExtraData] = useState({
-    goals: board.goals || [],
+    goalsText: (board.goals || []).join('\n'),
     meetingLink: board.meetingLink || '',
   });
-  const [newGoal, setNewGoal] = useState('');
   const [editedName, setEditedName] = useState(board.name);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -74,7 +70,7 @@ export function DroppableBoard({
   ) {
     setPrevBoardProps({ goals: board.goals, meetingLink: board.meetingLink });
     setExtraData({
-      goals: board.goals || [],
+      goalsText: (board.goals || []).join('\n'),
       meetingLink: board.meetingLink || '',
     });
   }
@@ -85,61 +81,19 @@ export function DroppableBoard({
 
   // Auto-save helper — called immediately after any goals/link mutation
   const autoSave = useCallback(
-    (goals: string[], meetingLink: string) => {
+    (goalsText: string, meetingLink: string) => {
+      const parsedGoals = goalsText
+        .split('\n')
+        .map((g) => g.trim())
+        .filter(Boolean);
+
       updateBoard(board.id, {
-        goals,
+        goals: parsedGoals,
         meetingLink: meetingLink.trim() || undefined,
       });
     },
     [board.id, updateBoard]
   );
-
-  const addGoal = () => {
-    if (!newGoal.trim()) return;
-    const updated = [...extraData.goals, newGoal.trim()];
-    setExtraData((prev) => ({ ...prev, goals: updated }));
-    setNewGoal('');
-    autoSave(updated, extraData.meetingLink);
-  };
-
-  const removeGoal = (index: number) => {
-    const updated = extraData.goals.filter((_, i) => i !== index);
-    setExtraData((prev) => ({ ...prev, goals: updated }));
-    autoSave(updated, extraData.meetingLink);
-  };
-
-  const moveGoal = (index: number, direction: 'up' | 'down') => {
-    const other = direction === 'up' ? index - 1 : index + 1;
-    if (other < 0 || other >= extraData.goals.length) return;
-    const updated = [...extraData.goals];
-    [updated[index], updated[other]] = [updated[other], updated[index]];
-    setExtraData((prev) => ({ ...prev, goals: updated }));
-    autoSave(updated, extraData.meetingLink);
-  };
-
-  const [editingGoalIndex, setEditingGoalIndex] = useState<number | null>(null);
-  const [editingGoalText, setEditingGoalText] = useState('');
-
-  const startEditGoal = (index: number) => {
-    setEditingGoalIndex(index);
-    setEditingGoalText(extraData.goals[index]);
-  };
-
-  const commitEditGoal = (index: number) => {
-    const trimmed = editingGoalText.trim();
-    if (!trimmed) {
-      // If cleared, remove it
-      removeGoal(index);
-    } else {
-      const updated = extraData.goals.map((g, i) =>
-        i === index ? trimmed : g
-      );
-      setExtraData((prev) => ({ ...prev, goals: updated }));
-      autoSave(updated, extraData.meetingLink);
-    }
-    setEditingGoalIndex(null);
-    setEditingGoalText('');
-  };
 
   const handleRenameCommit = async () => {
     const trimmed = editedName.trim();
@@ -290,91 +244,22 @@ export function DroppableBoard({
                 {/* Goals List */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    Daily Goals
+                    Daily Goals (One per line)
                   </label>
-                  {extraData.goals.map((g, i) => (
-                    <div key={i} className="flex items-center gap-1 group/goal">
-                      {/* Priority arrows */}
-                      <div className="flex flex-col opacity-0 group-hover/goal:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => moveGoal(i, 'up')}
-                          disabled={i === 0}
-                          className="p-0.5 text-neutral-300 hover:text-neutral-600 disabled:opacity-20 dark:hover:text-neutral-300"
-                          title="Move up"
-                        >
-                          <ChevronUp className="h-3 w-3" />
-                        </button>
-                        <button
-                          onClick={() => moveGoal(i, 'down')}
-                          disabled={i === extraData.goals.length - 1}
-                          className="p-0.5 text-neutral-300 hover:text-neutral-600 disabled:opacity-20 dark:hover:text-neutral-300"
-                          title="Move down"
-                        >
-                          <ChevronDown className="h-3 w-3" />
-                        </button>
-                      </div>
-
-                      {/* Goal text / inline editor */}
-                      {editingGoalIndex === i ? (
-                        <input
-                          autoFocus
-                          value={editingGoalText}
-                          onChange={(e) => setEditingGoalText(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') commitEditGoal(i);
-                            if (e.key === 'Escape') {
-                              setEditingGoalIndex(null);
-                              setEditingGoalText('');
-                            }
-                          }}
-                          onBlur={() => commitEditGoal(i)}
-                          className="flex-1 rounded-lg border border-brand-400 bg-white px-3 py-1.5 text-xs text-neutral-700 outline-none ring-2 ring-brand-500/20 dark:border-brand-600 dark:bg-neutral-900 dark:text-neutral-300"
-                        />
-                      ) : (
-                        <div className="flex flex-1 items-center rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-                          <span className="flex-1 leading-snug">{g}</span>
-                        </div>
-                      )}
-
-                      {/* Edit & Delete */}
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover/goal:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => startEditGoal(i)}
-                          className="rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-brand-600 dark:hover:bg-neutral-800"
-                          title="Edit goal"
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </button>
-                        <button
-                          onClick={() => removeGoal(i)}
-                          className="rounded p-1 text-neutral-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
-                          title="Remove goal"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Target className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
-                      <input
-                        value={newGoal}
-                        onChange={(e) => setNewGoal(e.target.value)}
-                        onKeyDown={(e) =>
-                          e.key === 'Enter' && (e.preventDefault(), addGoal())
-                        }
-                        placeholder="Add a goal..."
-                        className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
-                      />
-                    </div>
-                    <button
-                      onClick={addGoal}
-                      className="rounded-lg bg-neutral-200 px-3 text-xs font-bold text-neutral-600 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    >
-                      Add
-                    </button>
-                  </div>
+                  <textarea
+                    value={extraData.goalsText}
+                    onChange={(e) =>
+                      setExtraData((prev) => ({
+                        ...prev,
+                        goalsText: e.target.value,
+                      }))
+                    }
+                    onBlur={() =>
+                      autoSave(extraData.goalsText, extraData.meetingLink)
+                    }
+                    placeholder="- Ship the new feature..."
+                    className="w-full min-h-[80px] rounded-lg border border-neutral-200 bg-white py-2 px-3 text-xs leading-relaxed outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900 resize-y text-neutral-700 dark:text-neutral-300"
+                  />
                 </div>
 
                 {/* Meeting Link */}
@@ -393,7 +278,7 @@ export function DroppableBoard({
                         }))
                       }
                       onBlur={() =>
-                        autoSave(extraData.goals, extraData.meetingLink)
+                        autoSave(extraData.goalsText, extraData.meetingLink)
                       }
                       placeholder="Zoom / Meet link..."
                       className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
@@ -424,7 +309,9 @@ export function DroppableBoard({
                           className="flex gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400"
                         >
                           <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" />
-                          <span className="leading-tight">{g}</span>
+                          <span className="leading-relaxed break-words whitespace-pre-wrap">
+                            {g}
+                          </span>
                         </li>
                       ))}
                     </ul>

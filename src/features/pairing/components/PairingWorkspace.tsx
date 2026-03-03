@@ -347,19 +347,24 @@ export function PairingWorkspace() {
 
                 <TemplateManager />
 
-                <button
-                  id="recommend-btn"
-                  onClick={() => recommendPairs()}
-                  disabled={isStoreLoading || isRecommending}
-                  className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-                >
-                  {isRecommending ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                  )}
-                  {isRecommending ? 'Recommending...' : 'Recommend Pairs'}
-                </button>
+                <div className="flex flex-col items-center gap-1 w-full sm:w-auto relative">
+                  <button
+                    id="recommend-btn"
+                    onClick={() => recommendPairs()}
+                    disabled={isStoreLoading || isRecommending}
+                    className="w-full flex justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                  >
+                    {isRecommending ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 text-amber-500" />
+                    )}
+                    {isRecommending ? 'Recommending...' : 'Recommend Pairs'}
+                  </button>
+                  <span className="text-[9px] text-neutral-400 dark:text-neutral-500 font-black tracking-widest uppercase absolute -bottom-4 hidden sm:block w-max text-center">
+                    Shuffles entirely
+                  </span>
+                </div>
 
                 <button
                   id="save-session-btn"
@@ -419,21 +424,26 @@ export function PairingWorkspace() {
               )}
 
               {!isStoreLoading &&
-                boards.map((board) => {
-                  const assignedPeople = (board.assignedPersonIds || [])
-                    .map((id) => people.find((p) => p.id === id))
-                    .filter((p): p is Person => !!p);
+                [...boards]
+                  .sort((a, b) => {
+                    if (a.isExempt === b.isExempt) return 0;
+                    return a.isExempt ? 1 : -1;
+                  })
+                  .map((board) => {
+                    const assignedPeople = (board.assignedPersonIds || [])
+                      .map((id) => people.find((p) => p.id === id))
+                      .filter((p): p is Person => !!p);
 
-                  return (
-                    <DroppableBoard
-                      key={board.id}
-                      board={board}
-                      people={assignedPeople}
-                      selectedPersonIds={selectedPersonIds}
-                      onPersonClick={handlePersonClick}
-                    />
-                  );
-                })}
+                    return (
+                      <DroppableBoard
+                        key={board.id}
+                        board={board}
+                        people={assignedPeople}
+                        selectedPersonIds={selectedPersonIds}
+                        onPersonClick={handlePersonClick}
+                      />
+                    );
+                  })}
 
               {/* Add Board Trigger */}
               {!isStoreLoading && !isAddingBoard && (
