@@ -303,7 +303,7 @@ export function PairingWorkspace() {
           {/* Main Workspaces Column */}
           <div
             ref={dashboardRef}
-            className="flex-1 min-w-0 space-y-4 sm:space-y-6"
+            className="flex-1 min-w-0 space-y-4 sm:space-y-6 [html[data-exporting='true']_&]:p-12 [html[data-exporting='true']_&]:bg-neutral-50 dark:[html[data-exporting='true']_&]:bg-neutral-950/20 [html[data-exporting='true']_&]:rounded-[2.5rem]"
           >
             {/* 
               Visible only in Screenshot: Show full workspace identity 

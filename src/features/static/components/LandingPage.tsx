@@ -113,9 +113,9 @@ export function LandingPage() {
             </h1>
 
             <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl font-medium text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              Parrit is a fast, beautiful pairing board for engineering teams.
-              Sync live with teammates and track your rotation over time —
-              without a single email required.
+              Parrit is a fast, beautiful pairing board designed for engineering
+              teams practicing pair programming. Sync live with teammates and
+              track your rotations over time — without a single email required.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
