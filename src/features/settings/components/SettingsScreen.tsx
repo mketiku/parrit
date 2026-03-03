@@ -355,8 +355,8 @@ export function SettingsScreen() {
                 <div className="border-t border-neutral-100 dark:border-neutral-800">
                   <SettingToggle
                     icon={<HelpCircle className="h-5 w-5 text-neutral-400" />}
-                    title="Product Tutorial"
-                    description="Guided tour for new users (disabled by default)."
+                    title="Product Tutorial Auto-Start"
+                    description="Automatically start the tutorial for empty workspaces."
                     checked={!onboardingCompleted}
                     onChange={async (val) => {
                       const completed = !val;

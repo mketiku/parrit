@@ -19,22 +19,42 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     targetId: 'board-list',
     title: 'Pairing Boards',
     description:
-      'Create boards for different projects or squads. Drag people from the pool and drop them here.',
+      'Create boards for squads or projects. Drag people from the pool and drop them here.',
+    placement: 'bottom',
+  },
+  {
+    targetId: 'heatmap-toggle',
+    title: 'Pairing Heatmap',
+    description:
+      'Toggle the heatmap to see who hasn’t paired recently at a glance. Helps maintain healthy rotations.',
     placement: 'bottom',
   },
   {
     targetId: 'recommend-btn',
     title: 'Get Recommendations',
     description:
-      'Let Parrit suggest pairs based on historical data. Very handy for rotating pairs efficiently.',
+      'Let Parrit suggest pairs based on historical data. Very handy for rotating teams efficiently.',
     placement: 'bottom',
   },
   {
+    targetId: 'download-btn',
+    title: 'Share Dashboard',
+    description:
+      'Download a clean, high-resolution image of your current boards to share with stakeholders.',
+    placement: 'left',
+  },
+  {
     targetId: 'save-session-btn',
-    title: 'Finalize & Save',
+    title: 'Save Session',
     description:
       'Once pairings are set, click here to log history. This improves future recommendations.',
     placement: 'bottom',
+  },
+  {
+    targetId: 'help-btn',
+    title: 'Need Help?',
+    description: 'You can re-run this tutorial or find help here anytime.',
+    placement: 'left',
   },
 ];
 

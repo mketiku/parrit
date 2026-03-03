@@ -331,6 +331,7 @@ export function PairingWorkspace() {
 
               <div className="flex flex-wrap items-center gap-2 [html[data-exporting='true']_&]:hidden">
                 <button
+                  id="heatmap-toggle"
                   onClick={() => setShowHeatmap(!showHeatmap)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all
                     ${
@@ -517,6 +518,7 @@ export function PairingWorkspace() {
 
       <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40 [html[data-exporting='true']_&]:hidden">
         <button
+          id="download-btn"
           onClick={handleDownloadScreenshot}
           disabled={isDownloading || isStoreLoading}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 disabled:opacity-50 dark:bg-neutral-900 dark:border-neutral-800"
@@ -530,6 +532,7 @@ export function PairingWorkspace() {
         </button>
 
         <button
+          id="help-btn"
           onClick={() => startTutorial()}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 dark:bg-neutral-900 dark:border-neutral-800"
           title="Help & Tutorial"
