@@ -143,6 +143,10 @@ create policy "sessions_delete_own"
   on public.pairing_sessions for delete
   using (auth.uid() = public.pairing_sessions.user_id);
 
+create policy "sessions_update_own"
+  on public.pairing_sessions for update
+  using (auth.uid() = public.pairing_sessions.user_id);
+
 -- Pairing history policies
 alter table public.pairing_history enable row level security;
 
