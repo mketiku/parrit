@@ -3,6 +3,7 @@ import type { Person, PairingBoard, PersonRecord, BoardRecord } from '../types';
 import { supabase } from '../../../lib/supabase';
 import { useToastStore } from '../../../store/useToastStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
+import { calculateRecommendations } from '../utils/pairingLogic';
 
 export const AVATAR_COLORS = [
   '#6366f1',
@@ -618,7 +619,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     await get()._delay(1200); // Artificial delay for calmness
 
     try {
-      // 1. Fetch recent history to determine last time people paired
+      // 1. Fetch recent history
       const { data: history, error: historyErr } = await supabase
         .from('pairing_history')
         .select('person_id, board_id, session_id, created_at')
@@ -627,115 +628,17 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
 
       if (historyErr) throw historyErr;
 
-      // lastPairedAt[p1][p2] = most recent timestamp they were on a board together
-      const lastPairedAt: Record<string, Record<string, string>> = {};
+      // 2. Run the algorithm
+      const newBoards = calculateRecommendations(
+        people,
+        boards,
+        (history as unknown as HistoryRow[]) || []
+      );
 
-      // Group history by session + board to identify pairs
-      const sessionMap: Record<
-        string,
-        Record<string, { pid: string; time: string }[]>
-      > = {};
-      (history as unknown as HistoryRow[])?.forEach((row) => {
-        if (!sessionMap[row.session_id]) sessionMap[row.session_id] = {};
-        if (!sessionMap[row.session_id][row.board_id])
-          sessionMap[row.session_id][row.board_id] = [];
-        sessionMap[row.session_id][row.board_id].push({
-          pid: row.person_id,
-          time: row.created_at || '',
-        });
-      });
-
-      Object.values(sessionMap).forEach((boardsInSession) => {
-        Object.values(boardsInSession).forEach((peopleOnBoard) => {
-          for (let i = 0; i < peopleOnBoard.length; i++) {
-            for (let j = i + 1; j < peopleOnBoard.length; j++) {
-              const p1 = peopleOnBoard[i].pid;
-              const p2 = peopleOnBoard[j].pid;
-              const time = peopleOnBoard[i].time;
-
-              if (!lastPairedAt[p1]) lastPairedAt[p1] = {};
-              if (!lastPairedAt[p2]) lastPairedAt[p2] = {};
-
-              // Since we ordered by created_at DESC, the first one we find is the most recent
-              if (!lastPairedAt[p1][p2]) lastPairedAt[p1][p2] = time;
-              if (!lastPairedAt[p2][p1]) lastPairedAt[p2][p1] = time;
-            }
-          }
-        });
-      });
-
-      // 2. Identify who needs assigning
-      const exemptPersonIds = new Set<string>();
-      boards
-        .filter((b) => b.isExempt)
-        .forEach((b) => {
-          (b.assignedPersonIds || []).forEach((id) => exemptPersonIds.add(id));
-        });
-
-      const unassigned = people
-        .filter((p) => !exemptPersonIds.has(p.id))
-        .sort(() => Math.random() - 0.5); // Randomize initial pool
-
-      const newBoards = boards.map((b) => ({
-        ...b,
-        assignedPersonIds: b.isExempt
-          ? [...(b.assignedPersonIds || [])]
-          : ([] as string[]),
-      }));
-
-      const activeBoards = newBoards.filter((b) => !b.isExempt);
-      if (activeBoards.length === 0) {
-        set({ isRecommending: false });
-        return;
-      }
-
-      // 3. Smart Assignment Logic
-      // Strategy:
-      // - First, try to put 2 people on every available board using Least Recent logic.
-      // - Then, fill the rest on the least-filled boards.
-
-      // Phase A: Create Core Pairs
-      for (const board of activeBoards) {
-        if (unassigned.length === 0) break;
-
-        // Pick p1 (first person for the board)
-        const p1 = unassigned.pop()!;
-        board.assignedPersonIds.push(p1.id);
-
-        if (unassigned.length > 0) {
-          // Find p2 (the person who hasn't paired with p1 in the longest time)
-          let bestP2Index = -1;
-          let oldestTime = '9999-12-31'; // Future date for "never paired" logic
-
-          unassigned.forEach((candidate, idx) => {
-            const lastTime =
-              lastPairedAt[p1.id]?.[candidate.id] || '0000-01-01';
-            if (lastTime < oldestTime) {
-              oldestTime = lastTime;
-              bestP2Index = idx;
-            }
-          });
-
-          if (bestP2Index !== -1) {
-            const p2 = unassigned.splice(bestP2Index, 1)[0];
-            board.assignedPersonIds.push(p2.id);
-          }
-        }
-      }
-
-      // Phase B: Overflow (if people left, distribute to least filled boards)
-      while (unassigned.length > 0) {
-        const pNext = unassigned.pop()!;
-        const targetBoard = activeBoards.sort(
-          (a, b) =>
-            (a.assignedPersonIds?.length || 0) -
-            (b.assignedPersonIds?.length || 0)
-        )[0];
-        targetBoard.assignedPersonIds.push(pNext.id);
-      }
-
+      // 3. Update state and persists
       set({ boards: newBoards });
-      get().persistBoardAssignments(newBoards);
+      await get().persistBoardAssignments(newBoards);
+
       toast().addToast(
         'Data-driven "Least Recent" rotation suggested!',
         'success'
