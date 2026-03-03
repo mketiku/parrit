@@ -45,7 +45,7 @@ describe('App Root Component', () => {
     // Header Logo should exist
     expect(screen.getByText('Parrit')).toBeInTheDocument();
 
-    // Default route placeholder text should exist
-    expect(screen.getByText('Test Workspace')).toBeInTheDocument();
+    // Default route placeholder text should exist (one for UI, one for export)
+    expect(screen.getAllByText('Test Workspace')[0]).toBeInTheDocument();
   });
 });

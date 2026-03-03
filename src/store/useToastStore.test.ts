@@ -24,7 +24,7 @@ describe('useToastStore', () => {
 
   it('should remove a toast by id', () => {
     const { addToast, removeToast } = useToastStore.getState();
-    addToast('Test Message');
+    addToast('Test Message', 'info');
     const id = useToastStore.getState().toasts[0].id;
 
     removeToast(id);

@@ -1,17 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-
-// Mock zustand persist middleware to avoid localStorage issues in tests
-
-vi.mock('zustand/middleware', async (importOriginal) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const actual = await importOriginal<any>();
-  return {
-    ...actual,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    persist: (config: any) => (set: any, get: any, api: any) =>
-      config(set, get, api),
-  };
-});
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // Now import the store
 import { useWorkspacePrefsStore } from './useWorkspacePrefsStore';
