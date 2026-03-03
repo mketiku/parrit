@@ -42,7 +42,15 @@ This guide defines the architectural and code quality standards for the **Parrit
   - Use **Vitest** for unit tests, especially for the pairing recommendation engine.
   - Use **Playwright** for End-to-End (E2E) testing of critical user journeys.
 - **Formatting**: Code MUST be formatted with Prettier and linted with ESLint before any push. Run `npm run lint`.
-- **Clean Commits**: Follow the conventional commits specification (`feat:`, `fix:`, `chore:`, etc.).
+- **Clean Commits**: Follow the **Conventional Commits** specification. This is essential for automated changelog generation and maintaining a clean history:
+  - `feat`: (new feature for the user, not a new feature for build script)
+  - `fix`: (bug fix for the user, not a fix to a build script)
+  - `docs`: (changes to the documentation)
+  - `style`: (formatting, missing semi colons, etc; no production code change)
+  - `refactor`: (refactoring production code, eg. renaming a variable)
+  - `test`: (adding missing tests, refactoring tests; no production code change)
+  - `chore`: (updating grunt tasks etc; no production code change)
+  - Example: `feat(pairing): add bulk move functionality` or `fix(auth): resolve session timeout on mobile`
 
 ## 6. Implementation Workflow
 
