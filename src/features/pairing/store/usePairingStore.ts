@@ -69,7 +69,7 @@ function rowToBoard(row: BoardRecord): PairingBoard {
 }
 
 // ---- Store interface ----
-interface PairingStore {
+export interface PairingStore {
   people: Person[];
   boards: PairingBoard[];
   isLoading: boolean;

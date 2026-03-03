@@ -5,7 +5,7 @@ import { persist } from 'zustand/middleware';
  * Persisted user-controlled workspace preferences.
  * Stored in localStorage under 'parrit-workspace-prefs'.
  */
-interface WorkspacePrefsState {
+export interface WorkspacePrefsState {
   stalePairHighlightingEnabled: boolean;
   setStalePairHighlighting: (enabled: boolean) => void;
   showFullName: boolean;

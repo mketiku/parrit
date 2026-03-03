@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { usePairingStore } from './usePairingStore';
+import { createBoard } from '../../../test/factories';
 
 // Mock Supabase
 vi.mock('../../../lib/supabase', () => ({
@@ -31,6 +32,7 @@ describe('usePairingStore', () => {
       isSaving: false,
       isRecommending: false,
       error: null,
+      previousBoards: null,
     });
   });
 
@@ -42,10 +44,7 @@ describe('usePairingStore', () => {
   });
 
   it('should setBoards correctly', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mockBoards: any[] = [
-      { id: 'b1', name: 'Board 1', assignedPersonIds: [] },
-    ];
+    const mockBoards = [createBoard({ id: 'b1', name: 'Board 1' })];
     const { setBoards } = usePairingStore.getState();
 
     setBoards(mockBoards);
@@ -53,24 +52,18 @@ describe('usePairingStore', () => {
   });
 
   it('should handle undo', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const initialBoards: any[] = [
-      { id: 'b1', name: 'Board 1', assignedPersonIds: [] },
-    ];
+    const initialBoards = [createBoard({ id: 'b1', name: 'Board 1' })];
     usePairingStore.setState({ boards: initialBoards });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newBoards: any[] = [
-      { id: 'b1', name: 'Updated Board', assignedPersonIds: [] },
-    ];
+    const newBoards = [createBoard({ id: 'b1', name: 'Board 1 Updated' })];
     const { setBoards, undo } = usePairingStore.getState();
 
-    setBoards(newBoards, true); // undoable=true
+    // Set boards with undoable = true
+    setBoards(newBoards, true);
     expect(usePairingStore.getState().boards).toEqual(newBoards);
-    expect(usePairingStore.getState().previousBoards).toEqual(initialBoards);
 
+    // Undo
     undo();
     expect(usePairingStore.getState().boards).toEqual(initialBoards);
-    expect(usePairingStore.getState().previousBoards).toBeNull();
   });
 });

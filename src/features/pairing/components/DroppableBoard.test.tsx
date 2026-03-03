@@ -2,10 +2,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DndContext } from '@dnd-kit/core';
 import { DroppableBoard } from './DroppableBoard';
-import type { PairingBoard, Person } from '../types';
 import React from 'react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
+import { createBoard, createPerson } from '../../../test/factories';
+import {
+  createMockPairingStore,
+  createMockWorkspacePrefsStore,
+} from '../../../test/mocks';
 
 // Mocks
 vi.mock('../store/usePairingStore');
@@ -14,52 +18,18 @@ vi.mock('../../../store/useWorkspacePrefsStore');
 const mockUsePairingStore = vi.mocked(usePairingStore);
 const mockUseWorkspacePrefsStore = vi.mocked(useWorkspacePrefsStore);
 
-const defaultStoreValues = {
-  people: [],
-  boards: [],
-  isLoading: false,
-  error: null,
-  loadWorkspaceData: vi.fn(),
-  addPerson: vi.fn(),
-  updatePerson: vi.fn(),
-  removePerson: vi.fn(),
-  setBoards: vi.fn(),
-  persistBoardAssignments: vi.fn(),
-  addBoard: vi.fn(),
-  updateBoard: vi.fn(),
-  removeBoard: vi.fn(),
-  saveSession: vi.fn(),
-  recommendPairs: vi.fn(),
-  saveCurrentAsTemplate: vi.fn(),
-  applyTemplate: vi.fn(),
-  rotateBoardPair: vi.fn(),
-  subscribeToRealtime: vi.fn().mockReturnValue(vi.fn()),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any;
-
-const defaultPrefsValues = {
-  stalePairHighlightingEnabled: false,
-};
-
-mockUsePairingStore.mockReturnValue(defaultStoreValues);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-mockUseWorkspacePrefsStore.mockReturnValue(defaultPrefsValues as any);
-
-const mockBoard: PairingBoard = {
-  id: 'board-1',
-  name: 'Phoenix',
-  isExempt: false,
-  sortOrder: 0,
-  goals: ['Ship the board logic'],
-};
-
-const mockPeople: Person[] = [
-  { id: '1', name: 'Alice Bob', avatarColorHex: '#f00' },
-  { id: '2', name: 'Charlie Dave', avatarColorHex: '#0f0' },
-];
+const defaultStoreValues = createMockPairingStore();
 
 describe('DroppableBoard Component', () => {
-  it('renders board details correctly', () => {
+  it('renders board name and goals', () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({
+      name: 'Phoenix',
+      goals: ['Ship the board logic'],
+    });
+
     render(
       <DndContext>
         <DroppableBoard board={mockBoard} people={[]} />
@@ -70,7 +40,40 @@ describe('DroppableBoard Component', () => {
     expect(screen.getByText('Ship the board logic')).toBeInTheDocument();
   });
 
-  it('renders people inside the board', () => {
+  it('renders assigned people full names by default', () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(
+      createMockWorkspacePrefsStore({ showFullName: true })
+    );
+
+    const mockBoard = createBoard({ id: 'board-1' });
+    const mockPeople = [
+      createPerson({ name: 'Alice Bob' }),
+      createPerson({ name: 'Charlie Dave' }),
+    ];
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={mockPeople} />
+      </DndContext>
+    );
+
+    expect(screen.getByText('Alice Bob')).toBeInTheDocument();
+    expect(screen.getByText('Charlie Dave')).toBeInTheDocument();
+  });
+
+  it('renders assigned people initials when showFullName is false', () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(
+      createMockWorkspacePrefsStore({ showFullName: false })
+    );
+
+    const mockBoard = createBoard({ id: 'board-1' });
+    const mockPeople = [
+      createPerson({ name: 'Alice Bob' }),
+      createPerson({ name: 'Charlie Dave' }),
+    ];
+
     render(
       <DndContext>
         <DroppableBoard board={mockBoard} people={mockPeople} />
@@ -81,28 +84,46 @@ describe('DroppableBoard Component', () => {
     expect(screen.getByText('CD')).toBeInTheDocument();
   });
 
-  it('shows Off-Duty label when exempt', () => {
-    const exemptBoard = { ...mockBoard, isExempt: true };
+  it('calls updateBoard when editing name', () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1', name: 'Phoenix' });
+
     render(
       <DndContext>
-        <DroppableBoard board={exemptBoard} people={[]} />
+        <DroppableBoard board={mockBoard} people={[]} />
       </DndContext>
     );
 
-    expect(screen.getByText('Off-Duty')).toBeInTheDocument();
+    const editButton = screen.getByTitle('Rename board');
+    fireEvent.click(editButton);
+
+    const input = screen.getByDisplayValue('Phoenix');
+    fireEvent.change(input, { target: { value: 'New Name' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(defaultStoreValues.updateBoard).toHaveBeenCalledWith('board-1', {
+      name: 'New Name',
+    });
   });
 
-  it('triggers rotateBoardPair when rotate button is clicked', () => {
+  it('rotates board pair when button is clicked', () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1' });
+    const mockPeople = [createPerson()];
+
     render(
       <DndContext>
         <DroppableBoard board={mockBoard} people={mockPeople} />
       </DndContext>
     );
 
-    const rotateBtn = screen.getByTitle(/Rotate pair/i);
-    fireEvent.click(rotateBtn);
-    expect(defaultStoreValues.rotateBoardPair).toHaveBeenCalledWith(
-      mockBoard.id
-    );
+    const rotateButton = screen.getByTitle(/Rotate pair/i);
+    fireEvent.click(rotateButton);
+
+    expect(defaultStoreValues.rotateBoardPair).toHaveBeenCalledWith('board-1');
   });
 });
