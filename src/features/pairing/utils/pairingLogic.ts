@@ -73,36 +73,117 @@ export function calculateRecommendations(
       (b.assignedPersonIds || []).forEach((id) => exemptPersonIds.add(id));
     });
 
-  const unassigned = people
-    .filter((p) => !exemptPersonIds.has(p.id))
-    .sort(() => Math.random() - 0.5); // Randomize initial pool for varied results
+  // Calculate continuity for active boards
+  const orderedSessionIds = Array.from(
+    new Set(history.map((h) => h.session_id))
+  );
 
-  const newBoards = boards.map((b) => ({
-    ...b,
-    assignedPersonIds: b.isExempt
-      ? [...(b.assignedPersonIds || [])]
-      : ([] as string[]),
-  }));
+  const getConsecutiveCount = (personId: string, boardId: string) => {
+    let count = 0;
+    for (const sessionId of orderedSessionIds) {
+      const wasOnBoard = history.some(
+        (h) =>
+          h.session_id === sessionId &&
+          h.board_id === boardId &&
+          h.person_id === personId
+      );
+      if (wasOnBoard) count++;
+      else break;
+    }
+    return count;
+  };
+
+  const boardKeepMap = new Map<string, string>(); // boardId -> personId kept
+  const unassigned: Person[] = [];
+
+  const activeBoardsOriginal = boards.filter((b) => !b.isExempt);
+
+  activeBoardsOriginal.forEach((board) => {
+    const assignedIds = (board.assignedPersonIds || []).filter(
+      (id) => !exemptPersonIds.has(id)
+    );
+
+    if (assignedIds.length === 0) return;
+
+    // Find the newest person (lowest count)
+    let keptId = assignedIds[0];
+    let minCount = Infinity;
+
+    assignedIds.forEach((id) => {
+      const count = getConsecutiveCount(id, board.id);
+      if (count < minCount) {
+        minCount = count;
+        keptId = id;
+      } else if (count === minCount) {
+        // Tie-breaker: random
+        if (Math.random() > 0.5) keptId = id;
+      }
+    });
+
+    boardKeepMap.set(board.id, keptId);
+  });
+
+  // Collect unassigned people
+  people.forEach((p) => {
+    if (exemptPersonIds.has(p.id)) return;
+
+    // If they aren't on any board, or they are on an active board but NOT the kept person
+    let isKept = false;
+    activeBoardsOriginal.forEach((b) => {
+      if (
+        boardKeepMap.get(b.id) === p.id &&
+        (b.assignedPersonIds || []).includes(p.id)
+      ) {
+        isKept = true;
+      }
+    });
+
+    if (!isKept) {
+      unassigned.push(p);
+    }
+  });
+
+  unassigned.sort(() => Math.random() - 0.5); // Randomize pool
+
+  const newBoards = boards.map((b) => {
+    const assigned = b.isExempt ? [...(b.assignedPersonIds || [])] : [];
+    if (!b.isExempt && boardKeepMap.has(b.id)) {
+      assigned.push(boardKeepMap.get(b.id)!);
+    }
+    return {
+      ...b,
+      assignedPersonIds: assigned,
+    };
+  });
 
   const activeBoards = newBoards.filter((b) => !b.isExempt);
   if (activeBoards.length === 0) return boards;
 
   // 3. Smart Assignment Logic (Least Recent Pair First)
 
-  // Phase A: Create Core Pairs (2 people per board)
+  // Phase A: Create Core Pairs (Up to 2 people per board)
   for (const board of activeBoards) {
     if (unassigned.length === 0) break;
 
-    const p1 = unassigned.pop()!;
-    board.assignedPersonIds.push(p1.id);
+    let p1Id: string;
 
-    if (unassigned.length > 0) {
-      // Find the best partner for p1
+    if (board.assignedPersonIds.length === 0) {
+      // Board is empty. Pop 1 person and then find best partner.
+      const p1 = unassigned.pop()!;
+      board.assignedPersonIds.push(p1.id);
+      p1Id = p1.id;
+    } else {
+      // Board already has the kept person
+      p1Id = board.assignedPersonIds[0];
+    }
+
+    if (board.assignedPersonIds.length < 2 && unassigned.length > 0) {
+      // Find the best partner for p1Id
       let bestP2Index = -1;
       let oldestTime = '9999-12-31';
 
       unassigned.forEach((candidate, idx) => {
-        const lastTime = lastPairedAt[p1.id]?.[candidate.id] || '0000-01-01';
+        const lastTime = lastPairedAt[p1Id]?.[candidate.id] || '0000-01-01';
         if (lastTime < oldestTime) {
           oldestTime = lastTime;
           bestP2Index = idx;
@@ -119,11 +200,11 @@ export function calculateRecommendations(
   // Phase B: Overflow (distribute remaining people to least-filled boards)
   while (unassigned.length > 0) {
     const pNext = unassigned.pop()!;
-    const targetBoard = activeBoards.sort(
+    activeBoards.sort(
       (a, b) =>
         (a.assignedPersonIds?.length || 0) - (b.assignedPersonIds?.length || 0)
-    )[0];
-    targetBoard.assignedPersonIds.push(pNext.id);
+    );
+    activeBoards[0].assignedPersonIds.push(pNext.id);
   }
 
   return newBoards;

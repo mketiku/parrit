@@ -353,6 +353,7 @@ export function PairingWorkspace() {
                     onClick={() => recommendPairs()}
                     disabled={isStoreLoading || isRecommending}
                     className="w-full flex justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                    title="Rotates pairs while keeping the most recent addition to each active board for context"
                   >
                     {isRecommending ? (
                       <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
@@ -361,9 +362,6 @@ export function PairingWorkspace() {
                     )}
                     {isRecommending ? 'Recommending...' : 'Recommend Pairs'}
                   </button>
-                  <span className="text-[9px] text-neutral-400 dark:text-neutral-500 font-black tracking-widest uppercase absolute -bottom-4 hidden sm:block w-max text-center">
-                    Shuffles entirely
-                  </span>
                 </div>
 
                 <button
