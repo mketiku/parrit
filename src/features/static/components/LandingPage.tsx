@@ -170,7 +170,7 @@ export function LandingPage() {
                 <div className="h-3 w-3 rounded-full bg-green-400/50" />
               </div>
               <div className="ml-4 flex-1 max-w-md rounded-xl bg-neutral-100 dark:bg-neutral-800 px-4 py-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-400 tracking-tight">
-                parrit.org/workspace/macaw-elite
+                parrit.org/app
               </div>
             </div>
             {/* Fake pairing workspace UI */}
@@ -185,7 +185,7 @@ export function LandingPage() {
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {['Toco Toucan 🦤', 'Canada Goose 🪿', 'Board #3 🦜'].map(
+                {['Toco Toucan 🦤', 'Canada Goose 🪿', 'Bald Eagle 🦅'].map(
                   (name, i) => {
                     const people = [
                       ['Blu', 'Jewel'],
