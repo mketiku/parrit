@@ -18,6 +18,23 @@ export function calculateRecommendations(
 ): PairingBoard[] {
   if (people.length < 2) return boards;
 
+  // 0. Prepare history: avoid mutating input and inject current board state
+  // Inject current board state into history so that we ALWAYS penalize the currently paired people
+  // from pairing again, even if the user hasn't clicked "Save Session" yet!
+  const currentSessionTime = new Date().toISOString();
+  const augmentedHistory: HistoryRow[] = [...history];
+
+  boards.forEach((b) => {
+    (b.assignedPersonIds || []).forEach((pId) => {
+      augmentedHistory.push({
+        session_id: 'current-unsaved-session',
+        board_id: b.id,
+        person_id: pId,
+        created_at: currentSessionTime,
+      });
+    });
+  });
+
   // 1. Build recency map: lastPairedAt[p1][p2] = ISO timestamp
   const lastPairedAt: Record<string, Record<string, string>> = {};
 
@@ -25,7 +42,7 @@ export function calculateRecommendations(
   const sessionMap: Record<string, Record<string, string[]>> = {};
   const sessionTimeMap: Record<string, string> = {};
 
-  history.forEach((row) => {
+  augmentedHistory.forEach((row) => {
     if (!sessionMap[row.session_id]) sessionMap[row.session_id] = {};
     if (!sessionMap[row.session_id][row.board_id])
       sessionMap[row.session_id][row.board_id] = [];
@@ -76,18 +93,20 @@ export function calculateRecommendations(
     });
 
   // Calculate continuity for active boards
+  // We want the sessions ordered newest to oldest to count the current consecutive streak.
   const orderedSessionIds = Array.from(
-    new Set(history.map((h) => h.session_id))
-  );
+    new Set(augmentedHistory.map((h) => h.session_id))
+  ).sort((a, b) => {
+    const timeA = sessionTimeMap[a] || '0000-01-01';
+    const timeB = sessionTimeMap[b] || '0000-01-01';
+    return timeB.localeCompare(timeA); // Newest first
+  });
 
   const getConsecutiveCount = (personId: string, boardId: string) => {
     let count = 0;
     for (const sessionId of orderedSessionIds) {
-      const wasOnBoard = history.some(
-        (h) =>
-          h.session_id === sessionId &&
-          h.board_id === boardId &&
-          h.person_id === personId
+      const wasOnBoard = (sessionMap[sessionId]?.[boardId] || []).includes(
+        personId
       );
       if (wasOnBoard) count++;
       else break;
@@ -147,7 +166,7 @@ export function calculateRecommendations(
 
   unassigned.sort(() => Math.random() - 0.5); // Randomize pool
 
-  const newBoards = boards.map((b) => {
+  const newBoards: PairingBoard[] = boards.map((b) => {
     const assigned =
       b.isExempt || b.isLocked ? [...(b.assignedPersonIds || [])] : [];
     if (!b.isExempt && !b.isLocked && boardKeepMap.has(b.id)) {
@@ -165,38 +184,50 @@ export function calculateRecommendations(
   // 3. Smart Assignment Logic (Least Recent Pair First)
 
   // Phase A: Create Core Pairs (Up to 2 people per board)
+  // First, if any active boards are completely empty, fill them with 1 person to have a baseline to pair against.
   for (const board of activeBoards) {
-    if (unassigned.length === 0) break;
+    if (board.assignedPersonIds!.length === 0 && unassigned.length > 0) {
+      board.assignedPersonIds!.push(unassigned.pop()!.id);
+    }
+  }
 
-    let p1Id: string;
+  // Next, globally evaluate the best (Board, Candidate) pairs.
+  while (unassigned.length > 0) {
+    const eligibleBoards = activeBoards.filter(
+      (b) => b.assignedPersonIds!.length < 2
+    );
+    if (eligibleBoards.length === 0) break; // All active boards have at least 2 people
 
-    if (board.assignedPersonIds.length === 0) {
-      // Board is empty. Pop 1 person and then find best partner.
-      const p1 = unassigned.pop()!;
-      board.assignedPersonIds.push(p1.id);
-      p1Id = p1.id;
-    } else {
-      // Board already has the kept person
-      p1Id = board.assignedPersonIds[0];
+    let bestBoard: PairingBoard | null = null;
+    let bestCandidateIndex = -1;
+    let oldestTime = '9999-12-31';
+
+    for (const board of eligibleBoards) {
+      // Guaranteed to be at least length 1 because we seeded empty boards above.
+      // E.g. p1 is the kept person.
+      const p1Id = board.assignedPersonIds![0];
+
+      for (let cIdx = 0; cIdx < unassigned.length; cIdx++) {
+        const candidate = unassigned[cIdx];
+        const lastTime = lastPairedAt[p1Id]?.[candidate.id] || '0000-01-01';
+
+        // Randomize tie-breakers if time represents the identical oldest paired time
+        if (
+          lastTime < oldestTime ||
+          (lastTime === oldestTime && Math.random() > 0.5)
+        ) {
+          oldestTime = lastTime;
+          bestBoard = board;
+          bestCandidateIndex = cIdx;
+        }
+      }
     }
 
-    if (board.assignedPersonIds.length < 2 && unassigned.length > 0) {
-      // Find the best partner for p1Id
-      let bestP2Index = -1;
-      let oldestTime = '9999-12-31';
-
-      unassigned.forEach((candidate, idx) => {
-        const lastTime = lastPairedAt[p1Id]?.[candidate.id] || '0000-01-01';
-        if (lastTime < oldestTime) {
-          oldestTime = lastTime;
-          bestP2Index = idx;
-        }
-      });
-
-      if (bestP2Index !== -1) {
-        const p2 = unassigned.splice(bestP2Index, 1)[0];
-        board.assignedPersonIds.push(p2.id);
-      }
+    if (bestBoard && bestCandidateIndex !== -1) {
+      const p2 = unassigned.splice(bestCandidateIndex, 1)[0];
+      bestBoard.assignedPersonIds!.push(p2.id);
+    } else {
+      break;
     }
   }
 
@@ -207,7 +238,7 @@ export function calculateRecommendations(
       (a, b) =>
         (a.assignedPersonIds?.length || 0) - (b.assignedPersonIds?.length || 0)
     );
-    activeBoards[0].assignedPersonIds.push(pNext.id);
+    activeBoards[0].assignedPersonIds!.push(pNext.id);
   }
 
   return newBoards;

@@ -14,7 +14,6 @@ import {
   Lock,
   Unlock,
   Link as LinkIcon,
-  RefreshCcw,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useStalePairsDetector } from './useStalePairsDetector';
@@ -39,7 +38,7 @@ export function DroppableBoard({
     data: { type: 'BOARD' },
   });
 
-  const { removeBoard, updateBoard, rotateBoardPair } = usePairingStore();
+  const { removeBoard, updateBoard } = usePairingStore();
   const { stalePairHighlightingEnabled } = useWorkspacePrefsStore();
   const { isRecentPair } = useStalePairsDetector();
 
@@ -184,7 +183,7 @@ export function DroppableBoard({
                 {board.name}
               </h3>
               {board.isExempt && (
-                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mt-0.5">
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-400 mt-0.5">
                   <ShieldX className="h-2 w-2" />
                   Off-Duty
                 </span>
@@ -200,17 +199,10 @@ export function DroppableBoard({
             {/* Board actions — visible on hover on desktop, always visible on mobile */}
             <div className="ml-auto flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
               <button
-                onClick={() => rotateBoardPair(board.id)}
-                disabled={people.length === 0}
-                className="rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-brand-500 dark:hover:bg-neutral-800 dark:hover:text-brand-400 disabled:opacity-30"
-                title="Rotate pair (Swap one person randomly)"
-              >
-                <RefreshCcw className="h-3.5 w-3.5" />
-              </button>
-              <button
                 onClick={() => setIsEditing(true)}
-                className="rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
                 title="Rename board"
+                aria-label={`Rename board ${board.name}`}
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
@@ -221,13 +213,17 @@ export function DroppableBoard({
                 className={`rounded-md p-1 transition-colors ${
                   board.isExempt
                     ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
-                    : 'text-neutral-400 hover:bg-neutral-100 hover:text-amber-500 dark:hover:bg-neutral-800'
+                    : 'text-neutral-500 hover:bg-neutral-100 hover:text-amber-500 dark:text-neutral-300 dark:hover:bg-neutral-800'
                 }`}
                 title={
                   board.isExempt
                     ? 'Remove Exempt status'
                     : 'Mark as Exempt (Out of Office)'
                 }
+                aria-label={
+                  board.isExempt ? 'Remove Exempt status' : 'Mark as Exempt'
+                }
+                aria-pressed={board.isExempt}
               >
                 <ShieldX className="h-3.5 w-3.5" />
               </button>
@@ -238,14 +234,16 @@ export function DroppableBoard({
                 disabled={board.isExempt}
                 className={`rounded-md p-1 transition-colors disabled:opacity-30 ${
                   board.isLocked
-                    ? 'text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20'
-                    : 'text-neutral-400 hover:bg-neutral-100 hover:text-brand-500 dark:hover:bg-neutral-800'
+                    ? 'text-brand-500 hover:bg-brand-50 dark:hover:bg-amber-900/20'
+                    : 'text-neutral-500 hover:bg-neutral-100 hover:text-brand-600 dark:text-neutral-300 dark:hover:bg-neutral-800'
                 }`}
                 title={
                   board.isLocked
                     ? 'Unlock board (Allow rotation)'
                     : 'Lock board (Prevent rotation)'
                 }
+                aria-label={board.isLocked ? 'Unlock board' : 'Lock board'}
+                aria-pressed={board.isLocked}
               >
                 {board.isLocked ? (
                   <Lock className="h-3.5 w-3.5" />
@@ -255,8 +253,9 @@ export function DroppableBoard({
               </button>
               <button
                 onClick={() => removeBoard(board.id)}
-                className="rounded-md p-1 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                className="rounded-md p-1 text-neutral-500 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-neutral-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 title="Delete board"
+                aria-label={`Delete board ${board.name}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -336,7 +335,7 @@ export function DroppableBoard({
                       {board.goals.map((g, i) => (
                         <li
                           key={i}
-                          className="flex gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400"
+                          className="flex gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-300"
                         >
                           <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" />
                           <span className="leading-relaxed break-words whitespace-pre-wrap">
@@ -365,7 +364,8 @@ export function DroppableBoard({
                       <input
                         name="quick-goal"
                         placeholder="Add another..."
-                        className="w-full bg-transparent text-[10px] font-medium text-neutral-600 outline-none placeholder:italic placeholder:text-neutral-400 dark:text-neutral-400"
+                        aria-label="Add individual goal"
+                        className="w-full bg-transparent text-[10px] font-medium text-neutral-600 outline-none placeholder:italic placeholder:text-neutral-400 dark:text-neutral-300"
                         onKeyDown={(e) => {
                           if (e.key === 'Escape') e.currentTarget.blur();
                         }}
@@ -393,7 +393,7 @@ export function DroppableBoard({
                     <input
                       name="quick-goal"
                       placeholder="Add daily goal..."
-                      className="w-full bg-transparent text-[10px] font-medium text-neutral-600 outline-none placeholder:italic placeholder:text-neutral-400 dark:text-neutral-400"
+                      className="w-full bg-transparent text-[10px] font-medium text-neutral-600 outline-none placeholder:italic placeholder:text-neutral-400 dark:text-neutral-300"
                       onKeyDown={(e) => {
                         if (e.key === 'Escape') e.currentTarget.blur();
                       }}
@@ -443,7 +443,7 @@ export function DroppableBoard({
       >
         <AnimatePresence>
           {people.length === 0 ? (
-            <span className="flex w-full min-h-[48px] items-center justify-center text-sm font-medium text-neutral-400 dark:text-neutral-500">
+            <span className="flex w-full min-h-[48px] items-center justify-center text-sm font-medium text-neutral-400 dark:text-neutral-400">
               {isOver ? 'Drop to assign' : 'Empty Board'}
             </span>
           ) : (

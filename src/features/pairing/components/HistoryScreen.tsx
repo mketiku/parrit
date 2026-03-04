@@ -14,7 +14,6 @@ import {
   Workflow,
   Copy,
   CheckSquare,
-  Square,
   BarChart3,
   HelpCircle,
 } from 'lucide-react';
@@ -399,14 +398,14 @@ export function HistoryScreen() {
             <h1 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
               Pairing History
             </h1>
-            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
               Archives of your team's tactical growth.
             </p>
           </div>
         </div>
         <Link
           to="/app"
-          className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-brand-500 transition-colors"
+          className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-brand-600 transition-colors"
         >
           <ArrowLeft className="h-3 w-3" />
           Back to Workspace
@@ -430,7 +429,7 @@ export function HistoryScreen() {
                 ${
                   showInsights
                     ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20'
-                    : 'bg-white border-neutral-200 text-neutral-400 hover:border-brand-500 hover:text-brand-500 dark:bg-neutral-900 dark:border-neutral-800'
+                    : 'bg-white border-neutral-200 text-neutral-400 hover:border-brand-500 hover:text-brand-600 dark:bg-neutral-900 dark:border-neutral-800'
                 }
               `}
             >
@@ -491,13 +490,47 @@ export function HistoryScreen() {
         <div className="lg:col-span-4 space-y-4">
           <div className="flex items-center justify-between mb-4 px-2">
             <div className="flex items-center gap-3">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
-                Recent Snapshots
-              </h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (
+                      selectedBulkIds.size === sessions.length &&
+                      sessions.length > 0
+                    ) {
+                      setSelectedBulkIds(new Set());
+                    } else {
+                      setSelectedBulkIds(new Set(sessions.map((s) => s.id)));
+                    }
+                  }}
+                  className={`flex h-6 w-6 items-center justify-center rounded-lg border transition-all ${
+                    selectedBulkIds.size === sessions.length &&
+                    sessions.length > 0
+                      ? 'bg-brand-500 border-brand-500 text-white shadow-sm'
+                      : 'border-neutral-200 bg-white dark:bg-neutral-900 dark:border-neutral-800 text-neutral-300'
+                  }`}
+                  aria-label={
+                    selectedBulkIds.size === sessions.length
+                      ? 'Deselect all sessions'
+                      : 'Select all sessions'
+                  }
+                  title={
+                    selectedBulkIds.size === sessions.length
+                      ? 'Deselect all'
+                      : 'Select all'
+                  }
+                >
+                  <CheckSquare
+                    className={`h-4 w-4 ${selectedBulkIds.size === sessions.length ? 'opacity-100' : 'opacity-0'}`}
+                  />
+                </button>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+                  Recent Snapshots
+                </h2>
+              </div>
               {selectedBulkIds.size > 0 && (
                 <button
                   onClick={deleteBulkSessions}
-                  className="text-[10px] font-black uppercase text-red-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded-lg"
+                  className="text-[10px] font-black uppercase text-red-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded-lg active:scale-95"
                 >
                   <Trash2 className="h-3 w-3" />
                   Delete ({selectedBulkIds.size})
@@ -550,22 +583,31 @@ export function HistoryScreen() {
                             return next;
                           });
                         }}
-                        className={`p-1 rounded-md transition-colors ${selectedBulkIds.has(session.id) ? 'text-brand-500' : 'text-neutral-300 hover:text-neutral-400'}`}
+                        role="checkbox"
+                        aria-checked={selectedBulkIds.has(session.id)}
+                        className={`p-1 rounded-md transition-colors ${
+                          selectedBulkIds.has(session.id)
+                            ? 'text-brand-500 bg-brand-500/10'
+                            : 'text-neutral-300 hover:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                        }`}
+                        aria-label={`Select session from ${format(parseInputDate(session.session_date), 'MMM do')} for bulk action`}
                         title="Select for bulk action"
                       >
-                        {selectedBulkIds.has(session.id) ? (
-                          <CheckSquare className="h-5 w-5" />
-                        ) : (
-                          <Square className="h-5 w-5" />
-                        )}
+                        <CheckSquare
+                          className={`h-5 w-5 transition-transform ${selectedBulkIds.has(session.id) ? 'scale-110' : 'scale-100 opacity-40'}`}
+                        />
                       </button>
 
                       <button
                         onClick={() => loadSessionDetails(session.id)}
+                        aria-label={`View details for session on ${format(parseInputDate(session.session_date), 'MMM do, yyyy')}`}
+                        aria-selected={selectedSessionId === session.id}
                         className={`flex-1 flex items-center justify-between p-4 rounded-2xl border transition-all ${
                           selectedSessionId === session.id
                             ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20 shadow-lg shadow-brand-500/5'
-                            : 'border-neutral-200 bg-white hover:border-brand-200 dark:border-neutral-800 dark:bg-neutral-900/50'
+                            : selectedBulkIds.has(session.id)
+                              ? 'border-brand-200 bg-brand-50/30 dark:border-brand-900/40 dark:bg-brand-950/10'
+                              : 'border-neutral-200 bg-white hover:border-brand-200 dark:border-neutral-800 dark:bg-neutral-900/50'
                         }`}
                       >
                         <div className="flex items-center gap-4">
@@ -602,6 +644,7 @@ export function HistoryScreen() {
                       onClick={(e) => deleteSession(e, session.id)}
                       className="absolute -right-2 -top-2 flex h-8 w-8 scale-0 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-xl border border-neutral-100 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 group-hover:scale-100 active:scale-90"
                       title="Delete Session"
+                      aria-label={`Delete session on ${format(parseInputDate(session.session_date), 'MMM do')}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -669,10 +712,14 @@ export function HistoryScreen() {
                         {isEditingDate ? (
                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                             <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-bold text-white/60 uppercase">
+                              <label
+                                htmlFor="edit-session-date"
+                                className="text-[10px] font-bold text-white/60 uppercase"
+                              >
                                 Date
-                              </span>
+                              </label>
                               <input
+                                id="edit-session-date"
                                 type="date"
                                 value={editDateValue}
                                 onChange={(e) =>
@@ -682,10 +729,14 @@ export function HistoryScreen() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-bold text-white/60 uppercase">
+                              <label
+                                htmlFor="edit-session-time"
+                                className="text-[10px] font-bold text-white/60 uppercase"
+                              >
                                 Time
-                              </span>
+                              </label>
                               <input
+                                id="edit-session-time"
                                 type="time"
                                 value={editTimeValue}
                                 onChange={(e) =>
@@ -742,6 +793,7 @@ export function HistoryScreen() {
                               }}
                               className="ml-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-all border border-white/10"
                               title="Edit Date/Time"
+                              aria-label="Edit Date/Time"
                             >
                               <Calendar className="h-4 w-4" />
                             </button>
@@ -807,6 +859,7 @@ export function HistoryScreen() {
                                   personInStore &&
                                   setSelectedPersonId(personInStore.id)
                                 }
+                                aria-label={`View insights for ${p.person_name}`}
                                 className="flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border border-neutral-100/50 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all active:scale-95 group/person"
                               >
                                 <div
@@ -831,7 +884,7 @@ export function HistoryScreen() {
                   <div className="h-px w-24 bg-neutral-100 dark:bg-neutral-800 mb-8" />
                   <Link
                     to="/app"
-                    className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-brand-500 transition-all hover:gap-5"
+                    className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-brand-600 transition-all hover:gap-5"
                   >
                     End of Tape
                     <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-neutral-50 dark:bg-neutral-800 group transition-colors">
@@ -857,8 +910,9 @@ export function HistoryScreen() {
           <button
             id="help-btn"
             onClick={() => startTutorial(HISTORY_TUTORIAL_STEPS)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 dark:bg-neutral-900 dark:border-neutral-800"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-500 shadow-xl border border-neutral-200 transition-all hover:text-brand-600 hover:scale-110 active:scale-95 dark:text-neutral-300 dark:bg-neutral-900 dark:border-neutral-800"
             title="Help & Tutorial"
+            aria-label="Help & Tutorial"
           >
             <HelpCircle className="h-6 w-6" />
           </button>

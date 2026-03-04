@@ -71,7 +71,7 @@ export function TeamScreen() {
           <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
             Team Members
           </h1>
-          <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+          <p className="mt-2 text-neutral-500 dark:text-neutral-300">
             Add, rename, or remove people from your workspace.
           </p>
         </div>
@@ -131,7 +131,7 @@ export function TeamScreen() {
               setIsAdding(false);
               setNewName('');
             }}
-            className="flex items-center gap-1.5 rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-600 transition-all hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
+            className="flex items-center gap-1.5 rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-600 transition-all hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -234,15 +234,17 @@ export function TeamScreen() {
                               person.avatarColorHex
                             )
                           }
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-all hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-all hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
                           title="Edit"
+                          aria-label="Edit team member"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => removePerson(person.id)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-all hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-all hover:bg-red-50 hover:text-red-500 dark:text-neutral-300 dark:hover:bg-red-500/10"
                           title="Remove"
+                          aria-label="Remove team member"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

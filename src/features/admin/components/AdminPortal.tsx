@@ -66,7 +66,7 @@ export function AdminPortal() {
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
           Restricted Access
         </h1>
-        <p className="mt-2 max-w-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mt-2 max-w-sm text-neutral-500 dark:text-neutral-300">
           This portal is restricted to the system administrator.
         </p>
         <a
@@ -96,7 +96,7 @@ export function AdminPortal() {
             <Lock className="h-8 w-8 text-brand-500" />
             Admin Control
           </h1>
-          <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+          <p className="mt-2 text-neutral-500 dark:text-neutral-300">
             Secure audit view via RBAC. Action logs are recorded.
           </p>
         </div>
@@ -169,7 +169,7 @@ export function AdminPortal() {
                     href={`/view/${w.id}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-xs font-bold text-neutral-600 transition-all hover:bg-brand-50 hover:text-brand-600 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-400"
+                    className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-xs font-bold text-neutral-600 transition-all hover:bg-brand-50 hover:text-brand-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
                   >
                     <div className="flex items-center gap-2">
                       <ExternalLink className="h-3.5 w-3.5" />

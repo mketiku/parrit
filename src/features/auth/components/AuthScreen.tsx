@@ -64,7 +64,7 @@ export function AuthScreen() {
           <h1 className="text-2xl font-bold tracking-tight">
             Welcome to Parrit
           </h1>
-          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-300">
             {isSignUp
               ? 'Create a secure team workspace'
               : 'Sign in to orchestrate your team'}
@@ -72,17 +72,24 @@ export function AuthScreen() {
         </div>
 
         {errorMSG && (
-          <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
+          <div
+            role="alert"
+            className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400"
+          >
             {errorMSG}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            <label
+              htmlFor="workspace-name"
+              className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-300"
+            >
               Workspace Name
             </label>
             <input
+              id="workspace-name"
               type="text"
               required
               value={workspaceName}
@@ -93,10 +100,14 @@ export function AuthScreen() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            <label
+              htmlFor="password"
+              className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-300"
+            >
               Password
             </label>
             <input
+              id="password"
               type="password"
               required
               value={password}
@@ -109,7 +120,7 @@ export function AuthScreen() {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex w-full items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 transition-all hover:bg-brand-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70 dark:bg-brand-500 dark:hover:bg-brand-400"
+            className="flex w-full items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 transition-all hover:bg-brand-500 active:scale-[0.98] disabled:pointer-events-none disabled:dark:bg-brand-500 dark:hover:bg-brand-400"
           >
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -121,11 +132,11 @@ export function AuthScreen() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+        <div className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-300">
           {isSignUp ? 'Already have a workspace? ' : "Don't have a workspace? "}
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="font-medium text-brand-600 hover:text-brand-500 hover:underline dark:text-brand-400 dark:hover:text-brand-300"
+            className="font-medium text-brand-600 hover:text-brand-600 hover:underline dark:text-brand-400 dark:hover:text-brand-300"
           >
             {isSignUp ? 'Sign in' : 'Create one'}
           </button>

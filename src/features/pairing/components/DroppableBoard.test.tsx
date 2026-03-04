@@ -107,23 +107,4 @@ describe('DroppableBoard Component', () => {
       name: 'New Name',
     });
   });
-
-  it('rotates board pair when button is clicked', () => {
-    mockUsePairingStore.mockReturnValue(defaultStoreValues);
-    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
-
-    const mockBoard = createBoard({ id: 'board-1' });
-    const mockPeople = [createPerson()];
-
-    render(
-      <DndContext>
-        <DroppableBoard board={mockBoard} people={mockPeople} />
-      </DndContext>
-    );
-
-    const rotateButton = screen.getByTitle(/Rotate pair/i);
-    fireEvent.click(rotateButton);
-
-    expect(defaultStoreValues.rotateBoardPair).toHaveBeenCalledWith('board-1');
-  });
 });

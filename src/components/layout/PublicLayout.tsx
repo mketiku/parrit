@@ -48,13 +48,13 @@ export default function PublicLayout() {
           <div className="hidden sm:flex items-center gap-3">
             <Link
               to="/about"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition-colors"
             >
               About
             </Link>
             <button
               onClick={() => setIsDark(!isDark)}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition-colors"
               aria-label="Toggle Dark Mode"
             >
               {isDark ? (
@@ -100,7 +100,7 @@ export default function PublicLayout() {
           <div className="flex sm:hidden items-center gap-2">
             <button
               onClick={() => setIsDark(!isDark)}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
               {isDark ? (
                 <Sun className="h-4 w-4" />
@@ -127,7 +127,7 @@ export default function PublicLayout() {
             <Link
               to="/about"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-base font-medium text-neutral-600 hover:text-brand-500 dark:text-neutral-300 transition-colors"
+              className="text-base font-medium text-neutral-600 hover:text-brand-600 dark:text-neutral-300 transition-colors"
             >
               About Parrit
             </Link>
@@ -182,13 +182,13 @@ export default function PublicLayout() {
           <div className="flex items-center gap-6">
             <Link
               to="/about"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               About
             </Link>
             <a
               href="/about#contact"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               Contact
             </a>

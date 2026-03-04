@@ -116,7 +116,7 @@ export default function AppLayout() {
                     `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
                       isActive
                         ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400'
-                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800'
                     }`
                   }
                 >
@@ -149,7 +149,7 @@ export default function AppLayout() {
             {/* Hamburger — mobile only */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="sm:hidden flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800"
+              className="sm:hidden flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors dark:text-neutral-300 dark:hover:bg-neutral-800"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
@@ -177,7 +177,7 @@ export default function AppLayout() {
                     `rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                       isActive
                         ? 'bg-neutral-100 text-brand-600 dark:bg-neutral-800 dark:text-brand-400'
-                        : 'text-neutral-600 dark:text-neutral-400'
+                        : 'text-neutral-600 dark:text-neutral-300'
                     }`
                   }
                 >
@@ -191,7 +191,7 @@ export default function AppLayout() {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
               aria-label="Toggle Dark Mode"
             >
               {isDark ? (
@@ -232,13 +232,13 @@ export default function AppLayout() {
           <div className="flex items-center gap-6">
             <Link
               to="/about"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               About
             </Link>
             <a
               href="/about#contact"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-500 transition-colors"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               Contact
             </a>

@@ -33,8 +33,7 @@ export const createMockPairingStore = (
   saveCurrentAsTemplate: vi.fn().mockResolvedValue(undefined),
   applyTemplate: vi.fn().mockResolvedValue(undefined),
   applyBuiltinTemplate: vi.fn().mockResolvedValue(undefined),
-  rotateBoardPair: vi.fn().mockResolvedValue(undefined),
-  exportWorkspace: vi.fn().mockResolvedValue(''),
+  exportWorkspace: vi.fn().mockResolvedValue('{}'),
   importWorkspace: vi.fn().mockResolvedValue(undefined),
   ...overrides,
 });

@@ -39,7 +39,7 @@ function DashboardView() {
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
           {displayName} Workspace
         </h1>
-        <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+        <p className="mt-2 text-neutral-500 dark:text-neutral-300">
           Drag and drop team members to configure today's pairing sessions.
         </p>
       </div>

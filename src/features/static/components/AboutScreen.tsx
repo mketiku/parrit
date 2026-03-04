@@ -46,7 +46,7 @@ export function AboutScreen() {
           <h1 className="text-5xl font-black tracking-tight text-neutral-900 dark:text-neutral-50 uppercase">
             The Story of <span className="text-brand-500">Parrit</span>
           </h1>
-          <p className="mx-auto max-w-xl text-lg font-medium text-neutral-500 dark:text-neutral-400 leading-relaxed">
+          <p className="mx-auto max-w-xl text-lg font-medium text-neutral-500 dark:text-neutral-300 leading-relaxed">
             A dedicated space for engineering teams to manage their daily
             pairing rotations. Early birds and night owls welcome.
           </p>
@@ -57,7 +57,7 @@ export function AboutScreen() {
             href="https://www.linkedin.com/in/mketiku"
             target="_blank"
             rel="noreferrer"
-            className="group flex items-center gap-2 rounded-2xl bg-white px-6 py-3 text-sm font-bold text-neutral-600 shadow-sm border border-neutral-200 hover:border-brand-500 hover:text-brand-600 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400"
+            className="group flex items-center gap-2 rounded-2xl bg-white px-6 py-3 text-sm font-bold text-neutral-600 shadow-sm border border-neutral-200 hover:border-brand-500 hover:text-brand-600 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300"
           >
             <Linkedin className="h-4 w-4" />
             Connect with me
@@ -73,12 +73,12 @@ export function AboutScreen() {
             The Fellowship
           </h2>
           <div className="prose prose-neutral dark:prose-invert max-w-none space-y-4">
-            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
               We believe engineering is a team sport. Parrit was born from the
               realization that when we pair, we don't just write better code—we
               build better relationships.
             </p>
-            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
               By removing the friction of "who is with whom," we allow teams to
               focus on what actually matters: solving hard problems together.
             </p>
@@ -134,7 +134,7 @@ export function AboutScreen() {
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
                       {item.title}
                     </p>
-                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-300">
                       {item.desc}
                     </p>
                   </div>
@@ -151,7 +151,7 @@ export function AboutScreen() {
           <Code2 className="h-6 w-6 text-brand-500" />
           Acknowledgements
         </h2>
-        <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed mb-6">
+        <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed mb-6">
           This project is a spiritual successor to the original Parrit, which
           served the community faithfully for years. We are grateful for the
           inspiration provided by the original creators and the patterns they
@@ -170,7 +170,7 @@ export function AboutScreen() {
       {/* FAQ Section */}
       <section className="space-y-8">
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-1.5 text-xs font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+          <div className="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-1.5 text-xs font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-300">
             <MessageCircleQuestion className="h-3.5 w-3.5" />
             Common Questions
           </div>
@@ -188,7 +188,7 @@ export function AboutScreen() {
               <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-50 mb-3">
                 {faq.question}
               </h3>
-              <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
                 {faq.answer}
               </p>
             </div>

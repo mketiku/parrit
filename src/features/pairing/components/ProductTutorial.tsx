@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useLayoutEffect } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useLayoutEffect,
+  useEffect,
+  useRef,
+} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   useFloating,
@@ -25,6 +31,7 @@ export function ProductTutorial() {
   const { setOnboardingCompleted } = useWorkspacePrefsStore();
   const { user } = useAuthStore();
   const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   const currentStep = steps[currentStepIndex];
 
@@ -105,6 +112,42 @@ export function ProductTutorial() {
   // we extract the functions we need.
   const { setFloating } = refs;
 
+  // Manage focus trap
+  useEffect(() => {
+    if (isReady && dialogRef.current) {
+      // Focus the dialog to start the keyboard interaction
+      dialogRef.current.focus();
+    }
+  }, [isReady]);
+
+  // Trap focus inside the dialog
+  const handleDialogKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Tab' && dialogRef.current) {
+      const focusableElements = dialogRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[
+        focusableElements.length - 1
+      ] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (
+          document.activeElement === firstElement ||
+          document.activeElement === dialogRef.current
+        ) {
+          e.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    }
+  };
+
   return (
     <AnimatePresence>
       {isReady && (
@@ -123,13 +166,22 @@ export function ProductTutorial() {
           />
 
           <motion.div
-            ref={setFloating}
+            ref={(node) => {
+              setFloating(node);
+              dialogRef.current = node;
+            }}
+            tabIndex={-1}
+            onKeyDown={handleDialogKeyDown}
             key={currentStepIndex}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tutorial-title"
+            aria-describedby="tutorial-description"
             initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="absolute pointer-events-auto z-[101] w-80 rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-neutral-900"
+            className="absolute pointer-events-auto z-[101] w-80 rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-neutral-900 focus:outline-none"
             style={{
               position: strategy,
               top: y ?? 0,
@@ -141,23 +193,30 @@ export function ProductTutorial() {
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand-500 text-white">
                   <Bird className="h-4 w-4" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-500">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 dark:text-brand-500">
                   Step {currentStepIndex + 1} of {steps.length}
                 </span>
               </div>
               <button
                 onClick={handleFinish}
-                className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/10 transition-colors"
+                className="rounded-full p-1 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-white/10 transition-colors"
                 title="Skip Tour"
+                aria-label="Skip Tour"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <h3 className="mb-2 text-lg font-bold text-neutral-900 dark:text-neutral-50">
+            <h3
+              id="tutorial-title"
+              className="mb-2 text-lg font-bold text-neutral-900 dark:text-neutral-50"
+            >
               {currentStep.title}
             </h3>
-            <p className="mb-6 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+            <p
+              id="tutorial-description"
+              className="mb-6 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300"
+            >
               {currentStep.description}
             </p>
 

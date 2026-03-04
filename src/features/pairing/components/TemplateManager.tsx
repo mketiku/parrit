@@ -19,27 +19,27 @@ const BUILTIN_TEMPLATES: {
   description: string;
   boards: { name: string; isExempt: boolean }[];
 }[] = [
-    {
-      name: '3-Board Starter',
-      description: 'Board 1, Board 2, Board 3 + OOO exempt',
-      boards: [
-        { name: 'Board 1', isExempt: false },
-        { name: 'Board 2', isExempt: false },
-        { name: 'Board 3', isExempt: false },
-        { name: 'OOO', isExempt: true },
-      ],
-    },
-    {
-      name: 'Domain Teams',
-      description: 'Frontend, Backend, Platform + OOO exempt',
-      boards: [
-        { name: 'Frontend', isExempt: false },
-        { name: 'Backend', isExempt: false },
-        { name: 'Platform', isExempt: false },
-        { name: 'OOO', isExempt: true },
-      ],
-    },
-  ];
+  {
+    name: '3-Board Starter',
+    description: 'Board 1, Board 2, Board 3 + OOO exempt',
+    boards: [
+      { name: 'Board 1', isExempt: false },
+      { name: 'Board 2', isExempt: false },
+      { name: 'Board 3', isExempt: false },
+      { name: 'OOO', isExempt: true },
+    ],
+  },
+  {
+    name: 'Domain Teams',
+    description: 'Frontend, Backend, Platform + OOO exempt',
+    boards: [
+      { name: 'Frontend', isExempt: false },
+      { name: 'Backend', isExempt: false },
+      { name: 'Platform', isExempt: false },
+      { name: 'OOO', isExempt: true },
+    ],
+  },
+];
 
 interface TemplateBoard {
   name: string;
@@ -123,6 +123,9 @@ export function TemplateManager() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Manage Templates"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
         className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
       >
         <Copy className="h-4 w-4 text-brand-500" />
@@ -146,7 +149,8 @@ export function TemplateManager() {
                 </h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className="rounded-lg p-1 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  aria-label="Close"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -172,7 +176,7 @@ export function TemplateManager() {
                         <p className="text-xs font-bold text-neutral-900 group-hover:text-brand-700 dark:text-neutral-100 dark:group-hover:text-brand-300">
                           {preset.name}
                         </p>
-                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                        <p className="text-[10px] text-neutral-500 dark:text-neutral-300">
                           {preset.description}
                         </p>
                       </div>
@@ -194,6 +198,7 @@ export function TemplateManager() {
                     disabled={isSaving || !newTemplateName.trim()}
                     className="flex aspect-square h-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-lg shadow-brand-500/20 transition-all hover:bg-brand-600 active:scale-95 disabled:opacity-50"
                     title="Save Current as Template"
+                    aria-label="Save Current as Template"
                   >
                     {isSaving ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -239,7 +244,8 @@ export function TemplateManager() {
                         </span>
                         <button
                           onClick={(e) => handleDeleteTemplate(template.id, e)}
-                          className="rounded-lg p-1.5 text-neutral-400 hover:bg-white hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-all dark:hover:bg-neutral-800"
+                          className="rounded-lg p-1.5 text-neutral-500 hover:bg-white hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-all dark:text-neutral-300 dark:hover:bg-neutral-800"
+                          aria-label="Delete template"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>

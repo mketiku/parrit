@@ -124,7 +124,6 @@ export interface PairingStore {
     name: string,
     boards: { name: string; isExempt: boolean }[]
   ) => Promise<void>;
-  rotateBoardPair: (boardId: string) => Promise<void>;
 
   // Export / Import
   exportWorkspace: (includeHistory?: boolean) => Promise<string>; // returns JSON string
@@ -780,55 +779,6 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       set({ isLoading: false });
       toast().addToast('Failed to apply preset template.', 'error');
     }
-  },
-
-  rotateBoardPair: async (boardId) => {
-    const { boards, people } = get();
-    const sourceBoard = boards.find((b) => b.id === boardId);
-    if (!sourceBoard || (sourceBoard.assignedPersonIds ?? []).length === 0)
-      return;
-
-    // 1. Pick a person from the source board to "eject"
-    const ids = sourceBoard.assignedPersonIds ?? [];
-    const ejectIdx = Math.floor(Math.random() * ids.length);
-    const ejectedId = ids[ejectIdx];
-
-    // 2. Find eligible swap candidates (everyone NOT on this board)
-    const otherPeopleIds = people
-      .map((p) => p.id)
-      .filter((id) => !ids.includes(id));
-
-    if (otherPeopleIds.length === 0) return;
-
-    // 3. Pick a target person to swap in
-    const targetId =
-      otherPeopleIds[Math.floor(Math.random() * otherPeopleIds.length)];
-
-    // 4. Find which board (if any) the target person is currently on
-    const targetBoard = boards.find((b) =>
-      (b.assignedPersonIds ?? []).includes(targetId)
-    );
-
-    const updatedBoards = boards.map((b) => {
-      let newIds = [...(b.assignedPersonIds ?? [])];
-
-      if (b.id === sourceBoard.id) {
-        // Swap out the ejected guy, swap in the target
-        newIds = newIds.map((id) => (id === ejectedId ? targetId : id));
-      } else if (targetBoard && b.id === targetBoard.id) {
-        // If the target was on another board, swap out the target, swap in the ejected guy
-        newIds = newIds.map((id) => (id === targetId ? ejectedId : id));
-      } else if (!targetBoard && b.id === 'pool') {
-        // (Pool isn't a board in DB, it's just filtered state, so persistBoardAssignments handles it)
-      }
-
-      return { ...b, assignedPersonIds: newIds };
-    });
-
-    // 5. Update and Persist
-    set({ boards: updatedBoards });
-    await get().persistBoardAssignments(updatedBoards);
-    toast().addToast('Pair rotated', 'success');
   },
 
   exportWorkspace: async (includeHistory = true) => {

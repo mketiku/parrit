@@ -40,7 +40,7 @@ function ToastItem({ toast }: { toast: Toast }) {
             toast.action?.onClick();
             removeToast(toast.id);
           }}
-          className="shrink-0 rounded-md bg-neutral-100 px-2 py-1 text-[10px] font-black uppercase tracking-tight text-neutral-600 hover:bg-brand-500 hover:text-white dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-brand-500 dark:hover:text-white transition-all shadow-sm active:scale-95"
+          className="shrink-0 rounded-md bg-neutral-100 px-2 py-1 text-[10px] font-black uppercase tracking-tight text-neutral-600 hover:bg-brand-500 hover:text-white dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-brand-500 dark:hover:text-white transition-all shadow-sm active:scale-95"
         >
           {toast.action.label}
         </button>

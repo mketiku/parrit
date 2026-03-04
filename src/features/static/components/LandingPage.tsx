@@ -90,7 +90,7 @@ export function LandingPage() {
                   {workspaceName.substring(0, 1).toUpperCase()}
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 font-black uppercase tracking-widest">
+                  <p className="text-[10px] text-neutral-500 dark:text-neutral-300 font-black uppercase tracking-widest">
                     Signed in as
                   </p>
                   <p className="text-sm font-bold text-neutral-900 dark:text-white capitalize leading-tight">
@@ -112,7 +112,7 @@ export function LandingPage() {
               </span>
             </h1>
 
-            <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl font-medium text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl font-medium text-neutral-500 dark:text-neutral-300 leading-relaxed">
               Parrit is a fast, beautiful pairing board designed for engineering
               teams practicing pair programming. Sync live with teammates and
               track your rotations over time — without a single email required.
@@ -169,7 +169,7 @@ export function LandingPage() {
                 <div className="h-3 w-3 rounded-full bg-amber-400/50" />
                 <div className="h-3 w-3 rounded-full bg-green-400/50" />
               </div>
-              <div className="ml-4 flex-1 max-w-md rounded-xl bg-neutral-100 dark:bg-neutral-800 px-4 py-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-tight">
+              <div className="ml-4 flex-1 max-w-md rounded-xl bg-neutral-100 dark:bg-neutral-800 px-4 py-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-400 tracking-tight">
                 parrit.org/workspace/macaw-elite
               </div>
             </div>
@@ -247,7 +247,7 @@ export function LandingPage() {
           <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-neutral-900 dark:text-white mb-6">
             Everything your team needs
           </h2>
-          <p className="text-xl font-medium text-neutral-500 dark:text-neutral-400">
+          <p className="text-xl font-medium text-neutral-500 dark:text-neutral-300">
             A specialized toolset built for high-velocity rotation.
           </p>
         </motion.div>
@@ -271,7 +271,7 @@ export function LandingPage() {
               <h3 className="mb-3 text-lg font-black text-neutral-900 dark:text-neutral-100">
                 {f.title}
               </h3>
-              <p className="text-sm font-medium leading-[1.6] text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
+              <p className="text-sm font-medium leading-[1.6] text-neutral-500 dark:text-neutral-300 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
                 {f.description}
               </p>
             </motion.div>

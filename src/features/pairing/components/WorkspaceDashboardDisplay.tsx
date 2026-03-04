@@ -92,7 +92,7 @@ export function WorkspaceDashboardDisplay({
                     {board.goals.map((goal, gIdx) => (
                       <div key={gIdx} className="flex items-start gap-3">
                         <Target className="h-3.5 w-3.5 text-brand-400 mt-1 shrink-0" />
-                        <p className="text-[13px] font-medium text-neutral-600 dark:text-neutral-400">
+                        <p className="text-[13px] font-medium text-neutral-600 dark:text-neutral-300">
                           {goal}
                         </p>
                       </div>

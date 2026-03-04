@@ -162,7 +162,7 @@ export function PublicView() {
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
             Access Restricted
           </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mb-10 leading-relaxed">
+          <p className="text-neutral-500 dark:text-neutral-300 mb-10 leading-relaxed">
             This workspace dashboard is currently private.
           </p>
           <Link

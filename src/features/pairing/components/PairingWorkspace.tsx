@@ -66,6 +66,7 @@ export function PairingWorkspace() {
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [isMoveMenuOpen, setIsMoveMenuOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const { matrix, isLoading: isAnalyzing } = useHistoryAnalytics(people);
 
@@ -200,6 +201,7 @@ export function PairingWorkspace() {
   const handleDownloadScreenshot = async () => {
     if (!dashboardRef.current) return;
     setIsDownloading(true);
+    setIsExporting(true);
 
     try {
       // Trigger the export mode styles
@@ -227,6 +229,7 @@ export function PairingWorkspace() {
       useToastStore.getState().addToast('Failed to generate image.', 'error');
     } finally {
       document.documentElement.removeAttribute('data-exporting');
+      setIsExporting(false);
       setIsDownloading(false);
     }
   };
@@ -309,25 +312,29 @@ export function PairingWorkspace() {
               Visible only in Screenshot: Show full workspace identity 
               Hidden in App: Prevents repetition with the page-level H1
             */}
-            <div className="hidden [html[data-exporting='true']_&]:block mb-8">
-              <h2 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
-                {workspaceTitle}
-              </h2>
-              <div className="h-1 w-20 bg-brand-500 mt-2" />
-            </div>
+            {isExporting && (
+              <div className="mb-8">
+                <h2 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+                  {workspaceTitle}
+                </h2>
+                <div className="h-1 w-20 bg-brand-500 mt-2" />
+              </div>
+            )}
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
-              <div className="flex flex-col">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                  Active Pairing Boards
-                </h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                    Live Session
-                  </span>
+              {!isExporting && (
+                <div className="flex flex-col">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                    Active Pairing Boards
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                      Live Session
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex flex-wrap items-center gap-2 [html[data-exporting='true']_&]:hidden">
                 <button
@@ -337,7 +344,7 @@ export function PairingWorkspace() {
                     ${
                       showHeatmap
                         ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20'
-                        : 'bg-white border-neutral-200 text-neutral-400 hover:border-brand-500 hover:text-brand-500 dark:bg-neutral-900 dark:border-neutral-800'
+                        : 'bg-white border-neutral-200 text-neutral-400 hover:border-brand-500 hover:text-brand-600 dark:bg-neutral-900 dark:border-neutral-800'
                     }
                   `}
                 >
@@ -353,7 +360,7 @@ export function PairingWorkspace() {
                     onClick={() => recommendPairs()}
                     disabled={isStoreLoading || isRecommending}
                     className="w-full flex justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-                    title="Rotates pairs while keeping the most recent addition to each active board for context"
+                    title="Intelligently rotates ALL boards based on history. Keeps one person per board for continuity, and pairs them with someone they haven't worked with recently."
                   >
                     {isRecommending ? (
                       <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
@@ -447,12 +454,16 @@ export function PairingWorkspace() {
               {!isStoreLoading && !isAddingBoard && (
                 <button
                   onClick={() => setIsAddingBoard(true)}
+                  aria-label="Add new pairing board"
                   className="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 p-5 transition-all hover:border-brand-400 hover:bg-brand-50/30 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:bg-brand-950/10 [html[data-exporting='true']_&]:hidden"
                 >
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-brand-100 group-hover:text-brand-500 dark:bg-neutral-800 dark:group-hover:bg-brand-900/40">
+                  <div
+                    className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors group-hover:bg-brand-100 group-hover:text-brand-600 dark:bg-neutral-800 dark:group-hover:bg-brand-900/40"
+                    aria-hidden="true"
+                  >
                     <Plus className="h-6 w-6" />
                   </div>
-                  <span className="text-sm font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-400 dark:group-hover:text-brand-400">
+                  <span className="text-sm font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-300 dark:group-hover:text-brand-400">
                     Add Board
                   </span>
                 </button>
@@ -479,8 +490,8 @@ export function PairingWorkspace() {
                         onChange={(e) => setNewBoardIsExempt(e.target.checked)}
                         className="h-4 w-4 rounded border-neutral-300 text-brand-500 focus:ring-brand-500/20"
                       />
-                      <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                        Exempt/Off-Duty
+                      <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-300">
+                        Exempt (Out of Office)
                       </span>
                     </label>
                     <div className="flex gap-2">
@@ -532,8 +543,9 @@ export function PairingWorkspace() {
           id="download-btn"
           onClick={handleDownloadScreenshot}
           disabled={isDownloading || isStoreLoading}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 disabled:opacity-50 dark:bg-neutral-900 dark:border-neutral-800"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-500 shadow-xl border border-neutral-200 transition-all hover:text-brand-600 hover:scale-110 active:scale-95 disabled:opacity-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-800"
           title="Download Dashboard as Image"
+          aria-label="Download Dashboard as Image"
         >
           {isDownloading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -545,8 +557,9 @@ export function PairingWorkspace() {
         <button
           id="help-btn"
           onClick={() => startTutorial()}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-400 shadow-xl border border-neutral-200 transition-all hover:text-brand-500 hover:scale-110 active:scale-95 dark:bg-neutral-900 dark:border-neutral-800"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-500 shadow-xl border border-neutral-200 transition-all hover:text-brand-600 hover:scale-110 active:scale-95 dark:text-neutral-300 dark:bg-neutral-900 dark:border-neutral-800"
           title="Help & Tutorial"
+          aria-label="Help & Tutorial"
         >
           <HelpCircle className="h-6 w-6" />
         </button>
@@ -661,12 +674,12 @@ function DroppableUnpairedPool({
     >
       <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
         <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
+          <Users className="h-5 w-5 text-neutral-400 dark:text-neutral-400" />
           <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
             Unpaired Pool
           </h3>
         </div>
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
           {people.length}
         </span>
       </div>
@@ -681,7 +694,7 @@ function DroppableUnpairedPool({
         ) : (
           <AnimatePresence>
             {people.length === 0 ? (
-              <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-500">
+              <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-400">
                 {isOver ? 'Drop to unpair' : 'Everyone is paired!'}
               </span>
             ) : (

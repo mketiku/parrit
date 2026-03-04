@@ -191,7 +191,7 @@ export function SettingsScreen() {
         <h1 className="text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
           Settings
         </h1>
-        <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+        <p className="mt-2 text-neutral-500 dark:text-neutral-300">
           Manage your {workspaceName} environment and team preferences.
         </p>
       </header>
@@ -211,14 +211,14 @@ export function SettingsScreen() {
                 }`}
               >
                 <tab.icon
-                  className={`h-5 w-5 ${activeTab === tab.id ? 'text-white' : 'text-neutral-400'}`}
+                  className={`h-5 w-5 ${activeTab === tab.id ? 'text-white' : 'text-neutral-500 dark:text-neutral-300'}`}
                 />
                 <div className="text-left hidden sm:block">
                   <span className="block text-sm font-black whitespace-nowrap">
                     {tab.label}
                   </span>
                   <span
-                    className={`hidden lg:block text-[10px] font-medium opacity-70 ${activeTab === tab.id ? 'text-brand-50' : 'text-neutral-400'}`}
+                    className={`hidden lg:block text-[10px] font-medium ${activeTab === tab.id ? 'text-brand-50' : 'text-neutral-500 dark:text-neutral-300'}`}
                   >
                     {tab.description}
                   </span>
@@ -250,6 +250,8 @@ export function SettingsScreen() {
                     <button
                       key={t.id}
                       onClick={() => setTheme(t.id)}
+                      aria-label={`Switch to ${t.name} theme`}
+                      aria-pressed={theme === t.id}
                       className={`group relative flex flex-col items-start gap-4 rounded-2xl border-2 p-6 transition-all ${
                         theme === t.id
                           ? 'border-brand-500 bg-brand-50/30 dark:border-brand-500 dark:bg-brand-500/5'
@@ -321,7 +323,7 @@ export function SettingsScreen() {
                       <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
                         Stale Pair Warning
                       </h3>
-                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      <p className="text-sm text-neutral-500 dark:text-neutral-300">
                         Alert when a pair has been together recently.
                       </p>
                     </div>
@@ -333,6 +335,8 @@ export function SettingsScreen() {
                           <button
                             key={val}
                             onClick={() => setStalePairThreshold(val)}
+                            aria-label={`Warn after ${val} sessions`}
+                            aria-pressed={stalePairThreshold === val}
                             className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${
                               stalePairThreshold === val
                                 ? 'bg-amber-500 text-white shadow-md'
@@ -424,12 +428,12 @@ export function SettingsScreen() {
                             setJustCopied(true);
                             setTimeout(() => setJustCopied(false), 2000);
                           }}
-                          className="flex h-10 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-xs font-bold transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                          className="flex h-10 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-xs font-bold text-neutral-600 transition-all hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-800"
                         >
                           {justCopied ? (
                             <Check className="h-4 w-4 text-green-500" />
                           ) : (
-                            <Copy className="h-4 w-4 text-neutral-400" />
+                            <Copy className="h-4 w-4 text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white" />
                           )}
                           {justCopied ? 'Copied' : 'Copy'}
                         </button>
@@ -639,16 +643,20 @@ function SettingToggle({
         <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-neutral-50 dark:bg-neutral-950">
           {icon}
         </div>
-        <div>
+        <div id={`label-${title.replace(/\s+/g, '-').toLowerCase()}`}>
           <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
             {title}
           </h3>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-500 dark:text-neutral-300">
             {description}
           </p>
         </div>
       </div>
-      <ToggleSwitch checked={checked} onChange={onChange} />
+      <ToggleSwitch
+        checked={checked}
+        onChange={onChange}
+        ariaLabelledBy={`label-${title.replace(/\s+/g, '-').toLowerCase()}`}
+      />
     </div>
   );
 }
@@ -657,10 +665,12 @@ function ToggleSwitch({
   checked,
   onChange,
   color = 'brand',
+  ariaLabelledBy,
 }: {
   checked: boolean;
   onChange: (val: boolean) => void;
   color?: 'brand' | 'amber';
+  ariaLabelledBy?: string;
 }) {
   const bgClass =
     color === 'brand'
@@ -673,8 +683,11 @@ function ToggleSwitch({
 
   return (
     <button
+      role="switch"
+      aria-checked={checked}
+      aria-labelledby={ariaLabelledBy}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${bgClass}`}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 ${bgClass}`}
     >
       <span
         className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ${
