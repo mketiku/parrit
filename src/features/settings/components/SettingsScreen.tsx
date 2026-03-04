@@ -324,7 +324,8 @@ export function SettingsScreen() {
                         Stale Pair Warning
                       </h3>
                       <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                        Alert when a pair has been together recently.
+                        Alert when a pair has been together for consecutive
+                        sessions.
                       </p>
                     </div>
                   </div>
@@ -335,7 +336,7 @@ export function SettingsScreen() {
                           <button
                             key={val}
                             onClick={() => setStalePairThreshold(val)}
-                            aria-label={`Warn after ${val} sessions`}
+                            aria-label={`Warn after ${val} consecutive sessions`}
                             aria-pressed={stalePairThreshold === val}
                             className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${
                               stalePairThreshold === val

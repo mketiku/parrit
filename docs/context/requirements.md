@@ -18,12 +18,13 @@ This document outlines the core features for the modern, from-scratch version of
 - ✅ **Drag & Drop**: Seamlessly move people between boards.
 - ✅ **Multi-Select**: Bulk move people using Shift+Click.
 - ✅ **Board Templates**: Save current board layout as a named template. Apply templates from the dashboard.
+
 ## 3. Team Member Management
 
 - ✅ **Person CRUD**: Add/edit/delete team members.
 - ✅ **Initial-based Avatars**: Colors + initials based on name.
 - ✅ **Unpaired List**: Central pool for unassigned people.
-- ✅ **Stale Pair Highlighting**: Boards with pairs that have worked together in the last 3 sessions show an amber warning badge.
+- ✅ **Stale Pair Highlighting**: Boards with pairs that have worked together for at least N **consecutive** sessions show an amber warning badge.
 
 ## 4. Recommendation Engine
 
