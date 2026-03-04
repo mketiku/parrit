@@ -183,8 +183,7 @@ export function DroppableBoard({
                 {board.name}
               </h3>
               {board.isExempt && (
-                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-400 mt-0.5">
-                  <ShieldX className="h-2 w-2" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-400 mt-0.5 leading-none">
                   Off-Duty
                 </span>
               )}
