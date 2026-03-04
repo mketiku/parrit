@@ -176,37 +176,10 @@ export function LandingPage() {
               </div>
             </div>
             {/* Fake pairing workspace UI */}
+            {/* Fake pairing workspace UI */}
             <div className="p-4 sm:p-8 flex flex-col xl:flex-row gap-8">
-              {/* Unpaired Pool Mockup */}
-              <div className="xl:w-64 shrink-0 flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900/40">
-                <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-neutral-400" />
-                    <h3 className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
-                      Available Pool
-                    </h3>
-                  </div>
-                  <span className="h-5 w-5 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 dark:bg-neutral-800">
-                    2
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {['Zazu', 'Iago'].map((p, i) => (
-                    <div
-                      key={p}
-                      className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-inner ring-1 ring-black/5 dark:ring-white/10"
-                      style={{
-                        backgroundColor: i === 0 ? '#10b981' : '#f59e0b',
-                      }}
-                    >
-                      {p.substring(0, 1)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Boards Region */}
-              <div className="flex-1">
+              <div className="flex-1 order-last xl:order-first">
                 <div className="mb-6 flex items-center justify-between">
                   <p className="font-black tracking-tight text-neutral-900 dark:text-neutral-100">
                     Pairing Boards
@@ -278,6 +251,34 @@ export function LandingPage() {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Unpaired Pool Mockup */}
+              <div className="xl:w-64 shrink-0 flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900/40 order-first xl:order-last">
+                <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-neutral-400" />
+                    <h3 className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
+                      Available Pool
+                    </h3>
+                  </div>
+                  <span className="h-5 w-5 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 dark:bg-neutral-800">
+                    2
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {['Zazu', 'Iago'].map((p, i) => (
+                    <div
+                      key={p}
+                      className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-inner ring-1 ring-black/5 dark:ring-white/10"
+                      style={{
+                        backgroundColor: i === 0 ? '#10b981' : '#f59e0b',
+                      }}
+                    >
+                      {p.substring(0, 1)}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
