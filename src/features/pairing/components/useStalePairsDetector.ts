@@ -24,11 +24,10 @@ export function useStalePairsDetector() {
         .from('pairing_history')
         .select('person_id, board_id, session_id, created_at')
         .order('created_at', { ascending: false })
-        .limit(200);
+        .limit(500); // Increased limit slightly for better windowing
 
       if (error || !data) return;
 
-      // Group by session preserving order (descending = newest first)
       const sessionOrder: string[] = [];
       const sessionBoards: Record<string, Record<string, string[]>> = {};
 
@@ -50,24 +49,55 @@ export function useStalePairsDetector() {
         sessionBoards[row.session_id][row.board_id].push(row.person_id);
       });
 
-      // Build recency map: pair → most recent session index they appeared together in
-      const recency: Record<string, number> = {};
-      sessionOrder.forEach((sessionId, sessionIdx) => {
-        const boards = sessionBoards[sessionId];
-        Object.values(boards).forEach((pIds) => {
+      // Calculate consecutive sessions for each pair starting from the newest session
+      const consecutive: Record<string, number> = {};
+      const pairsFoundInMostRecent = new Set<string>();
+
+      // Populate which pairs exist in the VERY most recent session
+      if (sessionOrder.length > 0) {
+        const newestBoards = sessionBoards[sessionOrder[0]];
+        Object.values(newestBoards).forEach((pIds) => {
           for (let i = 0; i < pIds.length; i++) {
             for (let j = i + 1; j < pIds.length; j++) {
-              const key = buildPairKey(pIds[i], pIds[j]);
-              if (recency[key] === undefined) {
-                // Only record on first (most recent) occurrence
-                recency[key] = sessionIdx;
-              }
+              pairsFoundInMostRecent.add(buildPairKey(pIds[i], pIds[j]));
             }
           }
         });
+      }
+
+      // Count back from session 0 (newest) until the pairing breaks
+      pairsFoundInMostRecent.forEach((pairKey) => {
+        let count = 0;
+        for (let idx = 0; idx < sessionOrder.length; idx++) {
+          const boards = sessionBoards[sessionOrder[idx]];
+          let foundInThisSession = false;
+
+          for (const pIds of Object.values(boards)) {
+            if (pIds.length >= 2) {
+              for (let i = 0; i < pIds.length; i++) {
+                for (let j = i + 1; j < pIds.length; j++) {
+                  if (buildPairKey(pIds[i], pIds[j]) === pairKey) {
+                    foundInThisSession = true;
+                    break;
+                  }
+                }
+                if (foundInThisSession) break;
+              }
+            }
+            if (foundInThisSession) break;
+          }
+
+          if (foundInThisSession) {
+            count++;
+          } else {
+            // Once they haven't paired for a session, the streak is over
+            break;
+          }
+        }
+        consecutive[pairKey] = count;
       });
 
-      setPairRecency(recency);
+      setPairRecency(consecutive);
     } finally {
       setIsLoading(false);
     }
@@ -78,17 +108,17 @@ export function useStalePairsDetector() {
   }, [load]);
 
   /**
-   * Returns true if p1 and p2 have paired in the last `staleSessions` sessions.
-   * (i.e., they are "not fresh" — highlight them to prompt rotation)
+   * Returns true if p1 and p2 have paired for at least `stalePairThreshold` consecutive sessions.
+   * This flags pairs that have been "stuck" together for too long.
    */
   const isRecentPair = (p1: string, p2: string): boolean => {
     const key = buildPairKey(p1, p2);
-    const recencyIdx = pairRecency[key];
-    return recencyIdx !== undefined && recencyIdx < stalePairThreshold;
+    const consecutiveCount = pairRecency[key] || 0;
+    return consecutiveCount >= stalePairThreshold;
   };
 
   /**
-   * Returns the session index the pair last appeared in (0 = most recent), or undefined.
+   * Returns the number of consecutive sessions the pair has been together starting from today.
    */
   const getPairRecency = (p1: string, p2: string): number | undefined => {
     const key = buildPairKey(p1, p2);
