@@ -258,8 +258,9 @@ export function HistoryScreen() {
       // 1. Group details by board
       const boardGroups = details.reduce(
         (acc, curr) => {
-          if (!acc[curr.board_name]) acc[curr.board_name] = [];
-          acc[curr.board_name].push(curr.person_name);
+          const bName = curr.board_name.trim();
+          if (!acc[bName]) acc[bName] = [];
+          acc[bName].push(curr.person_name.trim());
           return acc;
         },
         {} as Record<string, string[]>
@@ -274,7 +275,9 @@ export function HistoryScreen() {
 
       const newBoards = Object.entries(boardGroups).map(([name, pNames]) => {
         const assignedIds = pNames
-          .map((name) => storePeople.find((p) => p.name === name)?.id)
+          .map(
+            (name) => storePeople.find((p) => p.name.trim() === name.trim())?.id
+          )
           .filter((id): id is string => !!id);
 
         return {
@@ -291,11 +294,16 @@ export function HistoryScreen() {
       );
 
       // 4. Re-assign people (applyBuiltinTemplate doesn't handle people)
-      const { boards: createdBoards } = usePairingStore.getState();
+      const { boards: createdBoards, people: latestPeople } =
+        usePairingStore.getState();
       const remappedBoards = createdBoards.map((cb) => {
-        const originalPeople = boardGroups[cb.name] || [];
+        const bName = cb.name.trim();
+        const originalPeople = boardGroups[bName] || [];
         const newIds = originalPeople
-          .map((name) => storePeople.find((p) => p.name === name)?.id)
+          .map(
+            (pName) =>
+              latestPeople.find((p) => p.name.trim() === pName.trim())?.id
+          )
           .filter((id): id is string => !!id);
 
         return { ...cb, assignedPersonIds: newIds };

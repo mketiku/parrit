@@ -20,7 +20,7 @@ export function PairingMatrixView({ matrix }: PairingMatrixViewProps) {
   });
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto pt-4">
       <table className="w-full border-separate border-spacing-1">
         <thead>
           <tr>
@@ -28,9 +28,11 @@ export function PairingMatrixView({ matrix }: PairingMatrixViewProps) {
             {personIds.map((id) => (
               <th
                 key={id}
-                className="p-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 rotate-45 h-20 w-12 text-left align-bottom"
+                className="p-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 -rotate-45 origin-bottom-left h-24 w-12 text-left align-bottom whitespace-nowrap"
               >
-                {personNames[id]}
+                <span className="inline-block translate-x-1 translate-y-0.5">
+                  {personNames[id]}
+                </span>
               </th>
             ))}
           </tr>
@@ -38,7 +40,7 @@ export function PairingMatrixView({ matrix }: PairingMatrixViewProps) {
         <tbody>
           {personIds.map((rowId) => (
             <tr key={rowId}>
-              <td className="p-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 text-right w-24">
+              <td className="p-2 pr-4 text-[10px] font-black uppercase tracking-widest text-neutral-400 text-right w-20">
                 {personNames[rowId]}
               </td>
               {personIds.map((colId) => {

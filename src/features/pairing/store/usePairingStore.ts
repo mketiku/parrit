@@ -548,6 +548,8 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   },
 
   saveSession: async () => {
+    if (get().isSaving) return;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
