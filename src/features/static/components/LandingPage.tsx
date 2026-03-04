@@ -8,8 +8,10 @@ import {
   LayoutDashboard,
   Wifi,
   MousePointerClick,
-  RefreshCw,
   Share2,
+  History,
+  Users,
+  Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 
@@ -174,62 +176,109 @@ export function LandingPage() {
               </div>
             </div>
             {/* Fake pairing workspace UI */}
-            <div className="p-4 sm:p-8">
-              <div className="mb-6 flex items-center justify-between">
-                <p className="text-lg font-black tracking-tight text-neutral-900 dark:text-neutral-100">
-                  Pairing Boards
-                </p>
-                <div className="flex gap-2">
-                  <div className="h-10 w-32 rounded-2xl bg-brand-500/10 border border-brand-500/20" />
-                  <div className="h-10 w-32 rounded-2xl bg-brand-500 shadow-xl shadow-brand-500/20" />
+            <div className="p-4 sm:p-8 flex flex-col xl:flex-row gap-8">
+              {/* Unpaired Pool Mockup */}
+              <div className="xl:w-64 shrink-0 flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900/40">
+                <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-neutral-400" />
+                    <h3 className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
+                      Available Pool
+                    </h3>
+                  </div>
+                  <span className="h-5 w-5 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 dark:bg-neutral-800">
+                    2
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {['Zazu', 'Iago'].map((p, i) => (
+                    <div
+                      key={p}
+                      className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-inner ring-1 ring-black/5 dark:ring-white/10"
+                      style={{
+                        backgroundColor: i === 0 ? '#10b981' : '#f59e0b',
+                      }}
+                    >
+                      {p.substring(0, 1)}
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {['Toco Toucan 🦤', 'Canada Goose 🪿', 'Bald Eagle 🦅'].map(
-                  (name, i) => {
-                    const people = [
+
+              {/* Boards Region */}
+              <div className="flex-1">
+                <div className="mb-6 flex items-center justify-between">
+                  <p className="font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+                    Pairing Boards
+                  </p>
+                  <div className="flex gap-2">
+                    <div className="hidden sm:flex items-center gap-2 rounded-xl bg-white/50 border border-neutral-200 px-3 py-1.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800/50 dark:border-neutral-700">
+                      <Sparkles className="h-3 w-3 text-amber-500" />
+                      Recommend
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg shadow-brand-500/20">
+                      <History className="h-3 w-3" />
+                      Save Session
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {[
+                    'Toco Toucan 🦤',
+                    'Canada Goose 🪿',
+                    'Bald Eagle 🦅',
+                    'Great Horned Owl 🦉',
+                  ].map((name, i) => {
+                    const peopleInBoard = [
                       ['Blu', 'Jewel'],
                       ['Roberto', 'Edo', 'Mimi'],
                       ['Nico', 'Pedro'],
+                      ['Linda', 'Tulio'],
                     ][i];
 
                     return (
                       <div
                         key={i}
-                        className="rounded-3xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/50 shadow-sm transition-transform hover:scale-[1.02]"
+                        className="group flex flex-col rounded-[2.5rem] border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/40 shadow-sm transition-all hover:shadow-xl hover:shadow-black/5"
                       >
-                        <div className="flex items-center justify-between mb-4">
-                          <p className="text-sm font-black text-neutral-900 dark:text-neutral-100">
+                        {/* Mock Board Header */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <LayoutDashboard className="h-4 w-4 text-brand-500" />
+                          <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
                             {name}
-                          </p>
-                          <RefreshCw className="h-3 w-3 text-brand-400 opacity-50" />
+                          </h3>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {people.map((p, j) => (
+
+                        {/* Draggable Zone Mockup */}
+                        <div className="flex flex-1 flex-wrap gap-2 rounded-2xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border-2 border-transparent min-h-[50px]">
+                          {peopleInBoard.map((p, j) => (
                             <div
                               key={j}
-                              className="h-10 px-3 rounded-2xl flex items-center gap-2 text-[11px] font-bold text-neutral-600 border border-neutral-100 bg-neutral-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300"
+                              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-inner ring-1 ring-black/5 dark:ring-white/10"
+                              style={{
+                                backgroundColor: [
+                                  '#6366f1',
+                                  '#f59e0b',
+                                  '#10b981',
+                                  '#ec4899',
+                                ][(i * 2 + j) % 4],
+                              }}
                             >
-                              <div
-                                className="h-6 w-6 rounded-lg flex items-center justify-center text-[9px] font-black text-white"
-                                style={{
-                                  backgroundColor: [
-                                    '#6366f1',
-                                    '#f59e0b',
-                                    '#10b981',
-                                  ][(i + j) % 3],
-                                }}
-                              >
-                                {p.charAt(0)}
-                              </div>
-                              {p}
+                              {p.substring(0, 1).toUpperCase()}
                             </div>
                           ))}
                         </div>
+
+                        {/* Mock Goals footer */}
+                        <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800/50 space-y-2">
+                          <div className="h-1.5 w-2/3 rounded-full bg-neutral-100 dark:bg-neutral-800/50" />
+                          <div className="h-1.5 w-1/2 rounded-full bg-neutral-200/50 dark:bg-neutral-800/20" />
+                        </div>
                       </div>
                     );
-                  }
-                )}
+                  })}
+                </div>
               </div>
             </div>
           </div>
