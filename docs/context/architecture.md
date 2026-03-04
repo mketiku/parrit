@@ -10,13 +10,15 @@ Two tables, both scoped per workspace via `user_id`.
 erDiagram
     AUTH_USERS ||--o{ PEOPLE : "owns"
     AUTH_USERS ||--o{ PAIRING_BOARDS : "owns"
+    AUTH_USERS ||--o{ PAIRING_SESSIONS : "owns"
+    AUTH_USERS ||--o{ PAIRING_TEMPLATES : "owns"
+    AUTH_USERS ||--one WORKSPACE_SETTINGS : "manages"
 
     PEOPLE {
         uuid id PK
         uuid user_id FK
         string name
         string avatar_color_hex
-        timestamptz created_at
     }
 
     PAIRING_BOARDS {
@@ -24,15 +26,40 @@ erDiagram
         uuid user_id FK
         string name
         boolean is_exempt
-        string goal_text
+        boolean is_locked
+        jsonb goals
         string meeting_link
         integer sort_order
         uuid[] assigned_person_ids
+    }
+
+    PAIRING_SESSIONS {
+        uuid id PK
+        uuid user_id FK
+        date session_date
         timestamptz created_at
+    }
+
+    PAIRING_HISTORY {
+        uuid id PK
+        uuid user_id FK
+        uuid session_id FK
+        uuid person_id FK
+        uuid board_id FK
+        timestamptz created_at
+    }
+
+    WORKSPACE_SETTINGS {
+        uuid user_id PK
+        boolean public_view_enabled
+        boolean onboarding_completed
     }
 ```
 
-**Key design decision:** Board assignments are stored as a `uuid[]` array directly on `pairing_boards.assigned_person_ids` rather than a separate join table. This simplifies drag-and-drop persistence — a single upsert per drag event updates the whole board state.
+**Key design decisions:** 
+- **Board assignments** are stored as a `uuid[]` array directly on `pairing_boards.assigned_person_ids`. This simplifies drag-and-drop persistence — a single upsert per drag event updates the whole board state.
+- **History** is decoupled into `pairing_sessions` (the "when") and `pairing_history` (the "who/where"). This allows for back-dating and analytics while maintaining a record of exactly when the snapshot was taken.
+- **Locked Boards**: The `is_locked` flag prevents the `recommendationEngine` from rotating people on specific boards, allowing for continuity in specific workstreams.
 
 Row Level Security (RLS) ensures each workspace (`auth.users` row) can only read and write its own rows.
 

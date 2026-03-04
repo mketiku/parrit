@@ -1,6 +1,6 @@
 # UI Design System: Parrit Modern (Human-Centric)
 
-![Parrit Human Modern Mockup](mockup_1772407673200.png)
+*The visual direction for this system is defined by the "Human Modern" layout, which prioritizes tactile surfaces and soft, clear interactions.*
 
 This document defines the "Human Modern" aesthetic for the Parrit rebuild—prioritizing clarity, softness, and a professional "non-AI" feel.
 

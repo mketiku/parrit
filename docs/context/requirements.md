@@ -8,7 +8,7 @@ This document outlines the core features for the modern, from-scratch version of
 - ✅ **Data Persistence**: All people, boards, and history are saved to the project.
 - ✅ **Session Links**: Ability to add/edit a Zoom link to a pairing board for easy joining.
 - ✅ **Project Export/Import**: JSON export/import (people, boards, goals, assignments). Available in Settings.
-- ⏳ **Stakeholder View-Only Links**: (Planned).
+- ✅ **Stakeholder View-Only Links**: Public read-only dashboard toggle in Settings.
 
 ## 2. Pairing Board Workspace
 
@@ -18,8 +18,6 @@ This document outlines the core features for the modern, from-scratch version of
 - ✅ **Drag & Drop**: Seamlessly move people between boards.
 - ✅ **Multi-Select**: Bulk move people using Shift+Click.
 - ✅ **Board Templates**: Save current board layout as a named template. Apply templates from the dashboard.
-- ⏳ **Role Management**: (Planned).
-
 ## 3. Team Member Management
 
 - ✅ **Person CRUD**: Add/edit/delete team members.

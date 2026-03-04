@@ -19,27 +19,27 @@ const BUILTIN_TEMPLATES: {
   description: string;
   boards: { name: string; isExempt: boolean }[];
 }[] = [
-  {
-    name: '3-Board Starter',
-    description: 'Board 1, Board 2, Board 3 + OOO exempt',
-    boards: [
-      { name: 'Board 1', isExempt: false },
-      { name: 'Board 2', isExempt: false },
-      { name: 'Board 3', isExempt: false },
-      { name: 'OOO', isExempt: true },
-    ],
-  },
-  {
-    name: 'Domain Teams',
-    description: 'Frontend, Backend, Platform + OOO exempt',
-    boards: [
-      { name: 'Frontend', isExempt: false },
-      { name: 'Backend', isExempt: false },
-      { name: 'Platform', isExempt: false },
-      { name: 'OOO', isExempt: true },
-    ],
-  },
-];
+    {
+      name: '3-Board Starter',
+      description: 'Board 1, Board 2, Board 3 + OOO exempt',
+      boards: [
+        { name: 'Board 1', isExempt: false },
+        { name: 'Board 2', isExempt: false },
+        { name: 'Board 3', isExempt: false },
+        { name: 'OOO', isExempt: true },
+      ],
+    },
+    {
+      name: 'Domain Teams',
+      description: 'Frontend, Backend, Platform + OOO exempt',
+      boards: [
+        { name: 'Frontend', isExempt: false },
+        { name: 'Backend', isExempt: false },
+        { name: 'Platform', isExempt: false },
+        { name: 'OOO', isExempt: true },
+      ],
+    },
+  ];
 
 interface TemplateBoard {
   name: string;
@@ -193,6 +193,7 @@ export function TemplateManager() {
                   <button
                     disabled={isSaving || !newTemplateName.trim()}
                     className="flex aspect-square h-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-lg shadow-brand-500/20 transition-all hover:bg-brand-600 active:scale-95 disabled:opacity-50"
+                    title="Save Current as Template"
                   >
                     {isSaving ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
