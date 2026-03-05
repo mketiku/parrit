@@ -73,7 +73,8 @@ export function PairingWorkspace() {
   const { matrix, isLoading: isAnalyzing } = useHistoryAnalytics(people);
 
   const { startTutorial } = useTutorialStore();
-  const { hintGoalsSeen, setHintGoalsSeen } = useWorkspacePrefsStore();
+  const { hintGoalsSeen, setHintGoalsSeen, gettingStartedDismissed } =
+    useWorkspacePrefsStore();
 
   // Derive contextual hint visibility
   const hasPairedSomeone = boards.some(
@@ -86,7 +87,9 @@ export function PairingWorkspace() {
       (b.goals || []).length === 0 &&
       (b.assignedPersonIds || []).length > 0
   );
-  const showGoalsHint = !hintGoalsSeen && boardsWithNoGoals.length > 0;
+  // Suppress goals hint while Getting Started card is visible to avoid visual competition
+  const showGoalsHint =
+    !hintGoalsSeen && gettingStartedDismissed && boardsWithNoGoals.length > 0;
 
   // Keyboard support for clearing selection
   useEffect(() => {
