@@ -39,7 +39,8 @@ export function DroppableBoard({
   });
 
   const { removeBoard, updateBoard } = usePairingStore();
-  const { stalePairHighlightingEnabled } = useWorkspacePrefsStore();
+  const { stalePairHighlightingEnabled, meetingLinkEnabled } =
+    useWorkspacePrefsStore();
   const { isRecentPair } = useStalePairsDetector();
 
   const hasStalePairs =
@@ -290,29 +291,31 @@ export function DroppableBoard({
                   />
                 </div>
 
-                {/* Meeting Link */}
-                <div className="flex flex-col gap-1.5 pt-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    Meeting Link
-                  </label>
-                  <div className="relative">
-                    <LinkIcon className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
-                    <input
-                      value={extraData.meetingLink}
-                      onChange={(e) =>
-                        setExtraData((prev) => ({
-                          ...prev,
-                          meetingLink: e.target.value,
-                        }))
-                      }
-                      onBlur={() =>
-                        autoSave(extraData.goalsText, extraData.meetingLink)
-                      }
-                      placeholder="Zoom / Meet link..."
-                      className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
-                    />
+                {/* Meeting Link — only visible when enabled in Settings */}
+                {meetingLinkEnabled && (
+                  <div className="flex flex-col gap-1.5 pt-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                      Meeting Link
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
+                      <input
+                        value={extraData.meetingLink}
+                        onChange={(e) =>
+                          setExtraData((prev) => ({
+                            ...prev,
+                            meetingLink: e.target.value,
+                          }))
+                        }
+                        onBlur={() =>
+                          autoSave(extraData.goalsText, extraData.meetingLink)
+                        }
+                        placeholder="Zoom / Meet link..."
+                        className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex justify-end pt-1">
                   <button
@@ -400,7 +403,7 @@ export function DroppableBoard({
                     />
                   </form>
                 )}
-                {board.meetingLink && (
+                {meetingLinkEnabled && board.meetingLink && (
                   <div className="flex items-center gap-1.5 pt-1">
                     <a
                       href={board.meetingLink}

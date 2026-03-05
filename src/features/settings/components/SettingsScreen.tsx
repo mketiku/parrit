@@ -51,6 +51,8 @@ export function SettingsScreen() {
     setOnboardingCompleted,
     stalePairThreshold,
     setStalePairThreshold,
+    meetingLinkEnabled,
+    setMeetingLinkEnabled,
   } = useWorkspacePrefsStore();
   const {
     exportWorkspace,
@@ -374,6 +376,15 @@ export function SettingsScreen() {
                         });
                       }
                     }}
+                  />
+                </div>
+                <div className="border-t border-neutral-100 dark:border-neutral-800">
+                  <SettingToggle
+                    icon={<Tag className="h-5 w-5 text-neutral-400" />}
+                    title="Meeting Links on Boards"
+                    description="Show a meeting link field (Zoom, Meet, etc.) on each pairing board."
+                    checked={meetingLinkEnabled}
+                    onChange={setMeetingLinkEnabled}
                   />
                 </div>
               </div>
