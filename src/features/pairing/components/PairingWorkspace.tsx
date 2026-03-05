@@ -37,6 +37,8 @@ import {
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
+import { GettingStartedCard } from './GettingStartedCard';
+import { ContextualHint } from './ContextualHint';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { PairingMatrixView } from './PairingMatrixView';
 import { BarChart3 } from 'lucide-react';
@@ -71,14 +73,27 @@ export function PairingWorkspace() {
   const { matrix, isLoading: isAnalyzing } = useHistoryAnalytics(people);
 
   const { startTutorial } = useTutorialStore();
-  const { onboardingCompleted } = useWorkspacePrefsStore();
+  const {
+    hintGoalsSeen,
+    setHintGoalsSeen,
+    hintRecommendSeen,
+    setHintRecommendSeen,
+  } = useWorkspacePrefsStore();
 
-  useEffect(() => {
-    // Auto-start tutorial if not completed and workspace is empty (likely first visit)
-    if (!onboardingCompleted && people.length === 0 && !isStoreLoading) {
-      startTutorial();
-    }
-  }, [onboardingCompleted, people.length, isStoreLoading, startTutorial]);
+  // Derive contextual hint visibility
+  const hasPairedSomeone = boards.some(
+    (b) => (b.assignedPersonIds || []).length > 0
+  );
+  const hasSessionSaved = matrix && Object.keys(matrix).length > 0;
+  const boardsWithNoGoals = boards.filter(
+    (b) =>
+      !b.isExempt &&
+      (b.goals || []).length === 0 &&
+      (b.assignedPersonIds || []).length > 0
+  );
+  const showGoalsHint = !hintGoalsSeen && boardsWithNoGoals.length > 0;
+  const showRecommendHint =
+    !hintRecommendSeen && hasPairedSomeone && people.length >= 3;
 
   // Keyboard support for clearing selection
   useEffect(() => {
@@ -639,6 +654,36 @@ export function PairingWorkspace() {
       )}
 
       <ProductTutorial />
+
+      {/* Getting Started Checklist Card (replaces auto-triggered step-by-step tutorial) */}
+      <GettingStartedCard
+        people={people}
+        boards={boards}
+        hasSessionSaved={!!hasSessionSaved}
+      />
+
+      {/* Contextual hint: Goals — appears on a board that has people but no goals yet */}
+      {showGoalsHint && (
+        <ContextualHint
+          targetId="board-goals"
+          title="Set your daily focus"
+          description="Click here to add goals for this board — great for keeping the pair focused and on track."
+          placement="bottom"
+          onDismiss={() => setHintGoalsSeen(true)}
+        />
+      )}
+
+      {/* Contextual hint: Recommend Pairs — appears once user has 3+ people and filled boards */}
+      {showRecommendHint && (
+        <ContextualHint
+          targetId="recommend-btn"
+          title="Let Parrit suggest pairs"
+          description="You have enough teammates to start. Try Recommend Pairs — it uses pairing history to rotate people intelligently."
+          placement="bottom"
+          color="amber"
+          onDismiss={() => setHintRecommendSeen(true)}
+        />
+      )}
     </>
   );
 }

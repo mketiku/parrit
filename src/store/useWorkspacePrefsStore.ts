@@ -16,6 +16,10 @@ export interface WorkspacePrefsState {
   setOnboardingCompleted: (completed: boolean) => void;
   stalePairThreshold: number;
   setStalePairThreshold: (threshold: number) => void;
+  hintGoalsSeen: boolean;
+  setHintGoalsSeen: (seen: boolean) => void;
+  hintRecommendSeen: boolean;
+  setHintRecommendSeen: (seen: boolean) => void;
 }
 
 export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
@@ -34,6 +38,10 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
       stalePairThreshold: 3,
       setStalePairThreshold: (threshold) =>
         set({ stalePairThreshold: threshold }),
+      hintGoalsSeen: false,
+      setHintGoalsSeen: (seen) => set({ hintGoalsSeen: seen }),
+      hintRecommendSeen: false,
+      setHintRecommendSeen: (seen) => set({ hintRecommendSeen: seen }),
     }),
     {
       name: 'parrit-workspace-prefs',

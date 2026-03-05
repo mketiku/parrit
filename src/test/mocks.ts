@@ -54,5 +54,9 @@ export const createMockWorkspacePrefsStore = (
   setOnboardingCompleted: vi.fn(),
   stalePairThreshold: 3,
   setStalePairThreshold: vi.fn(),
+  hintGoalsSeen: false,
+  setHintGoalsSeen: vi.fn(),
+  hintRecommendSeen: false,
+  setHintRecommendSeen: vi.fn(),
   ...overrides,
 });
