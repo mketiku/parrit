@@ -222,7 +222,11 @@ export function HistoryScreen() {
         if (data) {
           const rows = data as unknown as DbHistoryRow[];
           const formatted = rows
-            .filter((row) => row.board_id && row.person_id)
+            .filter(
+              (row) =>
+                (row.board_id || row.board_name) &&
+                (row.person_id || row.person_name)
+            )
             .map((row) => {
               const storeBoard = storeBoards.find(
                 (b: PairingBoard) => b.id === row.board_id
