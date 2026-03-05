@@ -25,6 +25,8 @@ interface HistoryRow {
   session_id: string;
   person_id: string;
   board_id: string;
+  person_name?: string;
+  board_name?: string;
   created_at?: string;
 }
 
@@ -590,11 +592,14 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     const historyRows: HistoryRow[] = [];
     boards.forEach((board) => {
       (board.assignedPersonIds ?? []).forEach((personId) => {
+        const person = get().people.find((p) => p.id === personId);
         historyRows.push({
           user_id: user.id,
           session_id: session.id,
           person_id: personId,
           board_id: board.id,
+          board_name: board.name,
+          person_name: person?.name || 'Unknown',
         });
       });
     });

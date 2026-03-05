@@ -60,6 +60,8 @@ interface HistoryDetail {
 interface DbHistoryRow {
   person_id: string;
   board_id: string;
+  person_name?: string | null;
+  board_name?: string | null;
   people: { name: string; avatar_color_hex: string } | null;
   pairing_boards: { name: string } | null;
 }
@@ -67,6 +69,8 @@ interface DbHistoryRow {
 interface HistoryRowData {
   person_id: string;
   session_id: string;
+  person_name?: string | null;
+  board_name?: string | null;
   pairing_boards: { name: string }[] | { name: string } | null;
   people:
     | { name: string; avatar_color_hex: string }[]
@@ -174,6 +178,8 @@ export function HistoryScreen() {
           person_id,
           board_id,
           session_id,
+          person_name,
+          board_name,
           people (name, avatar_color_hex),
           pairing_boards (name)
         `
@@ -203,6 +209,8 @@ export function HistoryScreen() {
             `
             person_id,
             board_id,
+            person_name,
+            board_name,
             people (name, avatar_color_hex),
             pairing_boards (name)
           `
@@ -224,9 +232,15 @@ export function HistoryScreen() {
               );
 
               const board_name =
-                row.pairing_boards?.name || storeBoard?.name || 'Unknown Board';
+                row.board_name ||
+                row.pairing_boards?.name ||
+                storeBoard?.name ||
+                'Unknown Board';
               const person_name =
-                row.people?.name || storePerson?.name || 'Unknown Person';
+                row.person_name ||
+                row.people?.name ||
+                storePerson?.name ||
+                'Unknown Person';
               const avatar_color =
                 row.people?.avatar_color_hex ||
                 storePerson?.avatarColorHex ||

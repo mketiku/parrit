@@ -66,8 +66,10 @@ create table public.pairing_history (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
   session_id uuid references public.pairing_sessions(id) on delete cascade not null,
-  person_id uuid references public.people(id) on delete cascade not null,
-  board_id uuid references public.pairing_boards(id) on delete cascade not null,
+  person_id uuid references public.people(id) on delete set null,
+  board_id uuid references public.pairing_boards(id) on delete set null,
+  person_name text,
+  board_name text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
