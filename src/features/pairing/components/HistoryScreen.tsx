@@ -983,33 +983,35 @@ function TeamFlowVisualizer({
   onPersonClick,
 }: TeamFlowProps) {
   // Aggregate history by session
-  const sessionData = sessions.map((s) => {
-    const assignments = history.filter((h) => h.session_id === s.id);
-    const boards: Record<
-      string,
-      { id: string; name: string; color: string }[]
-    > = {};
-    assignments.forEach((a) => {
-      const bNode = a.pairing_boards;
-      const bData = Array.isArray(bNode) ? bNode[0] : bNode;
-      const bName = a.board_name || bData?.name || 'Unknown';
+  const sessionData = sessions
+    .map((s) => {
+      const assignments = history.filter((h) => h.session_id === s.id);
+      const boards: Record<
+        string,
+        { id: string; name: string; color: string }[]
+      > = {};
+      assignments.forEach((a) => {
+        const bNode = a.pairing_boards;
+        const bData = Array.isArray(bNode) ? bNode[0] : bNode;
+        const bName = a.board_name || bData?.name || 'Unknown';
 
-      if (!boards[bName]) boards[bName] = [];
+        if (!boards[bName]) boards[bName] = [];
 
-      const pNode = a.people;
-      const pData = Array.isArray(pNode) ? pNode[0] : pNode;
+        const pNode = a.people;
+        const pData = Array.isArray(pNode) ? pNode[0] : pNode;
 
-      boards[bName].push({
-        id: a.person_id,
-        name: a.person_name || pData?.name || 'Unknown',
-        color: pData?.avatar_color_hex || '#94a3b8',
+        boards[bName].push({
+          id: a.person_id,
+          name: a.person_name || pData?.name || 'Unknown',
+          color: pData?.avatar_color_hex || '#94a3b8',
+        });
       });
-    });
-    return { ...s, boards };
-  });
+      return { ...s, boards };
+    })
+    .reverse();
 
   return (
-    <div className="flex gap-12 overflow-x-auto no-scrollbar pb-6">
+    <div className="flex gap-12 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800 scrollbar-track-transparent">
       {sessionData.map(
         (
           s: {
@@ -1023,7 +1025,15 @@ function TeamFlowVisualizer({
           },
           sIdx: number
         ) => (
-          <div key={s.id} className="flex-1 min-w-[200px] relative group/col">
+          <div
+            key={s.id}
+            className="flex-1 min-w-[200px] relative group/col shrink-0"
+          >
+            {sIdx === 0 && (
+              <span className="absolute -top-6 left-0 text-[9px] font-black uppercase text-brand-500 tracking-widest whitespace-nowrap">
+                Newest
+              </span>
+            )}
             <button
               onClick={() => onSessionSelect(s.id)}
               className={`w-full mb-6 py-2 px-4 rounded-xl border text-left transition-all ${
