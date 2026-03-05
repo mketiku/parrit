@@ -27,6 +27,7 @@ export const createMockPairingStore = (
   persistBoardAssignments: vi.fn().mockResolvedValue(undefined),
   addBoard: vi.fn().mockResolvedValue(undefined),
   updateBoard: vi.fn().mockResolvedValue(undefined),
+  moveBoard: vi.fn().mockResolvedValue(undefined),
   removeBoard: vi.fn().mockResolvedValue(undefined),
   saveSession: vi.fn().mockResolvedValue(undefined),
   recommendPairs: vi.fn().mockResolvedValue(undefined),
