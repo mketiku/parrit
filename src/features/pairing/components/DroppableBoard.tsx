@@ -325,6 +325,7 @@ export function DroppableBoard({
               </div>
             ) : (
               <div
+                id="board-goals"
                 onClick={() => setIsEditingExtra(true)}
                 className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-950/50"
               >

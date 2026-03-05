@@ -12,7 +12,7 @@ export const DASHBOARD_TUTORIAL_STEPS: TutorialStep[] = [
     targetId: 'unpaired-pool',
     title: 'Teammate Pool',
     description:
-      'This is where your teammates live. Start by adding people here.',
+      'This is where your unpaired teammates live. Start by adding people here.',
     placement: 'left',
   },
   {
@@ -20,6 +20,13 @@ export const DASHBOARD_TUTORIAL_STEPS: TutorialStep[] = [
     title: 'Pairing Boards',
     description:
       'Create boards for squads or projects. Drag people from the pool and drop them here.',
+    placement: 'bottom',
+  },
+  {
+    targetId: 'board-goals',
+    title: 'Daily Goals',
+    description:
+      'Set focus areas for each board. Click into the goals section to add tasks or video meeting links.',
     placement: 'bottom',
   },
   {
