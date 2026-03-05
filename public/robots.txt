@@ -4,29 +4,8 @@
 # Block all authenticated app routes and admin.
 # -------------------------------------------------------
 User-agent: Googlebot
-Allow: /
-Allow: /about
-Allow: /view/
-Disallow: /admin
-Disallow: /app/
-Disallow: /login
-
 User-agent: Bingbot
-Allow: /
-Allow: /about
-Allow: /view/
-Disallow: /admin
-Disallow: /app/
-Disallow: /login
-
 User-agent: DuckDuckBot
-Allow: /
-Allow: /about
-Allow: /view/
-Disallow: /admin
-Disallow: /app/
-Disallow: /login
-
 User-agent: Slurp
 Allow: /
 Allow: /about
@@ -40,36 +19,13 @@ Disallow: /login
 # This is a workspace tool with team data. We don't
 # consent to our users' content being used for AI training.
 # -------------------------------------------------------
-
-# OpenAI
 User-agent: GPTBot
-Disallow: /
-
-# Anthropic
 User-agent: ClaudeBot
-Disallow: /
-
-# Google AI (Gemini training — separate from Googlebot)
 User-agent: Google-Extended
-Disallow: /
-
-# Common Crawl (used as raw training data by many AI companies)
 User-agent: CCBot
-Disallow: /
-
-# ByteDance / TikTok
 User-agent: Bytespider
-Disallow: /
-
-# Apple AI
 User-agent: Applebot-Extended
-Disallow: /
-
-# Meta / Facebook AI
 User-agent: FacebookBot
-Disallow: /
-
-# Diffbot (AI data extraction)
 User-agent: Diffbot
 Disallow: /
 
