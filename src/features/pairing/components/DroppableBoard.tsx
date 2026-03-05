@@ -332,8 +332,8 @@ export function DroppableBoard({
                 onClick={() => setIsEditingExtra(true)}
                 className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-950/50"
               >
-                {(board.goals || []).length > 0 ? (
-                  <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3">
+                  {(board.goals || []).length > 0 && (
                     <ul className="flex flex-col gap-1">
                       {board.goals.map((g, i) => (
                         <li
@@ -347,36 +347,7 @@ export function DroppableBoard({
                         </li>
                       ))}
                     </ul>
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const input = e.currentTarget.elements.namedItem(
-                          'quick-goal'
-                        ) as HTMLInputElement;
-                        if (input.value.trim()) {
-                          updateBoard(board.id, {
-                            goals: [...board.goals, input.value.trim()],
-                          });
-                          input.value = '';
-                          input.focus();
-                        }
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1.5 opacity-0 group-hover/extra:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden"
-                    >
-                      <Plus className="h-3 w-3 text-neutral-400" />
-                      <input
-                        name="quick-goal"
-                        placeholder="Add another..."
-                        aria-label="Add individual goal"
-                        className="w-full bg-transparent text-[10px] font-medium text-neutral-600 outline-none placeholder:italic placeholder:text-neutral-400 dark:text-neutral-300"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Escape') e.currentTarget.blur();
-                        }}
-                      />
-                    </form>
-                  </div>
-                ) : (
+                  )}
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -388,23 +359,35 @@ export function DroppableBoard({
                           goals: [...board.goals, input.value.trim()],
                         });
                         input.value = '';
-                        input.focus();
+
+                        // We do a brief delay here to guarantee React has committed the new goals
+                        // and stable structure before applying focus.
+                        requestAnimationFrame(() => input.focus());
                       }
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1.5"
+                    className={`flex items-center gap-1.5 ${
+                      (board.goals || []).length > 0
+                        ? "opacity-0 group-hover/extra:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden"
+                        : ''
+                    }`}
                   >
                     <Plus className="h-3 w-3 text-neutral-400" />
                     <input
                       name="quick-goal"
-                      placeholder="Add daily goal..."
+                      placeholder={
+                        (board.goals || []).length > 0
+                          ? 'Add another...'
+                          : 'Add daily goal...'
+                      }
+                      aria-label="Add individual goal"
                       className="w-full bg-transparent text-[10px] font-medium text-neutral-600 outline-none placeholder:italic placeholder:text-neutral-400 dark:text-neutral-300"
                       onKeyDown={(e) => {
                         if (e.key === 'Escape') e.currentTarget.blur();
                       }}
                     />
                   </form>
-                )}
+                </div>
                 {meetingLinkEnabled && board.meetingLink && (
                   <div className="flex items-center gap-1.5 pt-1">
                     <a
