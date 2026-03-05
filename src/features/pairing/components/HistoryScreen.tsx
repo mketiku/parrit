@@ -878,6 +878,7 @@ export function HistoryScreen() {
                             const personInStore = storePeople.find(
                               (sp) => sp.name === p.person_name
                             );
+                            const isRemoved = !personInStore;
                             return (
                               <button
                                 key={pIdx}
@@ -885,17 +886,34 @@ export function HistoryScreen() {
                                   personInStore &&
                                   setSelectedPersonId(personInStore.id)
                                 }
-                                aria-label={`View insights for ${p.person_name}`}
-                                className="flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border border-neutral-100/50 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all active:scale-95 group/person"
+                                aria-label={
+                                  isRemoved
+                                    ? `${p.person_name} (Removed)`
+                                    : `View insights for ${p.person_name}`
+                                }
+                                className={`flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border shadow-sm transition-all group/person ${
+                                  isRemoved
+                                    ? 'opacity-60 grayscale cursor-not-allowed border-neutral-100/30 dark:border-neutral-800/30'
+                                    : 'border-neutral-100/50 dark:border-neutral-800 hover:shadow-md active:scale-95'
+                                }`}
                               >
                                 <div
-                                  className="flex h-8 w-8 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl shadow-black/5 group-hover/person:scale-110 transition-transform"
+                                  className={`flex h-8 w-8 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl shadow-black/5 transition-transform ${
+                                    !isRemoved && 'group-hover/person:scale-110'
+                                  }`}
                                   style={{ backgroundColor: p.avatar_color }}
                                 >
                                   {p.person_name.charAt(0).toUpperCase()}
                                 </div>
-                                <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+                                <span
+                                  className={`text-sm font-bold ${isRemoved ? 'text-neutral-500 line-through decoration-neutral-400' : 'text-neutral-800 dark:text-neutral-200'}`}
+                                >
                                   {p.person_name}
+                                  {isRemoved && (
+                                    <span className="ml-1 text-[9px] uppercase tracking-widest no-underline inline-block">
+                                      (Removed)
+                                    </span>
+                                  )}
                                 </span>
                               </button>
                             );
@@ -1039,9 +1057,13 @@ function TeamFlowVisualizer({
                           key={p.id || p.name}
                           layoutId={`flow-${p.id || p.name}`}
                           onClick={() => p.id && onPersonClick(p.id)}
-                          className="h-6 w-6 rounded-full border-2 border-white dark:border-neutral-900 shadow-sm transition-transform hover:scale-125 hover:z-10"
+                          className={`h-6 w-6 rounded-full border-2 border-white dark:border-neutral-900 shadow-sm transition-transform ${
+                            p.id
+                              ? 'hover:scale-125 hover:z-10 cursor-pointer'
+                              : 'opacity-50 grayscale hover:opacity-100 cursor-not-allowed'
+                          }`}
                           style={{ backgroundColor: p.color }}
-                          title={p.name}
+                          title={p.id ? p.name : `${p.name} (Removed)`}
                         />
                       )
                     )}
