@@ -621,6 +621,42 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       );
     } else {
       toast().addToast('Pairing session saved successfully!', 'success');
+
+      // Fire chat webhook if configured
+      const { slackWebhookUrl } = (
+        await import('../../../store/useWorkspacePrefsStore')
+      ).useWorkspacePrefsStore.getState();
+      if (slackWebhookUrl.trim()) {
+        const { boards: currentBoards, people: currentPeople } = get();
+        const today = new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+        });
+
+        // Build board lines, skip empty boards
+        const boardLines = currentBoards
+          .filter((b) => (b.assignedPersonIds ?? []).length > 0)
+          .map((b) => {
+            const names = (b.assignedPersonIds ?? [])
+              .map((id) => currentPeople.find((p) => p.id === id)?.name ?? id)
+              .join(' + ');
+            return `• *${b.name}*: ${names}`;
+          });
+
+        const text = `:hatching_chick: *Parrit — ${today}*\n${boardLines.join('\n')}`;
+
+        // Support Slack (use 'text'), Discord (use 'content'), and Teams (use 'text')
+        try {
+          await fetch(slackWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, content: text }),
+          });
+        } catch {
+          // Webhook errors are non-critical — don't surface to user
+        }
+      }
     }
   },
 

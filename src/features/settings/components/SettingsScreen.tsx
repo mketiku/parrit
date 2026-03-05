@@ -19,6 +19,7 @@ import {
   HelpCircle,
   Copy,
   ExternalLink,
+  MessageSquare,
 } from 'lucide-react';
 
 const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
@@ -53,6 +54,8 @@ export function SettingsScreen() {
     setStalePairThreshold,
     meetingLinkEnabled,
     setMeetingLinkEnabled,
+    slackWebhookUrl,
+    setSlackWebhookUrl,
   } = useWorkspacePrefsStore();
   const {
     exportWorkspace,
@@ -156,7 +159,7 @@ export function SettingsScreen() {
   };
 
   const [activeTab, setActiveTab] = useState<
-    'general' | 'pairing' | 'sharing' | 'security'
+    'general' | 'pairing' | 'sharing' | 'integrations' | 'security'
   >('general');
 
   const TABS = [
@@ -177,6 +180,12 @@ export function SettingsScreen() {
       label: 'Sharing',
       icon: Share2,
       description: 'Public Access',
+    },
+    {
+      id: 'integrations',
+      label: 'Integrations',
+      icon: MessageSquare,
+      description: 'Chat & Webhooks',
     },
     {
       id: 'security',
@@ -461,6 +470,52 @@ export function SettingsScreen() {
                     </div>
                   </div>
                 )}
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'integrations' && (
+            <section className="space-y-8">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
+                  Integrations
+                </h2>
+                <p className="text-sm text-neutral-500">
+                  Connect Parrit to your team's communication tools.
+                </p>
+              </div>
+
+              <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-50 dark:bg-brand-950/20 text-brand-500">
+                    <MessageSquare className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
+                      Chat Webhook
+                    </h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
+                      Send daily board assignments to Slack, Discord, or Teams
+                      when you click "Save Session".
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pl-0 sm:pl-14">
+                  <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                    Webhook URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://hooks.slack.com/services/..."
+                    value={slackWebhookUrl}
+                    onChange={(e) => setSlackWebhookUrl(e.target.value)}
+                    className="w-full rounded-2xl border-2 border-transparent bg-neutral-100 px-4 py-3 text-sm font-medium text-neutral-900 transition-all hover:bg-neutral-200 focus:border-brand-500 focus:bg-white focus:outline-none dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-800 focus:dark:bg-neutral-900"
+                  />
+                  <p className="text-[11px] font-medium text-neutral-400">
+                    Leave blank to disable chat notifications.
+                  </p>
+                </div>
               </div>
             </section>
           )}
