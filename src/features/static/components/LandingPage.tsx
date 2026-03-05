@@ -351,9 +351,9 @@ export function LandingPage() {
               'Daily Workspace Board Goals',
               'Meeting Link Integration',
               'Team Analytics Engine',
-              'Magic Link Authentication',
               'Contextual User Feature Hints',
               'Drag & Drop Mass Actions',
+              'Admin Role Permissions',
               'Keyboard Accessibility',
               'PWA Offline Capability',
             ].map((feature, i) => (
