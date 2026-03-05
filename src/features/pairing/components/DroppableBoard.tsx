@@ -358,6 +358,7 @@ export function DroppableBoard({
                             goals: [...board.goals, input.value.trim()],
                           });
                           input.value = '';
+                          input.focus();
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
@@ -387,6 +388,7 @@ export function DroppableBoard({
                           goals: [...board.goals, input.value.trim()],
                         });
                         input.value = '';
+                        input.focus();
                       }
                     }}
                     onClick={(e) => e.stopPropagation()}
