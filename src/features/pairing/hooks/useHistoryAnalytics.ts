@@ -7,6 +7,8 @@ interface HistoryRecord {
   person_id: string;
   board_id: string;
   session_id: string;
+  person_name?: string | null;
+  board_name?: string | null;
   created_at: string;
   people: { name: string; avatar_color_hex: string };
 }
@@ -44,6 +46,8 @@ export function useHistoryAnalytics(people: Person[]) {
             person_id,
             board_id,
             session_id,
+            person_name,
+            board_name,
             created_at,
             people (name, avatar_color_hex)
           `
@@ -82,56 +86,78 @@ export function useHistoryAnalytics(people: Person[]) {
     });
 
     // Group by session + board
-    const pairs: Record<string, Record<string, string[]>> = {}; // session -> board -> personIds
+    const pairs: Record<string, Record<string, HistoryRecord[]>> = {}; // session -> board -> records
 
     history.forEach((row) => {
       if (!pairs[row.session_id]) pairs[row.session_id] = {};
       if (!pairs[row.session_id][row.board_id])
         pairs[row.session_id][row.board_id] = [];
-      pairs[row.session_id][row.board_id].push(row.person_id);
+      pairs[row.session_id][row.board_id].push(row);
     });
 
     // Process pairs
     Object.keys(pairs).forEach((sessionId) => {
       const boards = pairs[sessionId];
       Object.keys(boards).forEach((boardId) => {
-        const peopleOnBoard = boards[boardId];
+        const peopleRecordsOnBoard = boards[boardId];
 
-        peopleOnBoard.forEach((pId) => {
+        peopleRecordsOnBoard.forEach((record) => {
+          const pId = record.person_id;
           if (!personStats[pId]) {
             // Person might have been deleted but exists in history
             return;
           }
 
-          const others = peopleOnBoard.filter((o) => o !== pId);
+          const others = peopleRecordsOnBoard.filter(
+            (o) => o.person_id !== pId
+          );
           personStats[pId].totalPairings += 1;
 
-          others.forEach((otherId) => {
-            if (!personStats[otherId]) return;
+          others.forEach((otherRecord) => {
+            const otherId = otherRecord.person_id;
+            const otherName =
+              otherRecord.person_name ||
+              otherRecord.people?.name ||
+              'Unknown (Removed)';
 
-            // Update partner counts
-            if (!personStats[pId].partnerCounts[otherId]) {
-              personStats[pId].partnerCounts[otherId] = {
-                count: 0,
-                name: personStats[otherId].name,
-              };
+            // If the other person is still active in the store
+            if (personStats[otherId]) {
+              // Update partner counts
+              if (!personStats[pId].partnerCounts[otherId]) {
+                personStats[pId].partnerCounts[otherId] = {
+                  count: 0,
+                  name: personStats[otherId].name,
+                };
+              }
+              personStats[pId].partnerCounts[otherId].count += 1;
+
+              // Update matrix
+              if (!matrix[pId]) matrix[pId] = {};
+              matrix[pId][otherId] = (matrix[pId][otherId] || 0) + 1;
+            } else {
+              // The partner was deleted. We still want to track the explicit count but we can use a synthetic ID
+              const synthId = `deleted-${otherName}`;
+              if (!personStats[pId].partnerCounts[synthId]) {
+                personStats[pId].partnerCounts[synthId] = {
+                  count: 0,
+                  name: `${otherName} (Removed)`,
+                };
+              }
+              personStats[pId].partnerCounts[synthId].count += 1;
             }
-            personStats[pId].partnerCounts[otherId].count += 1;
-
-            // Update matrix
-            if (!matrix[pId]) matrix[pId] = {};
-            matrix[pId][otherId] = (matrix[pId][otherId] || 0) + 1;
           });
 
-          // Update timeline (simplified example)
+          // Update timeline
           const firstRow = history.find((r) => r.session_id === sessionId);
           if (firstRow) {
             personStats[pId].timeline.push({
               date: firstRow.created_at,
               partnerName:
                 others
-                  .map((o) => personStats[o]?.name)
-                  .filter(Boolean)
+                  .map(
+                    (o) =>
+                      o.person_name || o.people?.name || 'Unknown (Removed)'
+                  )
                   .join(', ') || 'Solo',
             });
           }
