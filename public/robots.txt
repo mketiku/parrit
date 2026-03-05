@@ -1,7 +1,18 @@
 # -------------------------------------------------------
-# Standard search engine crawlers
-# Allow landing, about, and public workspace views.
-# Block all authenticated app routes and admin.
+# Default catch-all for any unlisted crawler.
+# Named blocks below take priority over this wildcard.
+# -------------------------------------------------------
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /view/
+Disallow: /admin
+Disallow: /app/
+Disallow: /login
+
+# -------------------------------------------------------
+# Standard search engine crawlers — same rules, named
+# explicitly so they appear in Google Search Console etc.
 # -------------------------------------------------------
 User-agent: Googlebot
 User-agent: Bingbot
@@ -15,7 +26,7 @@ Disallow: /app/
 Disallow: /login
 
 # -------------------------------------------------------
-# AI training crawlers — blocked entirely
+# AI training crawlers — blocked entirely.
 # This is a workspace tool with team data. We don't
 # consent to our users' content being used for AI training.
 # -------------------------------------------------------
