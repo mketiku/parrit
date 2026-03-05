@@ -641,7 +641,11 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             const names = (b.assignedPersonIds ?? [])
               .map((id) => currentPeople.find((p) => p.id === id)?.name ?? id)
               .join(' + ');
-            return `• *${b.name}*: ${names}`;
+            const goalLines =
+              (b.goals ?? []).length > 0
+                ? '\n' + (b.goals ?? []).map((g) => `   _${g}_`).join('\n')
+                : '';
+            return `• *${b.name}*: ${names}${goalLines}`;
           });
 
         const text = `:hatching_chick: *Parrit — ${today}*\n${boardLines.join('\n')}`;
