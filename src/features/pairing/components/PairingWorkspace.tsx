@@ -73,12 +73,7 @@ export function PairingWorkspace() {
   const { matrix, isLoading: isAnalyzing } = useHistoryAnalytics(people);
 
   const { startTutorial } = useTutorialStore();
-  const {
-    hintGoalsSeen,
-    setHintGoalsSeen,
-    hintRecommendSeen,
-    setHintRecommendSeen,
-  } = useWorkspacePrefsStore();
+  const { hintGoalsSeen, setHintGoalsSeen } = useWorkspacePrefsStore();
 
   // Derive contextual hint visibility
   const hasPairedSomeone = boards.some(
@@ -92,8 +87,6 @@ export function PairingWorkspace() {
       (b.assignedPersonIds || []).length > 0
   );
   const showGoalsHint = !hintGoalsSeen && boardsWithNoGoals.length > 0;
-  const showRecommendHint =
-    !hintRecommendSeen && hasPairedSomeone && people.length >= 3;
 
   // Keyboard support for clearing selection
   useEffect(() => {
@@ -670,18 +663,6 @@ export function PairingWorkspace() {
           description="Click here to add goals for this board — great for keeping the pair focused and on track."
           placement="bottom"
           onDismiss={() => setHintGoalsSeen(true)}
-        />
-      )}
-
-      {/* Contextual hint: Recommend Pairs — appears once user has 3+ people and filled boards */}
-      {showRecommendHint && (
-        <ContextualHint
-          targetId="recommend-btn"
-          title="Let Parrit suggest pairs"
-          description="You have enough teammates to start. Try Recommend Pairs — it uses pairing history to rotate people intelligently."
-          placement="bottom"
-          color="amber"
-          onDismiss={() => setHintRecommendSeen(true)}
         />
       )}
     </>
