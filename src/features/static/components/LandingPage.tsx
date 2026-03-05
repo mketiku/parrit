@@ -12,6 +12,7 @@ import {
   History,
   Users,
   Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 
@@ -148,7 +149,7 @@ export function LandingPage() {
 
             {!user && (
               <p className="mt-6 text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400/60 dark:text-neutral-600">
-                Open Source • No Credit Card • Zero Friction
+                Free • No Credit Card • Zero Friction
               </p>
             )}
           </motion.div>
@@ -309,15 +310,11 @@ export function LandingPage() {
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {features.map((f, i) => (
+          {features.map((f) => (
             <motion.div
               key={f.title}
               variants={itemVariants}
-              className={`group rounded-[2rem] border border-neutral-200/60 bg-white p-8 shadow-sm transition-all hover:bg-neutral-50/50 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/5 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:hover:bg-neutral-900 ${
-                i === 4
-                  ? 'sm:col-span-2 lg:col-span-4 bg-gradient-to-tr from-brand-50/50 to-transparent dark:from-brand-500/5'
-                  : ''
-              }`}
+              className="group rounded-[2rem] border border-neutral-200/60 bg-white p-8 shadow-sm transition-all hover:bg-neutral-50/50 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/5 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:hover:bg-neutral-900"
             >
               <div className="mb-6 inline-flex items-center justify-center rounded-2xl bg-brand-50 p-3 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 transition-all group-hover:scale-110 group-hover:bg-brand-500 group-hover:text-white">
                 <f.icon className="h-6 w-6" />
@@ -330,6 +327,53 @@ export function LandingPage() {
               </p>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* And so much more section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-20 pt-16 border-t border-neutral-200/60 dark:border-neutral-800/60 text-center"
+        >
+          <div className="inline-flex items-center gap-2 mb-12 bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 px-6 py-3 rounded-2xl border border-brand-100 dark:border-brand-500/20 shadow-sm shadow-brand-500/5">
+            <Sparkles className="h-5 w-5" />
+            <h3 className="font-black text-lg tracking-tight">
+              ...and so much more
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-8 gap-x-6 text-left max-w-5xl mx-auto px-4">
+            {[
+              'Smart Pair Recommendations',
+              'Historical Pairing Heatmaps',
+              'Time-travel Snapshot Cloning',
+              'Daily Workspace Board Goals',
+              'Meeting Link Integration',
+              'Team Analytics Engine',
+              'Magic Link Authentication',
+              'Contextual User Feature Hints',
+              'Drag & Drop Mass Actions',
+              'Keyboard Accessibility',
+              'PWA Offline Capability',
+            ].map((feature, i) => (
+              <motion.div
+                key={feature}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="flex items-start gap-3 group"
+              >
+                <div className="mt-0.5 rounded-full bg-brand-100 dark:bg-brand-500/20 p-1 group-hover:scale-110 group-hover:bg-brand-500 group-hover:text-white transition-all text-brand-600 dark:text-brand-400 shrink-0">
+                  <CheckCircle2 className="h-3 w-3" />
+                </div>
+                <span className="text-sm font-bold text-neutral-700 dark:text-neutral-300 leading-tight">
+                  {feature}
+                </span>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       </section>
 
@@ -353,7 +397,7 @@ export function LandingPage() {
               Ready to pair up?
             </h2>
             <p className="mb-10 text-white/60 text-lg font-medium max-w-md mx-auto leading-relaxed">
-              Set up your workspace in under a minute. Open source. No friction.
+              Set up your workspace in under a minute. Free. No friction.
             </p>
             {user ? (
               <Link
