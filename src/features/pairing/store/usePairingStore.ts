@@ -113,6 +113,7 @@ export interface PairingStore {
       >
     >
   ) => Promise<void>;
+  moveBoard: (activeId: string, overId: string) => Promise<void>;
   removeBoard: (id: string) => Promise<void>;
 
   // Session History
@@ -528,6 +529,52 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     if (error) {
       set({ boards: prev }); // rollback
       toast().addToast(`Failed to update board: ${error.message}`, 'error');
+    }
+  },
+
+  moveBoard: async (activeId, overId) => {
+    const { boards } = get();
+    const oldIndex = boards.findIndex((b) => b.id === activeId);
+    const newIndex = boards.findIndex((b) => b.id === overId);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newBoards = [...boards];
+    const [movedBoard] = newBoards.splice(oldIndex, 1);
+    newBoards.splice(newIndex, 0, movedBoard);
+
+    const reorderedBoards = newBoards.map((b, idx) => ({
+      ...b,
+      sortOrder: idx,
+    }));
+
+    // Optimistic update
+    set({ boards: reorderedBoards });
+
+    // Persist to DB
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const updates = reorderedBoards.map((b) => ({
+      id: b.id,
+      user_id: user.id,
+      name: b.name,
+      is_exempt: b.isExempt,
+      is_locked: b.isLocked,
+      sort_order: b.sortOrder,
+      goals: b.goals ?? [],
+      assigned_person_ids: b.assignedPersonIds ?? [],
+    }));
+
+    const { error } = await supabase
+      .from('pairing_boards')
+      .upsert(updates, { onConflict: 'id' });
+
+    if (error) {
+      set({ boards }); // rollback
+      toast().addToast(`Failed to reorder boards: ${error.message}`, 'error');
     }
   },
 

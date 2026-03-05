@@ -12,7 +12,11 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
@@ -51,6 +55,7 @@ export function PairingWorkspace() {
     addBoard,
     saveSession,
     recommendPairs,
+    moveBoard,
     isLoading: isStoreLoading,
     isSaving,
     isRecommending,
@@ -277,36 +282,49 @@ export function PairingWorkspace() {
 
     if (!over) return;
 
-    const dragItem = active.data.current as DragItem;
-    const targetBoardId = over.id as string;
-
-    // If we're dragging one of the selected people, move the whole selection
-    if (selectedPersonIds.has(dragItem.person.id)) {
-      handleBulkMove(targetBoardId);
+    // Handle Board Reordering
+    if (active.data.current?.type === 'BOARD') {
+      if (active.id !== over.id) {
+        moveBoard(active.id.toString(), over.id.toString());
+      }
       return;
     }
 
-    // Standard single-person move
-    setBoards((prevBoards: PairingBoard[]) => {
-      return prevBoards.map((board) => {
-        const isSource = board.id === dragItem.sourceId;
-        const isTarget = board.id === targetBoardId;
+    // Handle Person Movement
+    if (active.data.current?.type === 'PERSON') {
+      const dragItem = active.data.current as DragItem;
+      const targetBoardId = over.id as string;
 
-        let nextAssigned = [...(board.assignedPersonIds || [])];
+      // If we're dragging one of the selected people, move the whole selection
+      if (selectedPersonIds.has(dragItem.person.id)) {
+        handleBulkMove(targetBoardId);
+        return;
+      }
 
-        if (isSource) {
-          nextAssigned = nextAssigned.filter((id) => id !== dragItem.person.id);
-        }
+      // Standard single-person move
+      setBoards((prevBoards: PairingBoard[]) => {
+        return prevBoards.map((board) => {
+          const isSource = board.id === dragItem.sourceId;
+          const isTarget = board.id === targetBoardId;
 
-        if (isTarget && targetBoardId !== 'unpaired') {
-          if (!nextAssigned.includes(dragItem.person.id)) {
-            nextAssigned.push(dragItem.person.id);
+          let nextAssigned = [...(board.assignedPersonIds || [])];
+
+          if (isSource) {
+            nextAssigned = nextAssigned.filter(
+              (id) => id !== dragItem.person.id
+            );
           }
-        }
 
-        return { ...board, assignedPersonIds: nextAssigned } as PairingBoard;
-      });
-    }, true);
+          if (isTarget && targetBoardId !== 'unpaired') {
+            if (!nextAssigned.includes(dragItem.person.id)) {
+              nextAssigned.push(dragItem.person.id);
+            }
+          }
+
+          return { ...board, assignedPersonIds: nextAssigned } as PairingBoard;
+        });
+      }, true);
+    }
   };
 
   const handleDragCancel = () => {
@@ -457,13 +475,12 @@ export function PairingWorkspace() {
                 </>
               )}
 
-              {!isStoreLoading &&
-                [...boards]
-                  .sort((a, b) => {
-                    if (a.isExempt === b.isExempt) return 0;
-                    return a.isExempt ? 1 : -1;
-                  })
-                  .map((board) => {
+              {!isStoreLoading && (
+                <SortableContext
+                  items={boards.map((b) => b.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  {boards.map((board) => {
                     const assignedPeople = (board.assignedPersonIds || [])
                       .map((id) => people.find((p) => p.id === id))
                       .filter((p): p is Person => !!p);
@@ -478,6 +495,8 @@ export function PairingWorkspace() {
                       />
                     );
                   })}
+                </SortableContext>
+              )}
 
               {/* Add Board Trigger */}
               {!isStoreLoading && !isAddingBoard && (
