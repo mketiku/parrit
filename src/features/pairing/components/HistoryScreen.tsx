@@ -273,7 +273,22 @@ export function HistoryScreen() {
     if (!confirmClone) return;
 
     try {
-      // 1. Group details by board
+      const { people: storePeople, boards: currentBoards } =
+        usePairingStore.getState();
+
+      // 1. Delete all existing boards
+      await Promise.all(
+        currentBoards.map((b) =>
+          supabase.from('pairing_boards').delete().eq('id', b.id)
+        )
+      );
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // 2. Group snapshot details by board name
       const boardGroups = details.reduce(
         (acc, curr) => {
           const bName = curr.board_name.trim();
@@ -284,50 +299,60 @@ export function HistoryScreen() {
         {} as Record<string, string[]>
       );
 
-      // 2. Prepare boards and map people by name
-      const {
-        people: storePeople,
-        applyBuiltinTemplate,
-        setBoards,
-      } = usePairingStore.getState();
-
-      const newBoards = Object.entries(boardGroups).map(([name, pNames]) => {
+      // 3. Resolve person IDs from names in one pass
+      const boardRows = Object.entries(boardGroups).map(([name, pNames], i) => {
         const assignedIds = pNames
           .map(
-            (name) => storePeople.find((p) => p.name.trim() === name.trim())?.id
+            (pName) =>
+              storePeople.find((p) => p.name.trim() === pName.trim())?.id
           )
           .filter((id): id is string => !!id);
 
         return {
+          user_id: user.id,
           name,
-          isExempt: false,
-          assignedPersonIds: assignedIds,
+          goals: [] as string[],
+          is_exempt: false,
+          is_locked: false,
+          sort_order: i,
+          assigned_person_ids: assignedIds,
         };
       });
 
-      // 3. Apply via store (using applyBuiltinTemplate as a base for clean replacement)
-      await applyBuiltinTemplate(
-        `Clone of ${format(parseInputDate(sessions.find((s) => s.id === selectedSessionId)?.session_date || null), 'MMM d')}`,
-        newBoards.map((nb) => ({ name: nb.name, isExempt: nb.isExempt }))
-      );
+      // 4. Insert all boards with assignments in a single round-trip
+      const { data: created, error: createErr } = await supabase
+        .from('pairing_boards')
+        .insert(boardRows)
+        .select();
 
-      // 4. Re-assign people (applyBuiltinTemplate doesn't handle people)
-      const { boards: createdBoards, people: latestPeople } =
-        usePairingStore.getState();
-      const remappedBoards = createdBoards.map((cb) => {
-        const bName = cb.name.trim();
-        const originalPeople = boardGroups[bName] || [];
-        const newIds = originalPeople
-          .map(
-            (pName) =>
-              latestPeople.find((p) => p.name.trim() === pName.trim())?.id
-          )
-          .filter((id): id is string => !!id);
+      if (createErr) throw createErr;
 
-        return { ...cb, assignedPersonIds: newIds };
-      });
+      // 5. Update local store directly — no second persist needed
+      const { setBoards } = usePairingStore.getState();
+      // Use the raw created records to build the local state
+      const newBoards = (
+        created as Array<{
+          id: string;
+          name: string;
+          is_exempt: boolean;
+          is_locked: boolean;
+          sort_order: number;
+          goals: string[];
+          meeting_link: string | null;
+          assigned_person_ids: string[];
+        }>
+      ).map((r) => ({
+        id: r.id,
+        name: r.name,
+        isExempt: r.is_exempt,
+        isLocked: r.is_locked,
+        sortOrder: r.sort_order,
+        goals: r.goals ?? [],
+        meetingLink: r.meeting_link ?? undefined,
+        assignedPersonIds: r.assigned_person_ids ?? [],
+      }));
 
-      setBoards(remappedBoards);
+      setBoards(newBoards);
       addToast('Snapshot cloned to workspace!', 'success');
     } catch (err) {
       console.error('Clone error:', err);

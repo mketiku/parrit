@@ -88,6 +88,7 @@ export function PairingWorkspace() {
   } = useWorkspacePrefsStore();
 
   // Derive contextual hint visibility
+  // Only one hint shows at a time, in priority order: goals → history → heatmap
   const hasSessionSaved = matrix && Object.keys(matrix).length > 0;
   const boardsWithNoGoals = boards.filter(
     (b) =>
@@ -95,17 +96,19 @@ export function PairingWorkspace() {
       (b.goals || []).length === 0 &&
       (b.assignedPersonIds || []).length > 0
   );
-  // Suppress goals hint while Getting Started card is visible to avoid visual competition
-  const showGoalsHint =
+
+  const goalsHintEligible =
     !hintGoalsSeen && gettingStartedDismissed && boardsWithNoGoals.length > 0;
-
-  // "Where's my History?" — shown once after the first session is saved
-  const showHistoryHint =
-    !hintHistorySeen && gettingStartedDismissed && hasSessionSaved;
-
-  // "Heatmap is live" — shown once after 3+ sessions have been saved
-  const showHeatmapHint =
+  const historyHintEligible =
+    !hintHistorySeen && gettingStartedDismissed && !!hasSessionSaved;
+  const heatmapHintEligible =
     !hintHeatmapSeen && gettingStartedDismissed && sessionCount >= 3;
+
+  // Show only the highest-priority eligible hint
+  const showGoalsHint = goalsHintEligible;
+  const showHistoryHint = !goalsHintEligible && historyHintEligible;
+  const showHeatmapHint =
+    !goalsHintEligible && !historyHintEligible && heatmapHintEligible;
 
   // Keyboard support for clearing selection
   useEffect(() => {
