@@ -6,8 +6,6 @@ import {
   ShieldX,
   Pencil,
   Trash2,
-  Check,
-  X,
   Plus,
   Lock,
   Unlock,
