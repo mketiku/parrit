@@ -160,7 +160,7 @@ export function DroppableBoard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative flex min-h-[320px] sm:min-h-[440px] flex-col rounded-[2.5rem] border-2 p-5 sm:p-7 shadow-sm transition-all duration-300
+      className={`group relative flex min-h-[200px] sm:min-h-[240px] flex-col rounded-3xl border-2 p-4 sm:p-5 shadow-sm transition-all duration-300
         ${
           isOver
             ? 'border-brand-500 bg-brand-50/20 shadow-lg shadow-brand-500/10 ring-4 ring-brand-500/5'
@@ -168,8 +168,8 @@ export function DroppableBoard({
               ? 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/20'
               : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
         }
-        ${isDragging ? 'cursor-grabbing shadow-2xl z-50' : ''}
-        [html[data-exporting='true']_&]:min-h-0 [html[data-exporting='true']_&]:p-6 [html[data-exporting='true']_&]:bg-white [html[data-exporting='true']_&]:shadow-none [html[data-exporting='true']_&]:border-neutral-200
+        ${isDragging ? 'cursor-grabbing opacity-80 shadow-2xl z-50' : ''}
+        [html[data-exporting='true']_&]:min-h-0 [html[data-exporting='true']_&]:p-5 [html[data-exporting='true']_&]:bg-white [html[data-exporting='true']_&]:shadow-none [html[data-exporting='true']_&]:border-neutral-200
       `}
     >
       {/* Stale Pair Banner */}
@@ -183,14 +183,15 @@ export function DroppableBoard({
       )}
 
       {/* Board Header */}
-      <div className="mb-4 sm:mb-8 flex items-start justify-between">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
+      <div className="mb-3 sm:mb-4 flex items-start justify-between">
+        <div className="flex items-start gap-2 flex-1 min-w-0 -ml-2 sm:-ml-1">
           <button
             {...attributes}
             {...listeners}
-            className="mt-1 cursor-grab active:cursor-grabbing text-neutral-300 hover:text-neutral-500 dark:text-neutral-700 dark:hover:text-neutral-500 transition-colors [html[data-exporting='true']_&]:hidden"
+            className="mt-0.5 p-1 cursor-grab active:cursor-grabbing text-neutral-300 hover:text-neutral-500 dark:text-neutral-700 dark:hover:text-neutral-500 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 [html[data-exporting='true']_&]:hidden"
+            aria-label={`Drag to reorder board ${board.name}`}
           >
-            <GripVertical className="h-5 w-5" />
+            <GripVertical className="h-4 w-4" />
           </button>
 
           <div className="flex-1 min-w-0">

@@ -354,7 +354,7 @@ export function PairingWorkspace() {
           {/* Main Workspaces Column */}
           <div
             ref={dashboardRef}
-            className="flex-1 min-w-0 space-y-4 sm:space-y-6 [html[data-exporting='true']_&]:p-12 [html[data-exporting='true']_&]:bg-neutral-50 dark:[html[data-exporting='true']_&]:bg-neutral-950/20 [html[data-exporting='true']_&]:rounded-[2.5rem]"
+            className="flex-1 min-w-0 space-y-4 sm:space-y-6 [html[data-exporting='true']_&]:p-12 [html[data-exporting='true']_&]:bg-neutral-50 dark:[html[data-exporting='true']_&]:bg-neutral-950/20 [html[data-exporting='true']_&]:rounded-3xl"
           >
             {/* 
               Visible only in Screenshot: Show full workspace identity 
@@ -442,7 +442,7 @@ export function PairingWorkspace() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden mb-8"
                 >
-                  <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 overflow-x-auto">
+                  <div className="rounded-3xl border-2 border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 overflow-x-auto">
                     <div className="flex items-center gap-2 mb-8">
                       <BarChart3 className="h-4 w-4 text-brand-500" />
                       <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
@@ -809,7 +809,7 @@ function BoardSkeleton({ index }: { index: number }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="flex min-h-[240px] flex-col rounded-[2.5rem] border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/50"
+      className="flex min-h-[200px] sm:min-h-[240px] flex-col rounded-3xl border-2 border-neutral-200 bg-white p-4 sm:p-5 dark:border-neutral-800 dark:bg-neutral-900/50"
     >
       <div className="flex items-center gap-3 mb-6">
         <div className="h-10 w-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
