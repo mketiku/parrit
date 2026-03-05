@@ -268,9 +268,9 @@ export function DroppableBoard({
           {/* Goal / Meeting Link Section */}
           <div className="mb-4">
             {isEditingExtra ? (
-              <div className="space-y-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800">
+              <div className="flex flex-col gap-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800">
                 {/* Goals List */}
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                     Daily Goals (One per line)
                   </label>
@@ -291,7 +291,7 @@ export function DroppableBoard({
                 </div>
 
                 {/* Meeting Link */}
-                <div className="space-y-1.5 pt-1">
+                <div className="flex flex-col gap-1.5 pt-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                     Meeting Link
                   </label>
@@ -329,17 +329,17 @@ export function DroppableBoard({
                 className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-950/50"
               >
                 {(board.goals || []).length > 0 ? (
-                  <div className="space-y-3">
-                    <ul className="space-y-1">
+                  <div className="flex flex-col gap-3">
+                    <ul className="flex flex-col gap-1">
                       {board.goals.map((g, i) => (
                         <li
                           key={i}
-                          className="flex gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-300"
+                          className="flex items-start gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-300"
                         >
-                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" />
-                          <span className="leading-relaxed break-words whitespace-pre-wrap">
+                          <div className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" />
+                          <div className="flex-1 min-w-0 leading-relaxed break-words whitespace-pre-wrap">
                             {g}
-                          </span>
+                          </div>
                         </li>
                       ))}
                     </ul>

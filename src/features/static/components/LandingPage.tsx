@@ -148,7 +148,7 @@ export function LandingPage() {
 
             {!user && (
               <p className="mt-6 text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400/60 dark:text-neutral-600">
-                Free Forever • No Credit Card • Zero Friction
+                Open Source • No Credit Card • Zero Friction
               </p>
             )}
           </motion.div>
@@ -349,8 +349,7 @@ export function LandingPage() {
               Ready to pair up?
             </h2>
             <p className="mb-10 text-white/60 text-lg font-medium max-w-md mx-auto leading-relaxed">
-              Set up your workspace in under a minute. Free forever. No
-              friction.
+              Set up your workspace in under a minute. Open source. No friction.
             </p>
             {user ? (
               <Link
