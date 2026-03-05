@@ -77,9 +77,6 @@ export function PairingWorkspace() {
     useWorkspacePrefsStore();
 
   // Derive contextual hint visibility
-  const hasPairedSomeone = boards.some(
-    (b) => (b.assignedPersonIds || []).length > 0
-  );
   const hasSessionSaved = matrix && Object.keys(matrix).length > 0;
   const boardsWithNoGoals = boards.filter(
     (b) =>
