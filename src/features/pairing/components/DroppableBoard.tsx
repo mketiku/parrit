@@ -61,22 +61,14 @@ export function DroppableBoard({
   const inputRef = useRef<HTMLInputElement>(null);
   const extraEditRef = useRef<HTMLDivElement>(null);
 
-  // Sync internal state with board props during rendering
-  const [prevBoardProps, setPrevBoardProps] = useState({
-    goals: board.goals,
-    meetingLink: board.meetingLink,
-  });
-
-  if (
-    board.goals !== prevBoardProps.goals ||
-    board.meetingLink !== prevBoardProps.meetingLink
-  ) {
-    setPrevBoardProps({ goals: board.goals, meetingLink: board.meetingLink });
+  // Sync internal state with board props only when entering edit mode
+  const startEditingExtra = () => {
     setExtraData({
       goalsText: (board.goals || []).join('\n'),
       meetingLink: board.meetingLink || '',
     });
-  }
+    setIsEditingExtra(true);
+  };
 
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
@@ -97,7 +89,7 @@ export function DroppableBoard({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isEditingExtra]);
 
-  // Auto-save helper — called immediately after any goals/link mutation
+  // Auto-save helper — checks for actual content changes before hitting DB
   const autoSave = useCallback(
     (goalsText: string, meetingLink: string) => {
       const parsedGoals = goalsText
@@ -105,13 +97,31 @@ export function DroppableBoard({
         .map((g) => g.trim())
         .filter(Boolean);
 
-      updateBoard(board.id, {
-        goals: parsedGoals,
-        meetingLink: meetingLink.trim() || undefined,
-      });
+      const trimmedLink = meetingLink.trim() || undefined;
+
+      // Only update if something actually changed to prevent loops/blanking
+      const hasGoalsChanged =
+        JSON.stringify(parsedGoals) !== JSON.stringify(board.goals || []);
+      const hasLinkChanged = trimmedLink !== board.meetingLink;
+
+      if (hasGoalsChanged || hasLinkChanged) {
+        updateBoard(board.id, {
+          goals: parsedGoals,
+          meetingLink: trimmedLink,
+        });
+      }
     },
-    [board.id, updateBoard]
+    [board.id, board.goals, board.meetingLink, updateBoard]
   );
+
+  // Trigger save when finishing the "extra" edit session (clickaway or manual close)
+  const prevIsEditingExtra = useRef(isEditingExtra);
+  useEffect(() => {
+    if (prevIsEditingExtra.current === true && isEditingExtra === false) {
+      autoSave(extraData.goalsText, extraData.meetingLink);
+    }
+    prevIsEditingExtra.current = isEditingExtra;
+  }, [isEditingExtra, extraData, autoSave]);
 
   const handleRenameCommit = async () => {
     const trimmed = editedName.trim();
@@ -302,9 +312,7 @@ export function DroppableBoard({
                         goalsText: e.target.value,
                       }))
                     }
-                    onBlur={() =>
-                      autoSave(extraData.goalsText, extraData.meetingLink)
-                    }
+                    onBlur={() => {}} // Save is now handled by the transition effect
                     placeholder="- Ship the new feature..."
                     className="w-full min-h-[80px] rounded-lg border border-neutral-200 bg-white py-2 px-3 text-xs leading-relaxed outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900 resize-y text-neutral-700 dark:text-neutral-300"
                   />
@@ -326,9 +334,7 @@ export function DroppableBoard({
                             meetingLink: e.target.value,
                           }))
                         }
-                        onBlur={() =>
-                          autoSave(extraData.goalsText, extraData.meetingLink)
-                        }
+                        onBlur={() => {}} // Save is now handled by the transition effect
                         placeholder="Zoom / Meet link..."
                         className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
                       />
@@ -339,7 +345,7 @@ export function DroppableBoard({
             ) : (
               <div
                 id="board-goals"
-                onClick={() => setIsEditingExtra(true)}
+                onClick={startEditingExtra}
                 className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-950/50"
               >
                 <div className="flex flex-col gap-3">
