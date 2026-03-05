@@ -480,7 +480,7 @@ export function HistoryScreen() {
                     <div className="flex items-center gap-2 mb-8">
                       <BarChart3 className="h-4 w-4 text-brand-500" />
                       <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
-                        Pairing Frequency Matrix
+                        Pairing Heatmap
                       </h3>
                     </div>
                     {isAnalyzing ? (

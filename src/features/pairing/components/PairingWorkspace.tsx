@@ -340,11 +340,11 @@ export function PairingWorkspace() {
                 <button
                   id="heatmap-toggle"
                   onClick={() => setShowHeatmap(!showHeatmap)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all
+                  className={`flex justify-center items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all shadow-sm
                     ${
                       showHeatmap
-                        ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20'
-                        : 'bg-white border-neutral-200 text-neutral-400 hover:border-brand-500 hover:text-brand-600 dark:bg-neutral-900 dark:border-neutral-800'
+                        ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20'
+                        : 'bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800'
                     }
                   `}
                 >
