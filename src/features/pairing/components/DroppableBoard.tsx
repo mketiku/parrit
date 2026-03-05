@@ -169,7 +169,7 @@ export function DroppableBoard({
               : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
         }
         ${isDragging ? 'cursor-grabbing opacity-80 shadow-2xl z-50' : ''}
-        [html[data-exporting='true']_&]:min-h-0 [html[data-exporting='true']_&]:p-5 [html[data-exporting='true']_&]:bg-white [html[data-exporting='true']_&]:shadow-none [html[data-exporting='true']_&]:border-neutral-200
+        [html[data-exporting='true']_&]:min-h-0 [html[data-exporting='true']_&]:p-5 [html[data-exporting='true']_&]:shadow-none
       `}
     >
       {/* Stale Pair Banner */}
