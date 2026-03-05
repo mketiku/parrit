@@ -66,5 +66,7 @@ export const createMockWorkspacePrefsStore = (
   setHintHistorySeen: vi.fn(),
   hintHeatmapSeen: false,
   setHintHeatmapSeen: vi.fn(),
+  slackWebhookUrl: '',
+  setSlackWebhookUrl: vi.fn(),
   ...overrides,
 });
