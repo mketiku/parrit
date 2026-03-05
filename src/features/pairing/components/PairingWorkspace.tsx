@@ -70,11 +70,22 @@ export function PairingWorkspace() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const { matrix, isLoading: isAnalyzing } = useHistoryAnalytics(people);
+  const {
+    matrix,
+    sessionCount,
+    isLoading: isAnalyzing,
+  } = useHistoryAnalytics(people);
 
   const { startTutorial } = useTutorialStore();
-  const { hintGoalsSeen, setHintGoalsSeen, gettingStartedDismissed } =
-    useWorkspacePrefsStore();
+  const {
+    hintGoalsSeen,
+    setHintGoalsSeen,
+    gettingStartedDismissed,
+    hintHistorySeen,
+    setHintHistorySeen,
+    hintHeatmapSeen,
+    setHintHeatmapSeen,
+  } = useWorkspacePrefsStore();
 
   // Derive contextual hint visibility
   const hasSessionSaved = matrix && Object.keys(matrix).length > 0;
@@ -87,6 +98,14 @@ export function PairingWorkspace() {
   // Suppress goals hint while Getting Started card is visible to avoid visual competition
   const showGoalsHint =
     !hintGoalsSeen && gettingStartedDismissed && boardsWithNoGoals.length > 0;
+
+  // "Where's my History?" — shown once after the first session is saved
+  const showHistoryHint =
+    !hintHistorySeen && gettingStartedDismissed && hasSessionSaved;
+
+  // "Heatmap is live" — shown once after 3+ sessions have been saved
+  const showHeatmapHint =
+    !hintHeatmapSeen && gettingStartedDismissed && sessionCount >= 3;
 
   // Keyboard support for clearing selection
   useEffect(() => {
@@ -662,6 +681,28 @@ export function PairingWorkspace() {
           description="Click here to add goals for this board — great for keeping the pair focused and on track."
           placement="bottom"
           onDismiss={() => setHintGoalsSeen(true)}
+        />
+      )}
+
+      {/* Contextual hint: History — shown after the first session is saved */}
+      {showHistoryHint && (
+        <ContextualHint
+          targetId="save-session-btn"
+          title="Your session was saved! 🎉"
+          description="Head to the History tab from the sidebar to see your pairing patterns over time."
+          placement="bottom"
+          onDismiss={() => setHintHistorySeen(true)}
+        />
+      )}
+
+      {/* Contextual hint: Heatmap — shown after 3+ sessions, pointing to the toggle */}
+      {showHeatmapHint && (
+        <ContextualHint
+          targetId="heatmap-toggle"
+          title="Your heatmap is live 🔥"
+          description="You have enough data to see pairing patterns. Toggle the heatmap to see who's been working with whom!"
+          placement="bottom"
+          onDismiss={() => setHintHeatmapSeen(true)}
         />
       )}
     </>

@@ -165,8 +165,11 @@ export function useHistoryAnalytics(people: Person[]) {
       });
     });
 
+    const sessionCount = Object.keys(pairs).length;
+
     return {
       personStats,
+      sessionCount,
       matrix: {
         personIds: people.map((p) => p.id),
         personNames,

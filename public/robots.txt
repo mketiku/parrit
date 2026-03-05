@@ -1,5 +1,58 @@
-User-agent: *
+# -------------------------------------------------------
+# Standard search engine crawlers — allow landing page
+# -------------------------------------------------------
+User-agent: Googlebot
 Allow: /
 
-# Disallow sensitive internal paths if any
-# Disallow: /api/
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# -------------------------------------------------------
+# AI training crawlers — blocked
+# This is a workspace tool with team data. We don't
+# consent to our users' workspace data being used
+# for AI training purposes.
+# -------------------------------------------------------
+
+# OpenAI
+User-agent: GPTBot
+Disallow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Disallow: /
+
+# Google AI (Gemini training — separate from Googlebot)
+User-agent: Google-Extended
+Disallow: /
+
+# Common Crawl (used as raw training data by many AI companies)
+User-agent: CCBot
+Disallow: /
+
+# ByteDance / TikTok
+User-agent: Bytespider
+Disallow: /
+
+# Apple AI
+User-agent: Applebot-Extended
+Disallow: /
+
+# Meta / Facebook AI
+User-agent: FacebookBot
+Disallow: /
+
+# Diffbot (AI data extraction)
+User-agent: Diffbot
+Disallow: /
+
+# -------------------------------------------------------
+# Sitemap
+# -------------------------------------------------------
+Sitemap: https://parrit.app/sitemap.xml

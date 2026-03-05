@@ -24,6 +24,10 @@ export interface WorkspacePrefsState {
   setGettingStartedDismissed: (dismissed: boolean) => void;
   meetingLinkEnabled: boolean;
   setMeetingLinkEnabled: (enabled: boolean) => void;
+  hintHistorySeen: boolean;
+  setHintHistorySeen: (seen: boolean) => void;
+  hintHeatmapSeen: boolean;
+  setHintHeatmapSeen: (seen: boolean) => void;
 }
 
 export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
@@ -51,6 +55,10 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
         set({ gettingStartedDismissed: dismissed }),
       meetingLinkEnabled: false,
       setMeetingLinkEnabled: (enabled) => set({ meetingLinkEnabled: enabled }),
+      hintHistorySeen: false,
+      setHintHistorySeen: (seen) => set({ hintHistorySeen: seen }),
+      hintHeatmapSeen: false,
+      setHintHeatmapSeen: (seen) => set({ hintHeatmapSeen: seen }),
     }),
     {
       name: 'parrit-workspace-prefs',

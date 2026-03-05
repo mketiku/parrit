@@ -62,5 +62,9 @@ export const createMockWorkspacePrefsStore = (
   setGettingStartedDismissed: vi.fn(),
   meetingLinkEnabled: false,
   setMeetingLinkEnabled: vi.fn(),
+  hintHistorySeen: false,
+  setHintHistorySeen: vi.fn(),
+  hintHeatmapSeen: false,
+  setHintHeatmapSeen: vi.fn(),
   ...overrides,
 });
