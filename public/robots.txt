@@ -1,23 +1,44 @@
 # -------------------------------------------------------
-# Standard search engine crawlers — allow landing page
+# Standard search engine crawlers
+# Allow landing, about, and public workspace views.
+# Block all authenticated app routes and admin.
 # -------------------------------------------------------
 User-agent: Googlebot
 Allow: /
+Allow: /about
+Allow: /view/
+Disallow: /admin
+Disallow: /app/
+Disallow: /login
 
 User-agent: Bingbot
 Allow: /
-
-User-agent: Slurp
-Allow: /
+Allow: /about
+Allow: /view/
+Disallow: /admin
+Disallow: /app/
+Disallow: /login
 
 User-agent: DuckDuckBot
 Allow: /
+Allow: /about
+Allow: /view/
+Disallow: /admin
+Disallow: /app/
+Disallow: /login
+
+User-agent: Slurp
+Allow: /
+Allow: /about
+Allow: /view/
+Disallow: /admin
+Disallow: /app/
+Disallow: /login
 
 # -------------------------------------------------------
-# AI training crawlers — blocked
+# AI training crawlers — blocked entirely
 # This is a workspace tool with team data. We don't
-# consent to our users' workspace data being used
-# for AI training purposes.
+# consent to our users' content being used for AI training.
 # -------------------------------------------------------
 
 # OpenAI
@@ -53,6 +74,6 @@ User-agent: Diffbot
 Disallow: /
 
 # -------------------------------------------------------
-# Sitemap
+# Sitemap — update domain if needed
 # -------------------------------------------------------
 Sitemap: https://parrit.app/sitemap.xml

@@ -688,7 +688,7 @@ export function PairingWorkspace() {
       {showHistoryHint && (
         <ContextualHint
           targetId="save-session-btn"
-          title="Your session was saved! 🎉"
+          title="Your session was saved!"
           description="Head to the History tab from the sidebar to see your pairing patterns over time."
           placement="bottom"
           onDismiss={() => setHintHistorySeen(true)}
@@ -699,7 +699,7 @@ export function PairingWorkspace() {
       {showHeatmapHint && (
         <ContextualHint
           targetId="heatmap-toggle"
-          title="Your heatmap is live 🔥"
+          title="Your heatmap is live"
           description="You have enough data to see pairing patterns. Toggle the heatmap to see who's been working with whom!"
           placement="bottom"
           onDismiss={() => setHintHeatmapSeen(true)}
