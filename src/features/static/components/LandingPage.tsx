@@ -309,11 +309,15 @@ export function LandingPage() {
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {features.map((f) => (
+          {features.map((f, i) => (
             <motion.div
               key={f.title}
               variants={itemVariants}
-              className="group rounded-[2rem] border border-neutral-200/60 bg-white p-8 shadow-sm transition-all hover:bg-neutral-50/50 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/5 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:hover:bg-neutral-900"
+              className={`group rounded-[2rem] border border-neutral-200/60 bg-white p-8 shadow-sm transition-all hover:bg-neutral-50/50 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/5 dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:hover:bg-neutral-900 ${
+                i === 4
+                  ? 'sm:col-span-2 lg:col-span-4 bg-gradient-to-tr from-brand-50/50 to-transparent dark:from-brand-500/5'
+                  : ''
+              }`}
             >
               <div className="mb-6 inline-flex items-center justify-center rounded-2xl bg-brand-50 p-3 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 transition-all group-hover:scale-110 group-hover:bg-brand-500 group-hover:text-white">
                 <f.icon className="h-6 w-6" />
