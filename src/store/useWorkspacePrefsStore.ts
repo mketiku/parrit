@@ -20,6 +20,8 @@ export interface WorkspacePrefsState {
   setHintGoalsSeen: (seen: boolean) => void;
   hintRecommendSeen: boolean;
   setHintRecommendSeen: (seen: boolean) => void;
+  gettingStartedDismissed: boolean;
+  setGettingStartedDismissed: (dismissed: boolean) => void;
 }
 
 export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
@@ -42,6 +44,9 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
       setHintGoalsSeen: (seen) => set({ hintGoalsSeen: seen }),
       hintRecommendSeen: false,
       setHintRecommendSeen: (seen) => set({ hintRecommendSeen: seen }),
+      gettingStartedDismissed: false,
+      setGettingStartedDismissed: (dismissed) =>
+        set({ gettingStartedDismissed: dismissed }),
     }),
     {
       name: 'parrit-workspace-prefs',

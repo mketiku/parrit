@@ -58,5 +58,7 @@ export const createMockWorkspacePrefsStore = (
   setHintGoalsSeen: vi.fn(),
   hintRecommendSeen: false,
   setHintRecommendSeen: vi.fn(),
+  gettingStartedDismissed: false,
+  setGettingStartedDismissed: vi.fn(),
   ...overrides,
 });

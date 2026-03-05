@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, ChevronDown, X, Bird } from 'lucide-react';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
-import { useAuthStore } from '../../auth/store/useAuthStore';
-import { supabase } from '../../../lib/supabase';
 import type { Person, PairingBoard } from '../types';
 
 interface GettingStartedCardProps {
@@ -24,15 +22,17 @@ export function GettingStartedCard({
   boards,
   hasSessionSaved,
 }: GettingStartedCardProps) {
-  const { onboardingCompleted, setOnboardingCompleted } =
+  const { gettingStartedDismissed, setGettingStartedDismissed } =
     useWorkspacePrefsStore();
-  const { user } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
 
   const hasPeople = people.length > 0;
   const hasBoard = boards.filter((b) => !b.isExempt).length > 0;
   const hasPairedSomeone = boards.some(
     (b) => (b.assignedPersonIds || []).length > 0
+  );
+  const hasGoalAdded = boards.some(
+    (b) => !b.isExempt && (b.goals || []).length > 0
   );
 
   const items: ChecklistItem[] = [
@@ -56,6 +56,12 @@ export function GettingStartedCard({
       done: hasPairedSomeone,
     },
     {
+      id: 'add-goal',
+      label: 'Add a goal to a board',
+      detail: 'Click the goals area on any board to add daily focus items.',
+      done: hasGoalAdded,
+    },
+    {
       id: 'save-session',
       label: 'Save your first session',
       detail:
@@ -67,17 +73,12 @@ export function GettingStartedCard({
   const completedCount = items.filter((i) => i.done).length;
   const allDone = completedCount === items.length;
 
-  const handleDismiss = async () => {
-    setOnboardingCompleted(true);
-    if (user) {
-      await supabase
-        .from('workspace_settings')
-        .upsert({ user_id: user.id, onboarding_completed: true });
-    }
+  const handleDismiss = () => {
+    setGettingStartedDismissed(true);
   };
 
   // Hide once dismissed
-  if (onboardingCompleted) return null;
+  if (gettingStartedDismissed) return null;
 
   return (
     <AnimatePresence>
