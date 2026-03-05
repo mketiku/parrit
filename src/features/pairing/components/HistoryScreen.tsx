@@ -974,7 +974,7 @@ function TeamFlowVisualizer({
     assignments.forEach((a) => {
       const bNode = a.pairing_boards;
       const bData = Array.isArray(bNode) ? bNode[0] : bNode;
-      const bName = bData?.name || 'Unknown';
+      const bName = a.board_name || bData?.name || 'Unknown';
 
       if (!boards[bName]) boards[bName] = [];
 
@@ -983,8 +983,8 @@ function TeamFlowVisualizer({
 
       boards[bName].push({
         id: a.person_id,
-        name: pData?.name || 'Unknown',
-        color: pData?.avatar_color_hex || '#000000',
+        name: a.person_name || pData?.name || 'Unknown',
+        color: pData?.avatar_color_hex || '#94a3b8',
       });
     });
     return { ...s, boards };
@@ -1030,11 +1030,15 @@ function TeamFlowVisualizer({
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {people.map(
-                      (p: { id: string; color: string; name: string }) => (
+                      (p: {
+                        id: string | null;
+                        color: string;
+                        name: string;
+                      }) => (
                         <motion.button
-                          key={p.id}
-                          layoutId={`flow-${p.id}`}
-                          onClick={() => onPersonClick(p.id)}
+                          key={p.id || p.name}
+                          layoutId={`flow-${p.id || p.name}`}
+                          onClick={() => p.id && onPersonClick(p.id)}
                           className="h-6 w-6 rounded-full border-2 border-white dark:border-neutral-900 shadow-sm transition-transform hover:scale-125 hover:z-10"
                           style={{ backgroundColor: p.color }}
                           title={p.name}
