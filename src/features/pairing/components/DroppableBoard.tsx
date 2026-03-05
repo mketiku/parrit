@@ -59,6 +59,7 @@ export function DroppableBoard({
   });
   const [editedName, setEditedName] = useState(board.name);
   const inputRef = useRef<HTMLInputElement>(null);
+  const extraEditRef = useRef<HTMLDivElement>(null);
 
   // Sync internal state with board props during rendering
   const [prevBoardProps, setPrevBoardProps] = useState({
@@ -80,6 +81,21 @@ export function DroppableBoard({
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
   }, [isEditing]);
+
+  // Click outside to close extra editing area
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        isEditingExtra &&
+        extraEditRef.current &&
+        !extraEditRef.current.contains(event.target as Node)
+      ) {
+        setIsEditingExtra(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isEditingExtra]);
 
   // Auto-save helper — called immediately after any goals/link mutation
   const autoSave = useCallback(
@@ -269,7 +285,10 @@ export function DroppableBoard({
           {/* Goal / Meeting Link Section */}
           <div className="mb-4">
             {isEditingExtra ? (
-              <div className="flex flex-col gap-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800">
+              <div
+                ref={extraEditRef}
+                className="flex flex-col gap-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800"
+              >
                 {/* Goals List */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
@@ -316,15 +335,6 @@ export function DroppableBoard({
                     </div>
                   </div>
                 )}
-
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => setIsEditingExtra(false)}
-                    className="rounded-md px-2 py-1 text-[10px] font-bold uppercase text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                  >
-                    Done
-                  </button>
-                </div>
               </div>
             ) : (
               <div
