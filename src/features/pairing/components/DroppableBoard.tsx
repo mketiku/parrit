@@ -182,92 +182,91 @@ export function DroppableBoard({
         </div>
       )}
 
+      {/* Drag Handle - Absolute so it doesn't break alignment */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="absolute left-2 top-4 p-1 cursor-grab active:cursor-grabbing text-neutral-300 hover:text-neutral-500 dark:text-neutral-700 dark:hover:text-neutral-500 transition-all opacity-30 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 [html[data-exporting='true']_&]:hidden z-10"
+        aria-label={`Drag to reorder board ${board.name}`}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+
       {/* Board Header */}
       <div className="mb-3 sm:mb-4 flex items-start justify-between">
-        <div className="flex items-start gap-2 flex-1 min-w-0 -ml-2 sm:-ml-1">
-          <button
-            {...attributes}
-            {...listeners}
-            className="mt-0.5 p-1 cursor-grab active:cursor-grabbing text-neutral-300 hover:text-neutral-500 dark:text-neutral-700 dark:hover:text-neutral-500 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 [html[data-exporting='true']_&]:hidden"
-            aria-label={`Drag to reorder board ${board.name}`}
-          >
-            <GripVertical className="h-4 w-4" />
-          </button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            {board.isExempt ? (
+              <ShieldX className="h-4 w-4 shrink-0 text-neutral-400" />
+            ) : (
+              <LayoutDashboard className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-400" />
+            )}
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              {board.isExempt ? (
-                <ShieldX className="h-4 w-4 shrink-0 text-neutral-400" />
-              ) : (
-                <LayoutDashboard className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-400" />
-              )}
+            {isEditing ? (
+              <div className="flex flex-1 items-center gap-1">
+                <input
+                  ref={inputRef}
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onKeyDown={handleRenameKeyDown}
+                  onBlur={handleRenameCommit}
+                  className="min-w-0 flex-1 rounded-md border border-brand-400 bg-white px-2 py-0.5 text-sm font-semibold text-neutral-900 outline-none ring-2 ring-brand-500/20 dark:border-brand-600 dark:bg-neutral-800 dark:text-neutral-100"
+                />
+              </div>
+            ) : (
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
+                {board.name}
+              </h3>
+            )}
+          </div>
 
-              {isEditing ? (
-                <div className="flex flex-1 items-center gap-1">
-                  <input
-                    ref={inputRef}
-                    value={editedName}
-                    onChange={(e) => setEditedName(e.target.value)}
-                    onKeyDown={handleRenameKeyDown}
-                    onBlur={handleRenameCommit}
-                    className="min-w-0 flex-1 rounded-md border border-brand-400 bg-white px-2 py-0.5 text-sm font-semibold text-neutral-900 outline-none ring-2 ring-brand-500/20 dark:border-brand-600 dark:bg-neutral-800 dark:text-neutral-100"
-                  />
-                </div>
-              ) : (
-                <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
-                  {board.name}
-                </h3>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {board.isExempt && (
-                <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-400 leading-none">
-                  Off-Duty
-                </span>
-              )}
-              {board.isLocked && !board.isExempt && (
-                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-brand-500 dark:text-brand-400">
-                  <Lock className="h-2 w-2" />
-                  Locked
-                </span>
-              )}
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {board.isExempt && (
+              <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-400 leading-none">
+                Off-Duty
+              </span>
+            )}
+            {board.isLocked && !board.isExempt && (
+              <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-brand-500 dark:text-brand-400">
+                <Lock className="h-2 w-2" />
+                Locked
+              </span>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Board actions */}
-        <div className="ml-2 flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
-          <button
-            onClick={() => setIsEditing(true)}
-            className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => updateBoard(board.id, { isExempt: !board.isExempt })}
-            className={`rounded-md p-1 transition-colors ${board.isExempt ? 'text-amber-500' : 'text-neutral-500 hover:text-amber-500'}`}
-          >
-            <ShieldX className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => updateBoard(board.id, { isLocked: !board.isLocked })}
-            disabled={board.isExempt}
-            className={`rounded-md p-1 transition-colors ${board.isLocked ? 'text-brand-500' : 'text-neutral-500 hover:text-brand-600'}`}
-          >
-            {board.isLocked ? (
-              <Lock className="h-3.5 w-3.5" />
-            ) : (
-              <Unlock className="h-3.5 w-3.5" />
-            )}
-          </button>
-          <button
-            onClick={() => removeBoard(board.id)}
-            className="rounded-md p-1 text-neutral-500 hover:text-red-500"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
+      {/* Board actions */}
+      <div className="ml-2 flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
+        <button
+          onClick={() => setIsEditing(true)}
+          className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <button
+          onClick={() => updateBoard(board.id, { isExempt: !board.isExempt })}
+          className={`rounded-md p-1 transition-colors ${board.isExempt ? 'text-amber-500' : 'text-neutral-500 hover:text-amber-500'}`}
+        >
+          <ShieldX className="h-3.5 w-3.5" />
+        </button>
+        <button
+          onClick={() => updateBoard(board.id, { isLocked: !board.isLocked })}
+          disabled={board.isExempt}
+          className={`rounded-md p-1 transition-colors ${board.isLocked ? 'text-brand-500' : 'text-neutral-500 hover:text-brand-600'}`}
+        >
+          {board.isLocked ? (
+            <Lock className="h-3.5 w-3.5" />
+          ) : (
+            <Unlock className="h-3.5 w-3.5" />
+          )}
+        </button>
+        <button
+          onClick={() => removeBoard(board.id)}
+          className="rounded-md p-1 text-neutral-500 hover:text-red-500"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       {!board.isExempt && (
