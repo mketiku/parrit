@@ -43,6 +43,7 @@ import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
 import { GettingStartedCard } from './GettingStartedCard';
 import { ContextualHint } from './ContextualHint';
+import { formatLocalDate } from '../utils/dateUtils';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { PairingMatrixView } from './PairingMatrixView';
 import { BarChart3 } from 'lucide-react';
@@ -254,7 +255,7 @@ export function PairingWorkspace() {
 
       const link = document.createElement('a');
       const username = user?.email?.split('@')[0] || 'team';
-      link.download = `parrit-${username}-${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `parrit-${username}-${formatLocalDate(new Date())}.png`;
       link.href = dataUrl;
       link.click();
 

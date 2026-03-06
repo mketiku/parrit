@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { useToastStore } from '../../../store/useToastStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { calculateRecommendations } from '../utils/pairingLogic';
+import { formatLocalDate } from '../utils/dateUtils';
 
 export const AVATAR_COLORS = [
   '#6366f1',
@@ -619,10 +620,15 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
 
     set({ isSaving: true });
 
-    // 1. Create a session
+    // 1. Create a session with local date to prevent timezone roll-forward
+    const session_date = formatLocalDate(new Date());
+
     const { data: session, error: sessionErr } = await supabase
       .from('pairing_sessions')
-      .insert({ user_id: user.id })
+      .insert({
+        user_id: user.id,
+        session_date: session_date,
+      })
       .select()
       .single();
 

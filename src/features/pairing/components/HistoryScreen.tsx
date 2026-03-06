@@ -31,19 +31,7 @@ import {
   HISTORY_TUTORIAL_STEPS,
 } from '../store/useTutorialStore';
 
-/**
- * Robust date parsing that treats YYYY-MM-DD as LOCAL time
- */
-function parseInputDate(dateStr: string | null) {
-  if (!dateStr) return new Date();
-  const cleanDate = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
-  const parts = cleanDate.split('-');
-  if (parts.length === 3) {
-    const [year, month, day] = parts.map(Number);
-    return new Date(year, month - 1, day);
-  }
-  return new Date(dateStr);
-}
+import { parseLocalDate } from '../utils/dateUtils';
 
 interface HistorySession {
   id: string;
@@ -641,7 +629,7 @@ export function HistoryScreen() {
                             ? 'text-brand-500 bg-brand-500/10'
                             : 'text-neutral-300 hover:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                         }`}
-                        aria-label={`Select session from ${format(parseInputDate(session.session_date), 'MMM do')} for bulk action`}
+                        aria-label={`Select session from ${format(parseLocalDate(session.session_date), 'MMM do')} for bulk action`}
                         title="Select for bulk action"
                       >
                         <CheckSquare
@@ -651,7 +639,7 @@ export function HistoryScreen() {
 
                       <button
                         onClick={() => loadSessionDetails(session.id)}
-                        aria-label={`View details for session on ${format(parseInputDate(session.session_date), 'MMM do, yyyy')}`}
+                        aria-label={`View details for session on ${format(parseLocalDate(session.session_date), 'MMM do, yyyy')}`}
                         aria-selected={selectedSessionId === session.id}
                         className={`flex-1 flex items-center justify-between p-4 rounded-2xl border transition-all ${
                           selectedSessionId === session.id
@@ -676,7 +664,7 @@ export function HistoryScreen() {
                               className={`font-black tracking-tight ${selectedSessionId === session.id ? 'text-brand-900 dark:text-white' : 'text-neutral-900 dark:text-neutral-100'}`}
                             >
                               {format(
-                                parseInputDate(session.session_date),
+                                parseLocalDate(session.session_date),
                                 'MMM do, yyyy'
                               )}
                             </p>
@@ -695,7 +683,7 @@ export function HistoryScreen() {
                       onClick={(e) => deleteSession(e, session.id)}
                       className="absolute -right-2 -top-2 flex h-8 w-8 scale-0 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-xl border border-neutral-100 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 group-hover:scale-100 active:scale-90"
                       title="Delete Session"
-                      aria-label={`Delete session on ${format(parseInputDate(session.session_date), 'MMM do')}`}
+                      aria-label={`Delete session on ${format(parseLocalDate(session.session_date), 'MMM do')}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -815,7 +803,7 @@ export function HistoryScreen() {
                           <>
                             <h2 className="text-4xl font-black tracking-tight leading-none mb-2">
                               {format(
-                                parseInputDate(
+                                parseLocalDate(
                                   sessions.find(
                                     (s) => s.id === selectedSessionId
                                   )?.session_date || null
@@ -854,7 +842,7 @@ export function HistoryScreen() {
                       {!isEditingDate && (
                         <p className="text-lg font-bold text-brand-100 opacity-90">
                           {format(
-                            parseInputDate(
+                            parseLocalDate(
                               sessions.find((s) => s.id === selectedSessionId)
                                 ?.session_date || null
                             ),
@@ -1068,7 +1056,7 @@ function TeamFlowVisualizer({
               }`}
             >
               <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                {format(parseInputDate(s.session_date), 'MMM d')}
+                {format(parseLocalDate(s.session_date), 'MMM d')}
               </p>
               <p className="text-[9px] font-bold text-neutral-300 dark:text-neutral-600 mt-0.5">
                 {format(new Date(s.created_at), 'h:mm a')}
