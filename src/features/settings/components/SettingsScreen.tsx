@@ -75,6 +75,7 @@ export function SettingsScreen() {
   );
   const [includeHistoryInExport, setIncludeHistoryInExport] = useState(true);
   const [justCopied, setJustCopied] = useState(false);
+  const [webhookError, setWebhookError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Extract the original Workspace Name from the pseudo-email
@@ -501,20 +502,38 @@ export function SettingsScreen() {
                   </div>
                 </div>
 
-                <div className="space-y-2 pl-0 sm:pl-14">
+                <div className="space-y-2 pl-0 sm:pl-14 relative">
                   <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
                     Webhook URL
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     placeholder="https://hooks.slack.com/services/..."
                     value={slackWebhookUrl}
-                    onChange={(e) => setSlackWebhookUrl(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-transparent bg-neutral-100 px-4 py-3 text-sm font-medium text-neutral-900 transition-all hover:bg-neutral-200 focus:border-brand-500 focus:bg-white focus:outline-none dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-800 focus:dark:bg-neutral-900"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSlackWebhookUrl(val);
+                      if (val && !val.startsWith('https://')) {
+                        setWebhookError('Webhook URL must start with https://');
+                      } else {
+                        setWebhookError('');
+                      }
+                    }}
+                    className={`w-full rounded-2xl border-2 bg-neutral-100 px-4 py-3 text-sm font-medium text-neutral-900 transition-all hover:bg-neutral-200 focus:bg-white focus:outline-none dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-800 focus:dark:bg-neutral-900 ${
+                      webhookError
+                        ? 'border-red-500 focus:border-red-500'
+                        : 'border-transparent focus:border-brand-500'
+                    }`}
                   />
-                  <p className="text-[11px] font-medium text-neutral-400">
-                    Leave blank to disable chat notifications.
-                  </p>
+                  {webhookError ? (
+                    <p className="text-[11px] font-bold text-red-500">
+                      {webhookError}
+                    </p>
+                  ) : (
+                    <p className="text-[11px] font-medium text-neutral-400">
+                      Leave blank to disable chat notifications.
+                    </p>
+                  )}
                 </div>
               </div>
             </section>
