@@ -24,7 +24,9 @@ export function GettingStartedCard({
 }: GettingStartedCardProps) {
   const { gettingStartedDismissed, setGettingStartedDismissed } =
     useWorkspacePrefsStore();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
 
   const hasPeople = people.length > 0;
   const hasBoard = boards.filter((b) => !b.isExempt).length > 0;
@@ -87,7 +89,7 @@ export function GettingStartedCard({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.97 }}
         transition={{ type: 'spring', damping: 28, stiffness: 320, delay: 0.4 }}
-        className="fixed bottom-6 left-6 z-40 w-72 rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 [html[data-exporting='true']_&]:hidden"
+        className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto z-40 w-auto sm:w-80 max-h-[85vh] flex flex-col rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 [html[data-exporting='true']_&]:hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-neutral-100 dark:border-neutral-800">
@@ -151,7 +153,7 @@ export function GettingStartedCard({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <ul className="p-3 space-y-1">
+              <ul className="p-3 space-y-1 overflow-y-auto custom-scrollbar">
                 {items.map((item) => (
                   <li
                     key={item.id}
