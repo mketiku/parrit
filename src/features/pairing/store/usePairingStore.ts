@@ -662,8 +662,10 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .from('pairing_history')
       .insert(historyRows);
 
-    // Artificial delay for calmness
-    await get()._delay(250);
+    // Only apply artificial delay in local dev where network is instantaneous
+    if (import.meta.env.DEV) {
+      await get()._delay(500);
+    }
 
     set({ isSaving: false });
 
@@ -722,7 +724,11 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     if (people.length < 2) return;
 
     set({ isRecommending: true });
-    await get()._delay(200); // Artificial delay for calmness
+
+    // Only add delay in local dev; production network latency is enough delay
+    if (import.meta.env.DEV) {
+      await get()._delay(800);
+    }
 
     try {
       // 1. Fetch recent history
