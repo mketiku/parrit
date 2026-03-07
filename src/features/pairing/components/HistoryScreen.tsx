@@ -155,15 +155,19 @@ export function HistoryScreen() {
         setSelectedSessionId(null);
         setDetails([]);
       }
-      // Re-fetch to ensure pagination remains full
-      loadSessions(displayLimit);
+      // Re-fetch to ensure pagination remains full — do it silently
+      loadSessions(displayLimit, false, true);
     }
   };
 
   const loadSessions = useCallback(
-    async (currentLimit: number = 7, isAppending: boolean = false) => {
+    async (
+      currentLimit: number = 7,
+      isAppending: boolean = false,
+      isSilent: boolean = false
+    ) => {
       if (isAppending) setIsHistoryLoadingMore(true);
-      else setIsLoading(true);
+      else if (!isSilent) setIsLoading(true);
       const { data: sessionData, error: sessionErr } = await supabase
         .from('pairing_sessions')
         .select('id, session_date, created_at')
@@ -406,8 +410,8 @@ export function HistoryScreen() {
       }
       setSelectedBulkIds(new Set());
       setLastSelectedIndex(null);
-      // Re-fetch to keep pagination view full
-      loadSessions(displayLimit);
+      // Re-fetch to keep pagination view full — do it silently
+      loadSessions(displayLimit, false, true);
     }
   };
 

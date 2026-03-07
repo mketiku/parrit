@@ -408,7 +408,7 @@ export function PairingWorkspace() {
                     id="recommend-btn"
                     onClick={() => recommendPairs()}
                     disabled={isStoreLoading || isRecommending}
-                    className="w-full flex justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                    className="w-full sm:min-w-[170px] flex justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
                   >
                     {isRecommending ? (
                       <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
@@ -423,7 +423,7 @@ export function PairingWorkspace() {
                   id="save-session-btn"
                   onClick={saveSession}
                   disabled={isSaving}
-                  className="flex flex-1 sm:flex-none justify-center items-center gap-2 rounded-xl bg-brand-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                  className="flex flex-1 sm:flex-none sm:min-w-[145px] justify-center items-center gap-2 rounded-xl bg-brand-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

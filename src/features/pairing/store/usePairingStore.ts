@@ -663,7 +663,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       .insert(historyRows);
 
     // Artificial delay for calmness
-    await get()._delay(800);
+    await get()._delay(250);
 
     set({ isSaving: false });
 
@@ -722,7 +722,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     if (people.length < 2) return;
 
     set({ isRecommending: true });
-    await get()._delay(1200); // Artificial delay for calmness
+    await get()._delay(200); // Artificial delay for calmness
 
     try {
       // 1. Fetch recent history
