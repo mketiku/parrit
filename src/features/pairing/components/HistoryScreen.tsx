@@ -83,6 +83,12 @@ export function HistoryScreen() {
   const [selectedBulkIds, setSelectedBulkIds] = useState<Set<string>>(
     new Set()
   );
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
+    null
+  );
+  const [displayLimit, setDisplayLimit] = useState(7);
+  const [hasMore, setHasMore] = useState(true);
+  const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
   const { addToast } = useToastStore();
   const {
     personStats,
@@ -140,29 +146,44 @@ export function HistoryScreen() {
     } else {
       addToast('Session deleted', 'success');
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      setSelectedBulkIds((prev) => {
+        const next = new Set(prev);
+        next.delete(sessionId);
+        return next;
+      });
       if (selectedSessionId === sessionId) {
         setSelectedSessionId(null);
         setDetails([]);
       }
+      // Re-fetch to ensure pagination remains full
+      loadSessions(displayLimit);
     }
   };
 
-  const loadSessions = useCallback(async () => {
-    const { data: sessionData, error: sessionErr } = await supabase
-      .from('pairing_sessions')
-      .select('id, session_date, created_at')
-      .order('session_date', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(10); // Limit to top 10 for performance
+  const loadSessions = useCallback(
+    async (currentLimit: number = 7, isAppending: boolean = false) => {
+      if (isAppending) setIsHistoryLoadingMore(true);
+      else setIsLoading(true);
+      const { data: sessionData, error: sessionErr } = await supabase
+        .from('pairing_sessions')
+        .select('id, session_date, created_at')
+        .order('session_date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(currentLimit + 1); // Check for more
 
-    if (!sessionErr && sessionData) {
-      setSessions(sessionData);
+      if (!sessionErr && sessionData) {
+        const hasMoreData = sessionData.length > currentLimit;
+        const displayData = hasMoreData
+          ? sessionData.slice(0, currentLimit)
+          : sessionData;
+        setSessions(displayData);
+        setHasMore(hasMoreData);
 
-      // Load assignment summary for flow visualization
-      const { data: historyData } = await supabase
-        .from('pairing_history')
-        .select(
-          `
+        // Load assignment summary for flow visualization
+        const { data: historyData } = await supabase
+          .from('pairing_history')
+          .select(
+            `
           person_id,
           board_id,
           session_id,
@@ -171,18 +192,29 @@ export function HistoryScreen() {
           people (name, avatar_color_hex),
           pairing_boards (name)
         `
-        )
-        .in(
-          'session_id',
-          sessionData.map((s) => s.id)
-        );
+          )
+          .in(
+            'session_id',
+            sessionData.map((s) => s.id)
+          );
 
-      if (historyData) {
-        setFullHistory(historyData);
+        if (historyData) {
+          // We query from offset 0 to currentLimit+1 every time, so historyData
+          // contains the comprehensive snapshot list. No need to spread/append.
+          setFullHistory(historyData);
+        }
       }
-    }
-    setIsLoading(false);
-  }, []);
+      setIsLoading(false);
+      setIsHistoryLoadingMore(false);
+    },
+    []
+  );
+
+  const handleLoadMore = () => {
+    const newLimit = displayLimit + 7;
+    setDisplayLimit(newLimit);
+    loadSessions(newLimit, true);
+  };
 
   const loadSessionDetails = useCallback(
     async (sessionId: string) => {
@@ -373,13 +405,16 @@ export function HistoryScreen() {
         setDetails([]);
       }
       setSelectedBulkIds(new Set());
+      setLastSelectedIndex(null);
+      // Re-fetch to keep pagination view full
+      loadSessions(displayLimit);
     }
   };
 
   useEffect(() => {
     if (!user) return;
-    loadSessions();
-  }, [user, loadSessions]);
+    loadSessions(displayLimit);
+  }, [user, loadSessions, displayLimit]);
 
   // Keyboard Navigation
   useEffect(() => {
@@ -424,6 +459,16 @@ export function HistoryScreen() {
       return acc;
     },
     {} as Record<string, HistoryDetail[]>
+  );
+
+  const groupedSessions = sessions.reduce(
+    (acc, s) => {
+      const month = format(parseLocalDate(s.session_date), 'MMMM yyyy');
+      if (!acc[month]) acc[month] = [];
+      acc[month].push(s);
+      return acc;
+    },
+    {} as Record<string, HistorySession[]>
   );
 
   return (
@@ -513,7 +558,7 @@ export function HistoryScreen() {
                 <Workflow className="h-64 w-64 rotate-12" />
               </div>
               <TeamFlowVisualizer
-                sessions={[...sessions].reverse()}
+                sessions={[...sessions].slice(0, 7).reverse()}
                 history={fullHistory}
                 onSessionSelect={loadSessionDetails}
                 currentSessionId={selectedSessionId}
@@ -603,92 +648,161 @@ export function HistoryScreen() {
               </motion.div>
             ) : (
               <div className="space-y-3">
-                {sessions.map((session, idx) => (
-                  <motion.div
-                    key={session.id}
-                    layout
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="group relative"
-                  >
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedBulkIds((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(session.id)) next.delete(session.id);
-                            else next.add(session.id);
-                            return next;
-                          });
-                        }}
-                        role="checkbox"
-                        aria-checked={selectedBulkIds.has(session.id)}
-                        className={`p-1 rounded-md transition-colors ${
-                          selectedBulkIds.has(session.id)
-                            ? 'text-brand-500 bg-brand-500/10'
-                            : 'text-neutral-300 hover:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                        }`}
-                        aria-label={`Select session from ${format(parseLocalDate(session.session_date), 'MMM do')} for bulk action`}
-                        title="Select for bulk action"
-                      >
-                        <CheckSquare
-                          className={`h-5 w-5 transition-transform ${selectedBulkIds.has(session.id) ? 'scale-110' : 'scale-100 opacity-40'}`}
-                        />
-                      </button>
-
-                      <button
-                        onClick={() => loadSessionDetails(session.id)}
-                        aria-label={`View details for session on ${format(parseLocalDate(session.session_date), 'MMM do, yyyy')}`}
-                        aria-selected={selectedSessionId === session.id}
-                        className={`flex-1 flex items-center justify-between p-4 rounded-2xl border transition-all ${
-                          selectedSessionId === session.id
-                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20 shadow-lg shadow-brand-500/5'
-                            : selectedBulkIds.has(session.id)
-                              ? 'border-brand-200 bg-brand-50/30 dark:border-brand-900/40 dark:bg-brand-950/10'
-                              : 'border-neutral-200 bg-white hover:border-brand-200 dark:border-neutral-800 dark:bg-neutral-900/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div
-                            className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors ${
-                              selectedSessionId === session.id
-                                ? 'bg-brand-500 text-white'
-                                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
-                            }`}
+                <div className="space-y-8">
+                  {Object.entries(groupedSessions).map(
+                    ([month, monthSessions]) => (
+                      <div key={month} className="space-y-3">
+                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-300 dark:text-neutral-600 px-2">
+                          {month}
+                        </h3>
+                        {monthSessions.map((session, idx) => (
+                          <motion.div
+                            key={session.id}
+                            layout
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            className="group relative"
                           >
-                            <Calendar className="h-5 w-5" />
-                          </div>
-                          <div className="text-left">
-                            <p
-                              className={`font-black tracking-tight ${selectedSessionId === session.id ? 'text-brand-900 dark:text-white' : 'text-neutral-900 dark:text-neutral-100'}`}
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedBulkIds((prev) => {
+                                    const next = new Set(prev);
+                                    if (next.has(session.id))
+                                      next.delete(session.id);
+                                    else next.add(session.id);
+                                    return next;
+                                  });
+                                }}
+                                role="checkbox"
+                                aria-checked={selectedBulkIds.has(session.id)}
+                                className={`p-1 rounded-md transition-colors ${
+                                  selectedBulkIds.has(session.id)
+                                    ? 'text-brand-500 bg-brand-500/10'
+                                    : 'text-neutral-300 hover:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                                }`}
+                                aria-label={`Select session from ${format(parseLocalDate(session.session_date), 'MMM do')} for bulk action`}
+                                title="Select for bulk action"
+                              >
+                                <CheckSquare
+                                  className={`h-5 w-5 transition-transform ${selectedBulkIds.has(session.id) ? 'scale-110' : 'scale-100 opacity-40'}`}
+                                />
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  if (
+                                    e.shiftKey &&
+                                    lastSelectedIndex !== null
+                                  ) {
+                                    // Multi-select logic
+                                    const currentSessionIdx =
+                                      sessions.findIndex(
+                                        (s) => s.id === session.id
+                                      );
+                                    const start = Math.min(
+                                      lastSelectedIndex,
+                                      currentSessionIdx
+                                    );
+                                    const end = Math.max(
+                                      lastSelectedIndex,
+                                      currentSessionIdx
+                                    );
+
+                                    setSelectedBulkIds((prev) => {
+                                      const next = new Set(prev);
+                                      for (let i = start; i <= end; i++) {
+                                        next.add(sessions[i].id);
+                                      }
+                                      return next;
+                                    });
+                                  } else {
+                                    // Standard click behavior
+                                    loadSessionDetails(session.id);
+                                    const currentSessionIdx =
+                                      sessions.findIndex(
+                                        (s) => s.id === session.id
+                                      );
+                                    setLastSelectedIndex(currentSessionIdx);
+                                  }
+                                }}
+                                aria-label={`View details for session on ${format(parseLocalDate(session.session_date), 'MMM do, yyyy')}`}
+                                aria-selected={selectedSessionId === session.id}
+                                className={`flex-1 flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                                  selectedSessionId === session.id
+                                    ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20 shadow-lg shadow-brand-500/5'
+                                    : selectedBulkIds.has(session.id)
+                                      ? 'border-brand-200 bg-brand-50/30 dark:border-brand-900/40 dark:bg-brand-950/10'
+                                      : 'border-neutral-200 bg-white hover:border-brand-200 dark:border-neutral-800 dark:bg-neutral-900/50'
+                                }`}
+                              >
+                                <div className="flex items-center gap-4">
+                                  <div
+                                    className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors ${
+                                      selectedSessionId === session.id
+                                        ? 'bg-brand-500 text-white'
+                                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
+                                    }`}
+                                  >
+                                    <Calendar className="h-5 w-5" />
+                                  </div>
+                                  <div className="text-left">
+                                    <p
+                                      className={`font-black tracking-tight ${selectedSessionId === session.id ? 'text-brand-900 dark:text-white' : 'text-neutral-900 dark:text-neutral-100'}`}
+                                    >
+                                      {format(
+                                        parseLocalDate(session.session_date),
+                                        'MMM do, yyyy'
+                                      )}
+                                    </p>
+                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                                      {format(
+                                        new Date(session.created_at),
+                                        'h:mm a'
+                                      )}{' '}
+                                      • snapshot
+                                    </p>
+                                  </div>
+                                </div>
+                                <ChevronRight
+                                  className={`h-4 w-4 transition-all ${selectedSessionId === session.id ? 'text-brand-500 translate-x-1' : 'text-neutral-300'}`}
+                                />
+                              </button>
+                            </div>
+                            <button
+                              onClick={(e) => deleteSession(e, session.id)}
+                              className="absolute -right-2 -top-2 flex h-8 w-8 scale-0 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-xl border border-neutral-100 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 group-hover:scale-100 active:scale-90"
+                              title="Delete Session"
+                              aria-label={`Delete session on ${format(parseLocalDate(session.session_date), 'MMM do')}`}
                             >
-                              {format(
-                                parseLocalDate(session.session_date),
-                                'MMM do, yyyy'
-                              )}
-                            </p>
-                            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-                              {format(new Date(session.created_at), 'h:mm a')} •
-                              snapshot
-                            </p>
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )
+                  )}
+
+                  {hasMore && (
+                    <div className="pt-4 px-2">
+                      <button
+                        onClick={handleLoadMore}
+                        disabled={isHistoryLoadingMore}
+                        className="w-full py-4 rounded-2xl border-2 border-dashed border-neutral-100 dark:border-neutral-800/40 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-brand-500 hover:border-brand-500/20 hover:bg-brand-50/50 dark:hover:bg-brand-950/10 transition-all disabled:opacity-50"
+                      >
+                        {isHistoryLoadingMore ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Indexing archives...
                           </div>
-                        </div>
-                        <ChevronRight
-                          className={`h-4 w-4 transition-all ${selectedSessionId === session.id ? 'text-brand-500 translate-x-1' : 'text-neutral-300'}`}
-                        />
+                        ) : (
+                          '+ Load Older Snapshots'
+                        )}
                       </button>
                     </div>
-                    <button
-                      onClick={(e) => deleteSession(e, session.id)}
-                      className="absolute -right-2 -top-2 flex h-8 w-8 scale-0 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-xl border border-neutral-100 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 group-hover:scale-100 active:scale-90"
-                      title="Delete Session"
-                      aria-label={`Delete session on ${format(parseLocalDate(session.session_date), 'MMM do')}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </motion.div>
-                ))}
+                  )}
+                </div>
               </div>
             )}
           </AnimatePresence>
