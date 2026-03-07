@@ -84,7 +84,7 @@ export function DraggablePerson({
               ? 'ring-4 ring-brand-500 scale-110 shadow-md outline-none'
               : 'ring-1 ring-black/10 dark:ring-white/20'
           }
-          ${isDragging ? 'z-[100] scale-110 cursor-grabbing shadow-2xl ring-2' : 'hover:scale-105 hover:shadow-md'}
+          ${isDragging ? 'z-[100] scale-110 cursor-grabbing shadow-2xl ring-2' : 'hover:scale-105 hover:shadow-md active:scale-95 active:opacity-80 active:shadow-inner transition-all duration-200'}
         `}
         onClick={(e) => {
           if (e.defaultPrevented) return;
