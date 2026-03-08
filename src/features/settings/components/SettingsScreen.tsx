@@ -42,6 +42,12 @@ const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
       color: '#84cc16',
       accent: '#d946ef',
     },
+    {
+      id: 'sunset-parakeet',
+      name: 'Sunset Parakeet',
+      color: '#f97316',
+      accent: '#a855f7',
+    },
   ];
 
 export function SettingsScreen() {
@@ -302,7 +308,9 @@ export function SettingsScreen() {
                             ? 'Azure & Gold'
                             : t.id === 'night-parrot'
                               ? 'Slate & Rose'
-                              : 'Lime & Neon'}
+                              : t.id === 'cyber-cockatoo'
+                                ? 'Lime & Neon'
+                                : 'Orange & Purple'}
                         </p>
                       </div>
                     </button>

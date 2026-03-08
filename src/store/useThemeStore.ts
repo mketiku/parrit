@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type AppTheme = 'macaw-elite' | 'night-parrot' | 'cyber-cockatoo';
+export type AppTheme =
+  | 'macaw-elite'
+  | 'night-parrot'
+  | 'cyber-cockatoo'
+  | 'sunset-parakeet';
 
 interface ThemeState {
   theme: AppTheme;
