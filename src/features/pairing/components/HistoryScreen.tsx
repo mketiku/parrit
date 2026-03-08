@@ -1087,8 +1087,8 @@ export function HistoryScreen() {
         onClose={() => setSelectedPersonId(null)}
       />
 
-      {/* Floating Action Button for Help/Tutorial (Only if history exists to target) */}
-      {sessions.length > 1 && (
+      {/* Floating Action Button for Help/Tutorial */}
+      {sessions.length > 0 && (
         <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40 [html[data-exporting='true']_&]:hidden">
           <button
             id="help-btn"

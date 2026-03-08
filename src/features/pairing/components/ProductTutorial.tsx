@@ -105,8 +105,8 @@ export function ProductTutorial() {
 
   const isLastStep = currentStepIndex === steps.length - 1;
 
-  // We only render when we know the coordinates and the rect.
-  const isReady = isActive && x != null && y != null && spotlightRect != null;
+  // We only render when we know the coordinates.
+  const isReady = isActive && x != null && y != null;
 
   // To satisfy the linter about "accessing ref during render",
   // we extract the functions we need.
@@ -160,7 +160,9 @@ export function ProductTutorial() {
             transition={{ duration: 0.3 }}
             className="absolute inset-0 bg-black/60 backdrop-blur-[2px] pointer-events-auto"
             style={{
-              clipPath: `polygon(0% 0%, 0% 100%, ${spotlightRect.left}px 100%, ${spotlightRect.left}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.bottom}px, ${spotlightRect.left}px ${spotlightRect.bottom}px, ${spotlightRect.left}px 100%, 100% 100%, 100% 0%)`,
+              clipPath: spotlightRect
+                ? `polygon(0% 0%, 0% 100%, ${spotlightRect.left}px 100%, ${spotlightRect.left}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.bottom}px, ${spotlightRect.left}px ${spotlightRect.bottom}px, ${spotlightRect.left}px 100%, 100% 100%, 100% 0%)`
+                : undefined,
             }}
             onClick={handleFinish}
           />
@@ -183,9 +185,10 @@ export function ProductTutorial() {
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="absolute pointer-events-auto z-[101] w-80 rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-neutral-900 focus:outline-none"
             style={{
-              position: strategy,
-              top: y ?? 0,
-              left: x ?? 0,
+              position: spotlightRect ? strategy : 'fixed',
+              top: spotlightRect ? (y ?? 0) : '50%',
+              left: spotlightRect ? (x ?? 0) : '50%',
+              transform: spotlightRect ? undefined : 'translate(-50%, -50%)',
             }}
           >
             <div className="mb-4 flex items-center justify-between">
