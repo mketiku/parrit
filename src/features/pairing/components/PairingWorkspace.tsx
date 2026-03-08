@@ -481,7 +481,7 @@ export function PairingWorkspace() {
                   items={boards.map((b) => b.id)}
                   strategy={rectSortingStrategy}
                 >
-                  {boards.map((board) => {
+                  {boards.map((board, index) => {
                     const assignedPeople = (board.assignedPersonIds || [])
                       .map((id) => people.find((p) => p.id === id))
                       .filter((p): p is Person => !!p);
@@ -493,6 +493,7 @@ export function PairingWorkspace() {
                         people={assignedPeople}
                         selectedPersonIds={selectedPersonIds}
                         onPersonClick={handlePersonClick}
+                        index={index}
                       />
                     );
                   })}

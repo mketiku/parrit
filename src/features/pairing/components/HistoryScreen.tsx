@@ -502,7 +502,7 @@ export function HistoryScreen() {
 
       {/* Team Evolution Flow */}
       {sessions.length > 1 && (
-        <section id="history-timeline" className="mb-12">
+        <section className="mb-12">
           <div className="flex items-center justify-between mb-6 px-1">
             <div className="flex items-center gap-2">
               <Workflow className="h-4 w-4 text-brand-500" />
@@ -557,7 +557,10 @@ export function HistoryScreen() {
               )}
             </AnimatePresence>
 
-            <div className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 relative overflow-hidden">
+            <div
+              id="history-timeline"
+              className="rounded-[2.5rem] border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 relative overflow-hidden"
+            >
               <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
                 <Workflow className="h-64 w-64 rotate-12" />
               </div>
@@ -580,6 +583,7 @@ export function HistoryScreen() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <button
+                  id="history-bulk-select"
                   onClick={() => {
                     if (
                       selectedBulkIds.size === sessions.length &&
@@ -651,7 +655,7 @@ export function HistoryScreen() {
                 </Link>
               </motion.div>
             ) : (
-              <div className="space-y-3">
+              <div id="history-snapshots-list" className="space-y-3">
                 <div className="space-y-8">
                   {Object.entries(groupedSessions).map(
                     ([month, monthSessions]) => (
@@ -813,7 +817,10 @@ export function HistoryScreen() {
         </div>
 
         {/* Selected Session Details */}
-        <div id="session-details" className="lg:col-span-8 scroll-mt-24">
+        <div
+          id="history-session-details"
+          className="lg:col-span-8 scroll-mt-24"
+        >
           <AnimatePresence mode="wait">
             {!selectedSessionId ? (
               <motion.div
@@ -971,6 +978,7 @@ export function HistoryScreen() {
                     </div>
                     <div className="flex flex-col gap-3">
                       <button
+                        id="history-clone-btn"
                         onClick={handleCloneSession}
                         className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all group/clone"
                       >
@@ -1142,7 +1150,7 @@ function TeamFlowVisualizer({
     .reverse();
 
   return (
-    <div className="flex gap-12 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800 scrollbar-track-transparent">
+    <div className="flex gap-12 overflow-x-auto pt-12 pb-6 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800 scrollbar-track-transparent">
       {sessionData.map(
         (
           s: {
@@ -1161,7 +1169,7 @@ function TeamFlowVisualizer({
             className="flex-1 min-w-[200px] relative group/col shrink-0"
           >
             {sIdx === 0 && (
-              <span className="absolute -top-6 left-0 text-[9px] font-black uppercase text-brand-500 tracking-widest whitespace-nowrap">
+              <span className="absolute -top-8 left-0 text-[10px] font-black uppercase text-brand-500 tracking-widest whitespace-nowrap">
                 Newest
               </span>
             )}

@@ -56,7 +56,8 @@ erDiagram
     }
 ```
 
-**Key design decisions:** 
+**Key design decisions:**
+
 - **Board assignments** are stored as a `uuid[]` array directly on `pairing_boards.assigned_person_ids`. This simplifies drag-and-drop persistence — a single upsert per drag event updates the whole board state.
 - **History** is decoupled into `pairing_sessions` (the "when") and `pairing_history` (the "who/where"). This allows for back-dating and analytics while maintaining a record of exactly when the snapshot was taken.
 - **Locked Boards**: The `is_locked` flag prevents the `recommendationEngine` from rotating people on specific boards, allowing for continuity in specific workstreams.
@@ -92,6 +93,11 @@ Workspaces use a **pseudonym email strategy**: the workspace name entered by the
 - No real email address is collected
 - No email confirmation inbox is required (disabled in Supabase dashboard)
 - Each workspace is a distinct Supabase auth user — data is isolated by `user_id`
+
+> [!NOTE]
+> **Domain Refactoring**: The synthetic `@parrit.com` domain is currently used project-wide. In a future iteration, this should be moved to a configuration file or environment variable to support custom domains or multi-tenant hosting.
+>
+> **Workspace vs. Username**: Currently, the "Workspace Name" serves as both the organizational unit and the primary login ID. For higher-tier scaling, we should consider separating the `WorkspaceID` from the `AdminUsername` to allow multiple administrators per workspace.
 
 See [ADR-0001](../adr/0001-workspace-pseudonym-authentication.md) for full rationale.
 

@@ -68,24 +68,51 @@ export const DASHBOARD_TUTORIAL_STEPS: TutorialStep[] = [
 export const HISTORY_TUTORIAL_STEPS: TutorialStep[] = [
   {
     targetId: 'history-timeline',
-    title: 'Pairing Timeline',
+    title: 'Evolution Flow',
     description:
-      'Browse through all your past pairing sessions. You can delete or modify past records from here.',
+      'A bird’s eye view of your team’s progression. See how squads evolved over the last several sessions at a glance.',
     placement: 'bottom',
   },
   {
     targetId: 'history-insights',
-    title: 'Personal Insights',
+    title: 'Deeper Insights',
     description:
-      'Click on any person to see their individual pairing history, favorite partners, and stats.',
+      'Toggle the analytical view to surface the pairing matrix and team-wide stats hidden in your data.',
     placement: 'left',
   },
   {
-    targetId: 'history-matrix',
-    title: 'Full Heatmap',
+    targetId: 'history-snapshots-list',
+    title: 'Snapshot Archive',
     description:
-      'View the complete pairing matrix for your entire team. Perfect for finding isolated or siloed team members.',
+      'Every time you save a session, it lives here. We’ve grouped them by month to help you find historical records faster.',
+    placement: 'right',
+  },
+  {
+    targetId: 'history-bulk-select',
+    title: 'Bulk Management',
+    description:
+      'Need to clean up? Use the check-all or Shift+Click to select multiple sessions for bulk deletion.',
     placement: 'bottom',
+  },
+  {
+    targetId: 'history-session-details',
+    title: 'Detailed Inspection',
+    description:
+      'Select any session to see exactly who was paired on which board. You can even edit the date and time of past records.',
+    placement: 'left',
+  },
+  {
+    targetId: 'history-clone-btn',
+    title: 'Time Machine',
+    description:
+      'The ultimate reset button. Clicking Clone will immediately restore your live dashboard to this exact configuration.',
+    placement: 'bottom',
+  },
+  {
+    targetId: 'help-btn',
+    title: 'Need Help?',
+    description: 'You can re-run this tutorial or find help here anytime.',
+    placement: 'left',
   },
 ];
 

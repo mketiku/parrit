@@ -25,6 +25,7 @@ interface DroppableBoardProps {
   people: Person[];
   selectedPersonIds?: Set<string>;
   onPersonClick?: (id: string, e: React.MouseEvent) => void;
+  index?: number;
 }
 
 export function DroppableBoard({
@@ -32,6 +33,7 @@ export function DroppableBoard({
   people,
   selectedPersonIds,
   onPersonClick,
+  index,
 }: DroppableBoardProps) {
   const {
     attributes,
@@ -316,6 +318,7 @@ export function DroppableBoard({
             </div>
           ) : (
             <div
+              id={index === 0 ? 'board-goals' : undefined}
               onClick={startEditingExtra}
               className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 hover:bg-neutral-50 dark:hover:bg-neutral-950/50"
             >

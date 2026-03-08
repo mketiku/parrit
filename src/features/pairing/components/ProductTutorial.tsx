@@ -42,7 +42,7 @@ export function ProductTutorial() {
     middleware: [
       offset(16),
       flip({ fallbackAxisSideDirection: 'end' }),
-      shift({ padding: 16 }),
+      shift({ padding: 24 }),
     ],
   });
 
@@ -151,7 +151,7 @@ export function ProductTutorial() {
   return (
     <AnimatePresence>
       {isReady && (
-        <div className="fixed inset-0 z-[100] overflow-hidden pointer-events-none">
+        <div className="fixed inset-0 z-[100] pointer-events-none">
           {/* Dark Overlay with Circle Cutout */}
           <motion.div
             initial={{ opacity: 0 }}

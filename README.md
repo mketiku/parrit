@@ -134,6 +134,7 @@ In **Supabase → Authentication → URL Configuration → Redirect URLs**, add 
 See `docs/adr/` for documented decisions:
 
 - [ADR-0001](docs/adr/0001-workspace-pseudonym-authentication.md) — Workspace pseudonym authentication strategy
+- [ADR-0002](docs/adr/0002-historical-snapshot-design.md) — Historical snapshot design
 
 ## Contributing
 
