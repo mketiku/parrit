@@ -36,6 +36,12 @@ const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
       color: '#64748b',
       accent: '#f43f5e',
     },
+    {
+      id: 'cyber-cockatoo',
+      name: 'Cyber Cockatoo',
+      color: '#84cc16',
+      accent: '#d946ef',
+    },
   ];
 
 export function SettingsScreen() {
@@ -294,7 +300,9 @@ export function SettingsScreen() {
                         <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                           {t.id === 'macaw-elite'
                             ? 'Azure & Gold'
-                            : 'Slate & Rose'}
+                            : t.id === 'night-parrot'
+                              ? 'Slate & Rose'
+                              : 'Lime & Neon'}
                         </p>
                       </div>
                     </button>

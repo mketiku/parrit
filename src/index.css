@@ -80,6 +80,31 @@
   --accent-900: #881337;
 }
 
+[data-theme='cyber-cockatoo'] {
+  /* Wacky Theme: Cyber Cockatoo (Lime/Fuchsia) */
+  --brand-50: #f7fee7;
+  --brand-100: #ecfccb;
+  --brand-200: #d9f99d;
+  --brand-300: #bef264;
+  --brand-400: #a3e635;
+  --brand-500: #84cc16;
+  --brand-600: #65a30d;
+  --brand-700: #4d7c0f;
+  --brand-800: #3f6212;
+  --brand-900: #365314;
+  --brand-950: #1a2e05;
+  --accent-50: #fdf4ff;
+  --accent-100: #fae8ff;
+  --accent-200: #f5d0fe;
+  --accent-300: #f0abfc;
+  --accent-400: #e879f9;
+  --accent-500: #d946ef;
+  --accent-600: #c026d3;
+  --accent-700: #a21caf;
+  --accent-800: #86198f;
+  --accent-900: #701a75;
+}
+
 body {
   margin: 0;
   min-width: 320px;
