@@ -703,13 +703,16 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             return `• *${b.name}*: ${names}${goalLines}`;
           });
 
-        const text = `:hatching_chick: *Parrit — ${today}*\n${boardLines.join('\n')}`;
+        const text = `:hatching_chick: *Parrit Daily Pairing Status — ${today}*\n${boardLines.join('\n')}`;
 
         // Support Slack (use 'text'), Discord (use 'content'), and Teams (use 'text')
         try {
+          // Use 'no-cors' mode and 'text/plain' to bypass browser preflight CORS checks.
+          // This is a "fire and forget" request since we don't care about the response.
           await fetch(slackWebhookUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ text, content: text }),
           });
         } catch {

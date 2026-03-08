@@ -142,3 +142,14 @@ sequenceDiagram
     S-->>Z: Realtime event broadcast to other tabs
     Z-->>W: Other tabs update automatically
 ```
+
+---
+
+## Integrations
+
+### Chat Webhooks
+
+The application supports sending daily pairing snapshots to Slack, Microsoft Teams, or Discord via incoming webhooks.
+
+> [!IMPORTANT]
+> **Client-Side Webhook Handling**: For this small team tool, the client-side webhook implementation (using `no-cors` and `text/plain`) is perfect and fast. However, if this were a massive public app, we would move this logic to a **Supabase Edge Function** so that the secret URL stays hidden on the server and is not exposed to the client, as per Slack's official security requirements.
