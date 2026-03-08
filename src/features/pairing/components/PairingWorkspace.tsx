@@ -73,6 +73,8 @@ export function PairingWorkspace() {
   );
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [isMoveMenuOpen, setIsMoveMenuOpen] = useState(false);
+  const [hasJustSaved, setHasJustSaved] = useState(false);
+  const prevIsSaving = useRef(isSaving);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
@@ -80,6 +82,7 @@ export function PairingWorkspace() {
     matrix,
     sessionCount,
     isLoading: isAnalyzing,
+    refreshHistory,
   } = useHistoryAnalytics(people);
 
   const { startTutorial } = useTutorialStore();
@@ -103,10 +106,18 @@ export function PairingWorkspace() {
       (b.assignedPersonIds || []).length > 0
   );
 
+  const hasAnyGoals = boards.some((b) => (b.goals || []).length > 0);
+
   const goalsHintEligible =
-    !hintGoalsSeen && gettingStartedDismissed && boardsWithNoGoals.length > 0;
+    !hintGoalsSeen &&
+    gettingStartedDismissed &&
+    boardsWithNoGoals.length > 0 &&
+    !hasAnyGoals;
   const historyHintEligible =
-    !hintHistorySeen && gettingStartedDismissed && !!hasSessionSaved;
+    !hintHistorySeen &&
+    gettingStartedDismissed &&
+    !!hasSessionSaved &&
+    hasJustSaved;
   const heatmapHintEligible =
     !hintHeatmapSeen && gettingStartedDismissed && sessionCount >= 3;
 
@@ -128,6 +139,23 @@ export function PairingWorkspace() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Track isSaving transition to trigger the "saved" hint only after a real save action
+  useEffect(() => {
+    if (prevIsSaving.current && !isSaving) {
+      refreshHistory();
+      // We delay the celebratory hint slightly to ensure history data is processed
+      setTimeout(() => setHasJustSaved(true), 100);
+    }
+    prevIsSaving.current = isSaving;
+  }, [isSaving, refreshHistory]);
+
+  // Permanently retire the "Goals" hint once the user has successfully added any goal
+  useEffect(() => {
+    if (hasAnyGoals && !hintGoalsSeen) {
+      setHintGoalsSeen(true);
+    }
+  }, [hasAnyGoals, hintGoalsSeen, setHintGoalsSeen]);
 
   const username = user?.email?.split('@')[0] || 'Workspace';
   const workspaceTitle =

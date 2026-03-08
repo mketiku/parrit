@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import type { Person } from '../types';
@@ -33,38 +33,38 @@ export function useHistoryAnalytics(people: Person[]) {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchAllHistory() {
-      if (!user) return;
-      setIsLoading(true);
+  const fetchAllHistory = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
 
-      try {
-        const { data, error } = await supabase
-          .from('pairing_history')
-          .select(
-            `
-            person_id,
-            board_id,
-            session_id,
-            person_name,
-            board_name,
-            created_at,
-            people (name, avatar_color_hex)
+    try {
+      const { data, error } = await supabase
+        .from('pairing_history')
+        .select(
           `
-          )
-          .order('created_at', { ascending: false });
+          person_id,
+          board_id,
+          session_id,
+          person_name,
+          board_name,
+          created_at,
+          people (name, avatar_color_hex)
+        `
+        )
+        .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        setHistory((data as unknown as HistoryRecord[]) || []);
-      } catch (err) {
-        console.error('Error fetching full history:', err);
-      } finally {
-        setIsLoading(false);
-      }
+      if (error) throw error;
+      setHistory((data as unknown as HistoryRecord[]) || []);
+    } catch (err) {
+      console.error('Error fetching full history:', err);
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchAllHistory();
   }, [user]);
+
+  useEffect(() => {
+    fetchAllHistory();
+  }, [fetchAllHistory]);
 
   const analytics = useMemo(() => {
     const personStats: Record<string, PersonStats> = {};
@@ -178,5 +178,5 @@ export function useHistoryAnalytics(people: Person[]) {
     };
   }, [history, people]);
 
-  return { ...analytics, isLoading };
+  return { ...analytics, isLoading, refreshHistory: fetchAllHistory };
 }
