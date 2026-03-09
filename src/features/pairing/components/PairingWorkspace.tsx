@@ -28,7 +28,7 @@ import { useAuthStore } from '../../auth/store/useAuthStore';
 import { useToastStore } from '../../../store/useToastStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import {
-  Users,
+  House,
   X,
   Plus,
   Sparkles,
@@ -792,7 +792,7 @@ function DroppableUnpairedPool({
     >
       <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
         <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-neutral-400 dark:text-neutral-400" />
+          <House className="h-5 w-5 text-neutral-400 dark:text-neutral-400" />
           <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
             Unpaired Pool
           </h3>
