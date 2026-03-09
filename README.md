@@ -101,7 +101,10 @@ supabase/
 
 ## Deployment
 
-The app deploys to **Vercel** with automatic CI/CD from GitHub. See [`docs/deployment.md`](docs/deployment.md) for the full guide.
+The app deploys to **Vercel** with automatic CI/CD from GitHub.
+
+- [Deployment Guide](docs/deployment.md) — Full guide
+- [Database Management](docs/database.md) — Backups and safety strategy
 
 ### Quick steps
 
@@ -143,6 +146,11 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 ## Acknowledgements
 
 This project is a spiritual successor to the original [Parrit](https://github.com/Parrit/Parrit). We are grateful for the inspiration provided by the original creators.
+
+## Maintenance & Health
+
+- **Backups**: We are currently investigating an automated backup strategy for the Supabase Free Tier. Contributions or suggestions are welcome.
+- **Safety**: Always follow the [Database Management](docs/database.md) guide when making schema changes.
 
 ## License
 
