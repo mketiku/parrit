@@ -813,7 +813,7 @@ function DroppableUnpairedPool({
           <AnimatePresence>
             {people.length === 0 ? (
               <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-400">
-                {isOver ? 'Drop to unpair' : 'Everyone is paired!'}
+                {isOver ? 'Drop to unpair' : 'The nest is empty!'}
               </span>
             ) : (
               people.map((person) => (

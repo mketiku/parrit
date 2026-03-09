@@ -178,12 +178,18 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
 
     if (peopleRes.error) {
       set({ isLoading: false, error: peopleRes.error.message });
-      toast().addToast('Failed to load team data.', 'error');
+      toast().addToast(
+        'RAAA What the heck?! Failed to load team data. 🦜',
+        'error'
+      );
       return;
     }
     if (boardsRes.error) {
       set({ isLoading: false, error: boardsRes.error.message });
-      toast().addToast('Failed to load boards.', 'error');
+      toast().addToast(
+        'RAAA! Failed to load boards. Did they fly away? 🪹',
+        'error'
+      );
       return;
     }
 
@@ -612,7 +618,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
     );
     if (!hasAssignments) {
       toast().addToast(
-        'Nothing to save! Assign some people to boards first.',
+        'Nothing to save! The nest is empty. Assign some people to boards first. 🪹',
         'info'
       );
       return;
@@ -675,7 +681,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         'error'
       );
     } else {
-      toast().addToast('Pairing session saved successfully!', 'success');
+      toast().addToast('Pairing session saved successfully! 🪺', 'success');
 
       // Fire chat webhook if configured
       const { slackWebhookUrl } = (
@@ -757,7 +763,10 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       toast().addToast('Rotation recommended!', 'success');
     } catch (err) {
       console.error('Recommendation Error:', err);
-      toast().addToast('Algorithm failed to load history data.', 'error');
+      toast().addToast(
+        'RAAA What the heck?! Algorithm failed to load history data. 🦜',
+        'error'
+      );
     } finally {
       set({ isRecommending: false });
     }

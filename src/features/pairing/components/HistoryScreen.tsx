@@ -6,7 +6,6 @@ import {
   History,
   Calendar,
   ChevronRight,
-  Inbox,
   Trash2,
   ArrowLeft,
   Bird,
@@ -642,10 +641,10 @@ export function HistoryScreen() {
                 className="bg-white dark:bg-neutral-900 rounded-3xl p-10 text-center border border-dashed border-neutral-200 dark:border-neutral-800"
               >
                 <div className="h-16 w-16 bg-neutral-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6 text-neutral-300">
-                  <Inbox className="h-8 w-8" />
+                  <Bird className="h-8 w-8" />
                 </div>
                 <p className="text-sm font-bold text-neutral-500 mb-4">
-                  The archives are empty.
+                  The archives are empty. *sad parrot noises*
                 </p>
                 <Link
                   to="/app"
