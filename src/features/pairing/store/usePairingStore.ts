@@ -681,7 +681,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         'error'
       );
     } else {
-      toast().addToast('Pairing session saved successfully! 🪺', 'success');
+      toast().addToast('Pairing session saved successfully!', 'success');
 
       // Fire chat webhook if configured
       const { slackWebhookUrl } = (
