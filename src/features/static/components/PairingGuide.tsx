@@ -13,6 +13,11 @@ import {
   User,
   Heart,
   Code2,
+  Sparkles,
+  Share2,
+  BookOpen,
+  Timer,
+  Users,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -21,14 +26,17 @@ export function PairingGuide() {
     {
       title: 'Pair per Story',
       desc: 'Pairs are assigned to a specific story, not for a fixed duration of the day.',
+      icon: BookOpen,
     },
     {
       title: 'Max 2 Days per Pair',
       desc: 'To prevent silos, the same pair works together on a story for a maximum of two days.',
+      icon: Timer,
     },
     {
       title: 'Rotate One Person',
       desc: 'After two days, one person stays to preserve context, while the other rotates to spread knowledge.',
+      icon: Users,
     },
   ];
 
@@ -122,10 +130,10 @@ export function PairingGuide() {
         </div>
         <div className="space-y-3">
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-neutral-900 dark:text-neutral-50 uppercase">
-            A <span className="text-brand-500">Playbook</span>
+            Pairing <span className="text-brand-500">Patterns</span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg font-medium text-neutral-500 dark:text-neutral-400 leading-relaxed italic">
-            "This isn't a rulebook—it's just what works for us."
+            "These aren't rules—just patterns that help us stay in sync."
           </p>
           <p className="mx-auto max-w-2xl text-sm font-medium text-neutral-400 dark:text-neutral-500 leading-relaxed">
             We use this framework to balance momentum and knowledge sharing.
@@ -146,7 +154,7 @@ export function PairingGuide() {
             className="group rounded-[2rem] border border-neutral-200 bg-white p-8 shadow-sm transition-all hover:border-brand-500 hover:shadow-xl dark:border-neutral-800 dark:bg-neutral-900/50"
           >
             <div className="mb-6 h-10 w-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 group-hover:bg-brand-500 group-hover:text-white transition-colors">
-              <ShieldCheck className="h-5 w-5" />
+              <item.icon className="h-5 w-5" />
             </div>
             <h3 className="text-lg font-black text-neutral-900 dark:text-neutral-50 mb-2 uppercase tracking-tight">
               {item.title}
@@ -299,11 +307,11 @@ export function PairingGuide() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
                 title: 'Pairing + TDD',
-                desc: 'The gold standard. One person writes a test, the other makes it pass. RAAA!',
+                desc: 'The gold standard. One person writes a test, the other makes it pass.',
                 icon: ShieldCheck,
               },
               {
@@ -320,6 +328,16 @@ export function PairingGuide() {
                 title: 'Standup Sync',
                 desc: "Use the Parrit board during standups to visualize the day's pecking order.",
                 icon: Target,
+              },
+              {
+                title: 'AI + Spec Driven Dev',
+                desc: 'Pair to define a plan from a story, then the tests. Use AI as a third pair to help write the code that meets the work.',
+                icon: Sparkles,
+              },
+              {
+                title: 'Knowledge Flight',
+                desc: 'Rotation ensures context spreads across the entire flock. No single person becomes a bottleneck for the system.',
+                icon: Share2,
               },
             ].map((item, i) => (
               <div
@@ -392,7 +410,7 @@ export function PairingGuide() {
                   className="group flex items-center gap-3 rounded-2xl bg-white px-10 py-4 text-sm font-black uppercase text-neutral-900 tracking-widest shadow-xl transition-all hover:bg-neutral-100 active:scale-95"
                 >
                   <Rocket className="h-5 w-5 text-brand-500 transition-transform group-hover:-translate-y-2 group-hover:translate-x-1" />
-                  Take flight! RAAA!
+                  Take flight!
                 </motion.button>
               </Link>
             </div>
