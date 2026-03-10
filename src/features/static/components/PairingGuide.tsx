@@ -122,7 +122,7 @@ export function PairingGuide() {
         </div>
         <div className="space-y-3">
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-neutral-900 dark:text-neutral-50 uppercase">
-            Our <span className="text-brand-500">Playbook</span>
+            A <span className="text-brand-500">Playbook</span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg font-medium text-neutral-500 dark:text-neutral-400 leading-relaxed italic">
             "This isn't a rulebook—it's just what works for us."
@@ -289,7 +289,7 @@ export function PairingGuide() {
               Level Up Your Flight
             </div>
             <h2 className="text-4xl font-black text-neutral-900 dark:text-neutral-50 uppercase tracking-tight">
-              Our <span className="text-brand-500">Rhythm</span>
+              Team <span className="text-brand-500">Rhythm</span>
             </h2>
             <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
               Pairing isn't a silver bullet, but it's a great tool for shared
