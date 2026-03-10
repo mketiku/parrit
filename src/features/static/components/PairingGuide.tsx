@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bird,
+  Rocket,
   RotateCw,
   ZapOff,
   Target,
@@ -317,16 +318,18 @@ export function PairingGuide() {
                 splits, rotate early!
               </p>
             </div>
-            <Link to="/app">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group flex items-center gap-3 rounded-2xl bg-white px-10 py-4 text-sm font-black uppercase text-neutral-900 tracking-widest shadow-xl transition-all hover:bg-neutral-100 active:scale-95"
-              >
-                <Bird className="h-5 w-5 text-brand-500 transition-transform group-hover:-translate-y-1" />
-                Take flight! RAAA!
-              </motion.button>
-            </Link>
+            <div className="flex justify-center">
+              <Link to="/app">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="group flex items-center gap-3 rounded-2xl bg-white px-10 py-4 text-sm font-black uppercase text-neutral-900 tracking-widest shadow-xl transition-all hover:bg-neutral-100 active:scale-95"
+                >
+                  <Rocket className="h-5 w-5 text-brand-500 transition-transform group-hover:-translate-y-2 group-hover:translate-x-1" />
+                  Take flight! RAAA!
+                </motion.button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
