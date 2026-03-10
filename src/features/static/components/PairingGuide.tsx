@@ -289,11 +289,13 @@ export function PairingGuide() {
               Level Up Your Flight
             </div>
             <h2 className="text-4xl font-black text-neutral-900 dark:text-neutral-50 uppercase tracking-tight">
-              Joining the <span className="text-brand-500">Flock</span>
+              Our <span className="text-brand-500">Rhythm</span>
             </h2>
             <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-              Pairing isn't just about code—it's a human compiler for quality.
-              Here's how to take your collaboration to the next level.
+              Pairing isn't a silver bullet, but it's a great tool for shared
+              quality. These are just some ways we've found to take
+              collaboration to the next level—feel free to adapt them to what
+              works for your team.
             </p>
           </div>
 

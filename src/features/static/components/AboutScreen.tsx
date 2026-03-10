@@ -106,13 +106,13 @@ export function AboutScreen() {
             <div className="text-center space-y-4">
               <Bird className="h-12 w-12 text-brand-500 mx-auto animate-bounce-slow" />
               <p className="text-sm font-bold text-neutral-500">
-                More secrets in the guide...
+                More tips in the guide...
               </p>
               <Link
                 to="/guide"
                 className="inline-flex items-center gap-2 text-xs font-black uppercase text-brand-600 hover:text-brand-700"
               >
-                View Pairing Guide <ArrowRight className="h-3 w-3" />
+                How we pair <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </div>
