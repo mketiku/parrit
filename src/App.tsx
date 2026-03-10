@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { SettingsScreen } from './features/settings/components/SettingsScreen';
 import { TeamScreen } from './features/team/components/TeamScreen';
 import { AboutScreen } from './features/static/components/AboutScreen';
+import { PairingGuide } from './features/static/components/PairingGuide';
 import { LandingPage } from './features/static/components/LandingPage';
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
 import { HistoryScreen } from './features/pairing/components/HistoryScreen';
@@ -89,6 +90,7 @@ function App() {
               element={user ? <Navigate to="/app" replace /> : <LandingPage />}
             />
             <Route path="/about" element={<AboutScreen />} />
+            <Route path="/guide" element={<PairingGuide />} />
             <Route path="/view/:userId" element={<PublicView />} />
             <Route path="/admin" element={<AdminPortal />} />
             <Route
@@ -103,6 +105,7 @@ function App() {
               <Route path="/app" element={<DashboardView />} />
               <Route path="/app/team" element={<TeamScreen />} />
               <Route path="/app/history" element={<HistoryScreen />} />
+              <Route path="/app/guide" element={<PairingGuide />} />
               <Route path="/app/settings" element={<SettingsScreen />} />
             </Route>
           ) : (

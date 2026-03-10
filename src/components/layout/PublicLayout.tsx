@@ -52,6 +52,12 @@ export default function PublicLayout() {
             >
               About
             </Link>
+            <Link
+              to="/guide"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white transition-colors"
+            >
+              Guide
+            </Link>
             <button
               onClick={() => setIsDark(!isDark)}
               className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition-colors"
@@ -131,6 +137,13 @@ export default function PublicLayout() {
             >
               About Parrit
             </Link>
+            <Link
+              to="/guide"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-base font-medium text-neutral-600 hover:text-brand-600 dark:text-neutral-300 transition-colors"
+            >
+              Pairing Guide
+            </Link>
             <div className="flex flex-col gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
               {user ? (
                 <Link
@@ -185,6 +198,12 @@ export default function PublicLayout() {
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               About
+            </Link>
+            <Link
+              to="/guide"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+            >
+              Guide
             </Link>
             <a
               href="/about#contact"

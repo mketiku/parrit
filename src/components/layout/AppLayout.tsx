@@ -62,6 +62,7 @@ export default function AppLayout() {
     { to: '/app', label: 'Dashboard', end: true },
     { to: '/app/team', label: 'Team' },
     { to: '/app/history', label: 'History' },
+    { to: '/app/guide', label: 'Guide' },
     { to: '/app/settings', label: 'Settings' },
   ];
 
