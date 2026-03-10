@@ -1,10 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Bird,
   Heart,
   Linkedin,
   MessageCircleQuestion,
-  Rocket,
   ArrowRight,
   Code2,
 } from 'lucide-react';
@@ -101,46 +101,20 @@ export function AboutScreen() {
         </div>
 
         <div className="relative">
-          <div className="absolute inset-0 bg-brand-500/20 blur-3xl -z-10 rounded-full" />
-          <div className="rounded-3xl border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900 shadow-2xl">
-            <h3 className="text-xl font-bold mb-6 text-neutral-900 dark:text-neutral-50 flex items-center gap-2">
-              <Rocket className="h-5 w-5 text-brand-500" />
-              Spread the Gospel
-            </h3>
-            <ul className="space-y-4">
-              {[
-                {
-                  title: 'Public URLs',
-                  desc: 'Show pairings on office TVs. No more squawking for updates.',
-                },
-                {
-                  title: 'Save History',
-                  desc: 'Export logs for team retrospectives and rotation tracking.',
-                },
-                {
-                  title: 'Try TDD Next',
-                  desc: 'Pairing + TDD is the gold standard for software quality.',
-                },
-                {
-                  title: 'Mob Programming',
-                  desc: 'Try 3+ people on a high-stakes fire. Strength in numbers.',
-                },
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-4">
-                  <div className="h-6 w-6 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center shrink-0 dark:bg-brand-500/10 dark:text-brand-400">
-                    <ArrowRight className="h-3 w-3" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-                      {item.title}
-                    </p>
-                    <p className="text-[11px] text-neutral-500 dark:text-neutral-300">
-                      {item.desc}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          <div className="absolute inset-0 bg-brand-500/10 blur-3xl -z-10 rounded-full" />
+          <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-8 dark:border-neutral-800 dark:bg-neutral-900/50 shadow-xl flex items-center justify-center min-h-[300px]">
+            <div className="text-center space-y-4">
+              <Bird className="h-12 w-12 text-brand-500 mx-auto animate-bounce-slow" />
+              <p className="text-sm font-bold text-neutral-500">
+                More secrets in the guide...
+              </p>
+              <Link
+                to="/guide"
+                className="inline-flex items-center gap-2 text-xs font-black uppercase text-brand-600 hover:text-brand-700"
+              >
+                View Pairing Guide <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

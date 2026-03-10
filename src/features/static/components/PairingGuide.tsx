@@ -11,6 +11,8 @@ import {
   Plus,
   ShieldCheck,
   User,
+  Heart,
+  Code2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -271,6 +273,68 @@ export function PairingGuide() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Leveling Up Sections */}
+      <section className="rounded-[4rem] bg-brand-500/5 border border-brand-500/20 p-12 overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <Heart className="h-32 w-32 text-brand-500" />
+        </div>
+        <div className="relative z-10 space-y-12">
+          <div className="max-w-2xl space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg">
+              <Code2 className="h-3 w-3" />
+              Level Up Your Flight
+            </div>
+            <h2 className="text-4xl font-black text-neutral-900 dark:text-neutral-50 uppercase tracking-tight">
+              Joining the <span className="text-brand-500">Flock</span>
+            </h2>
+            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+              Pairing isn't just about code—it's a human compiler for quality.
+              Here's how to take your collaboration to the next level.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                title: 'Pairing + TDD',
+                desc: 'The gold standard. One person writes a test, the other makes it pass. RAAA!',
+                icon: ShieldCheck,
+              },
+              {
+                title: 'Mob Programming',
+                desc: 'Try 3+ people on a high-stakes fire. Strength in numbers.',
+                icon: Bird,
+              },
+              {
+                title: 'Ease Into It',
+                desc: 'Start with "Pairing Thursdays" or use it for complex high-risk tickets.',
+                icon: Rocket,
+              },
+              {
+                title: 'Standup Sync',
+                desc: "Use the Parrit board during standups to visualize the day's pecking order.",
+                icon: Target,
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="group p-6 rounded-[2rem] bg-white border border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800 transition-all hover:-translate-y-2 hover:shadow-xl"
+              >
+                <div className="h-10 w-10 rounded-xl bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 group-hover:bg-brand-500 group-hover:text-white transition-colors mb-4">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h4 className="text-sm font-black text-neutral-900 dark:text-neutral-100 mb-2 uppercase">
+                  {item.title}
+                </h4>
+                <p className="text-xs font-medium text-neutral-500 leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
