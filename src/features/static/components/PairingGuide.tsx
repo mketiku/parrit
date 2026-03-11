@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bird,
-  Rocket,
   RotateCw,
   ZapOff,
   Target,
@@ -18,6 +17,9 @@ import {
   BookOpen,
   Timer,
   Users,
+  Flame,
+  Sprout,
+  Kanban,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -317,17 +319,17 @@ export function PairingGuide() {
               {
                 title: 'Mob Programming',
                 desc: 'Try 3+ people on a high-stakes fire. Strength in numbers.',
-                icon: Bird,
+                icon: Flame,
               },
               {
                 title: 'Ease Into It',
                 desc: 'Start with "Pairing Thursdays" or use it for complex high-risk tickets.',
-                icon: Rocket,
+                icon: Sprout,
               },
               {
                 title: 'Standup Sync',
                 desc: "Use the Parrit board during standups to visualize the day's pecking order.",
-                icon: Target,
+                icon: Kanban,
               },
               {
                 title: 'AI + Spec Driven Dev',
@@ -409,8 +411,12 @@ export function PairingGuide() {
                   whileTap={{ scale: 0.95 }}
                   className="group flex items-center gap-3 rounded-2xl bg-white px-10 py-4 text-sm font-black uppercase text-neutral-900 tracking-widest shadow-xl transition-all hover:bg-neutral-100 active:scale-95"
                 >
-                  <Rocket className="h-5 w-5 text-brand-500 transition-transform group-hover:-translate-y-2 group-hover:translate-x-1" />
-                  Take flight!
+                  <span className="flex items-end gap-1 transition-transform group-hover:-translate-y-1 group-hover:rotate-[4deg]">
+                    <span className="text-xl">🦆</span>
+                    <span className="text-sm">🐣</span>
+                    <span className="text-xs">🐥</span>
+                  </span>
+                  Join the flock!
                 </motion.button>
               </Link>
             </div>

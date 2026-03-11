@@ -70,13 +70,13 @@ export function AboutScreen() {
         <div className="space-y-6">
           <h2 className="text-3xl font-black text-neutral-900 dark:text-neutral-50 flex items-center gap-3">
             <Heart className="h-7 w-7 text-red-500" />
-            The Fellowship
+            The Flock
           </h2>
           <div className="prose prose-neutral dark:prose-invert max-w-none space-y-4">
             <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              We believe engineering is a team sport. Parrit was born from the
-              realization that when we pair, we don't just write better code—we
-              build better relationships.
+              We believe engineering is a synchronized flight. Parrit was born
+              from the realization that when we pair, we don't just write better
+              code—we build better relationships.
             </p>
             <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
               By removing the friction of "who is with whom," we allow teams to
