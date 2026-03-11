@@ -90,9 +90,11 @@ export function useHistoryAnalytics(people: Person[]) {
 
     history.forEach((row) => {
       if (!pairs[row.session_id]) pairs[row.session_id] = {};
-      if (!pairs[row.session_id][row.board_id])
-        pairs[row.session_id][row.board_id] = [];
-      pairs[row.session_id][row.board_id].push(row);
+      // Use board_id if available, fallback to board_name if the board was deleted
+      const groupingKey = row.board_id || row.board_name || 'unknown_board';
+      if (!pairs[row.session_id][groupingKey])
+        pairs[row.session_id][groupingKey] = [];
+      pairs[row.session_id][groupingKey].push(row);
     });
 
     // Process pairs

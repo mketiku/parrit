@@ -145,7 +145,7 @@ export default function AppLayout() {
 
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 shrink-0 border-b border-neutral-200 bg-white/80 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/80">
-        <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
+        <div className="mx-auto flex h-16 w-full max-w-[2200px] items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
           <div className="flex items-center gap-3 sm:gap-8">
             {/* Hamburger — mobile only */}
             <button
@@ -223,13 +223,13 @@ export default function AppLayout() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 w-full mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-10 xl:px-12 py-6 md:py-8">
+      <main className="flex-1 w-full mx-auto max-w-[2200px] px-4 sm:px-6 lg:px-10 xl:px-12 py-6 md:py-8">
         <Outlet />
       </main>
 
       {/* Footer */}
       <footer className="shrink-0 border-t border-neutral-200 bg-white/50 py-6 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/50">
-        <div className="mx-auto flex flex-col md:flex-row w-full max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12 gap-4">
+        <div className="mx-auto flex flex-col md:flex-row w-full max-w-[2200px] items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12 gap-4">
           <div className="flex items-center gap-6">
             <Link
               to="/about"

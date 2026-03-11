@@ -140,6 +140,17 @@ export function DroppableBoard({
     prevIsEditingExtra.current = isEditingExtra;
   }, [isEditingExtra, extraData, autoSave]);
 
+  // Auto-close goals editor after 30s of inactivity
+  useEffect(() => {
+    if (!isEditingExtra) return;
+
+    const timer = setTimeout(() => {
+      setIsEditingExtra(false);
+    }, 30000); // 30 seconds
+
+    return () => clearTimeout(timer);
+  }, [isEditingExtra, extraData]);
+
   const handleRenameCommit = async () => {
     const trimmed = editedName.trim();
     if (trimmed && trimmed !== board.name) {
@@ -206,7 +217,7 @@ export function DroppableBoard({
                 />
               </div>
             ) : (
-              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate leading-tight">
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-tight">
                 {board.name}
               </h3>
             )}
@@ -228,47 +239,53 @@ export function DroppableBoard({
         </div>
 
         {/* Board actions + Drag Handle */}
-        <div className="ml-2 flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-10 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
-          <button
-            {...attributes}
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
-            title="Drag to reorder"
-            aria-label={`Drag to reorder board ${board.name}`}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </button>
-          <div className="w-[1px] h-3 bg-neutral-200 dark:bg-neutral-800 mx-0.5" />
-          <button
-            onClick={() => setIsEditing(true)}
-            className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => updateBoard(board.id, { isExempt: !board.isExempt })}
-            className={`rounded-md p-1 transition-colors ${board.isExempt ? 'text-amber-500' : 'text-neutral-500 hover:text-amber-500'}`}
-          >
-            <ShieldX className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => updateBoard(board.id, { isLocked: !board.isLocked })}
-            disabled={board.isExempt}
-            className={`rounded-md p-1 transition-colors ${board.isLocked ? 'text-brand-500' : 'text-neutral-500 hover:text-brand-600'}`}
-          >
-            {board.isLocked ? (
-              <Lock className="h-3.5 w-3.5" />
-            ) : (
-              <Unlock className="h-3.5 w-3.5" />
-            )}
-          </button>
-          <button
-            onClick={() => removeBoard(board.id)}
-            className="rounded-md p-1 text-neutral-500 hover:text-red-500"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        {!isEditing && (
+          <div className="ml-2 flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-10 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+              title="Drag to reorder"
+              aria-label={`Drag to reorder board ${board.name}`}
+            >
+              <GripVertical className="h-3.5 w-3.5" />
+            </button>
+            <div className="w-[1px] h-3 bg-neutral-200 dark:bg-neutral-800 mx-0.5" />
+            <button
+              onClick={() => setIsEditing(true)}
+              className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() =>
+                updateBoard(board.id, { isExempt: !board.isExempt })
+              }
+              className={`rounded-md p-1 transition-colors ${board.isExempt ? 'text-amber-500' : 'text-neutral-500 hover:text-amber-500'}`}
+            >
+              <ShieldX className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() =>
+                updateBoard(board.id, { isLocked: !board.isLocked })
+              }
+              disabled={board.isExempt}
+              className={`rounded-md p-1 transition-colors ${board.isLocked ? 'text-brand-500' : 'text-neutral-500 hover:text-brand-600'}`}
+            >
+              {board.isLocked ? (
+                <Lock className="h-3.5 w-3.5" />
+              ) : (
+                <Unlock className="h-3.5 w-3.5" />
+              )}
+            </button>
+            <button
+              onClick={() => removeBoard(board.id)}
+              className="rounded-md p-1 text-neutral-500 hover:text-red-500"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {!board.isExempt && (

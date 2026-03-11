@@ -15,6 +15,7 @@ import {
   CheckSquare,
   BarChart3,
   HelpCircle,
+  ShieldX,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -992,72 +993,85 @@ export function HistoryScreen() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {Object.entries(detailsByBoard).map(
-                    ([boardName, people], bIdx) => (
-                      <motion.div
-                        key={boardName}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: bIdx * 0.1 }}
-                        className="bg-white dark:bg-neutral-900/60 rounded-[2rem] border border-neutral-100 dark:border-neutral-800/80 p-8 shadow-sm flex flex-col"
-                      >
-                        <div className="flex items-center gap-3 mb-8">
-                          <div className="h-3 w-3 rounded-full bg-brand-500 shadow-sm ring-4 ring-brand-500/10" />
-                          <h3 className="text-xl font-black text-neutral-900 dark:text-neutral-100">
-                            {boardName}
-                          </h3>
-                          <span className="text-[9px] bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-xl text-neutral-500 font-black uppercase tracking-widest ml-auto border border-neutral-200/50 dark:border-neutral-800">
-                            {people.length} PPL
-                          </span>
-                        </div>
+                  {Object.keys(detailsByBoard).length === 0 ? (
+                    <div className="md:col-span-2 flex flex-col items-center justify-center py-20 bg-white dark:bg-neutral-900/40 rounded-[2.5rem] border border-dashed border-neutral-200 dark:border-neutral-800">
+                      <ShieldX className="h-12 w-12 text-neutral-300 mb-4" />
+                      <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest">
+                        No pairing assignments in this snapshot
+                      </p>
+                      <p className="text-xs text-neutral-400 mt-2">
+                        Maybe everyone was on a break?
+                      </p>
+                    </div>
+                  ) : (
+                    Object.entries(detailsByBoard).map(
+                      ([boardName, people], bIdx) => (
+                        <motion.div
+                          key={boardName}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: bIdx * 0.1 }}
+                          className="bg-white dark:bg-neutral-900/60 rounded-[2rem] border border-neutral-100 dark:border-neutral-800/80 p-8 shadow-sm flex flex-col"
+                        >
+                          <div className="flex items-center gap-3 mb-8">
+                            <div className="h-3 w-3 rounded-full bg-brand-500 shadow-sm ring-4 ring-brand-500/10" />
+                            <h3 className="text-xl font-black text-neutral-900 dark:text-neutral-100">
+                              {boardName}
+                            </h3>
+                            <span className="text-[9px] bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-xl text-neutral-500 font-black uppercase tracking-widest ml-auto border border-neutral-200/50 dark:border-neutral-800">
+                              {people.length} PPL
+                            </span>
+                          </div>
 
-                        <div className="flex flex-wrap gap-3">
-                          {people.map((p, pIdx) => {
-                            const personInStore = storePeople.find(
-                              (sp) => sp.name === p.person_name
-                            );
-                            const isRemoved = !personInStore;
-                            return (
-                              <button
-                                key={pIdx}
-                                onClick={() =>
-                                  personInStore &&
-                                  setSelectedPersonId(personInStore.id)
-                                }
-                                aria-label={
-                                  isRemoved
-                                    ? `${p.person_name} (Removed)`
-                                    : `View insights for ${p.person_name}`
-                                }
-                                className={`flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border shadow-sm transition-all group/person ${
-                                  isRemoved
-                                    ? 'opacity-60 grayscale cursor-not-allowed border-neutral-100/30 dark:border-neutral-800/30'
-                                    : 'border-neutral-100/50 dark:border-neutral-800 hover:shadow-md active:scale-95'
-                                }`}
-                              >
-                                <div
-                                  className={`flex h-8 w-8 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl shadow-black/5 transition-transform ${
-                                    !isRemoved && 'group-hover/person:scale-110'
+                          <div className="flex flex-wrap gap-3">
+                            {people.map((p, pIdx) => {
+                              const personInStore = storePeople.find(
+                                (sp) => sp.name === p.person_name
+                              );
+                              const isRemoved = !personInStore;
+                              return (
+                                <button
+                                  key={pIdx}
+                                  onClick={() =>
+                                    personInStore &&
+                                    setSelectedPersonId(personInStore.id)
+                                  }
+                                  aria-label={
+                                    isRemoved
+                                      ? `${p.person_name} (Removed)`
+                                      : `View insights for ${p.person_name}`
+                                  }
+                                  className={`flex items-center gap-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 pl-1 pr-4 py-1.5 border shadow-sm transition-all group/person ${
+                                    isRemoved
+                                      ? 'opacity-60 grayscale cursor-not-allowed border-neutral-100/30 dark:border-neutral-800/30'
+                                      : 'border-neutral-100/50 dark:border-neutral-800 hover:shadow-md active:scale-95'
                                   }`}
-                                  style={{ backgroundColor: p.avatar_color }}
                                 >
-                                  {p.person_name.charAt(0).toUpperCase()}
-                                </div>
-                                <span
-                                  className={`text-sm font-bold ${isRemoved ? 'text-neutral-500 line-through decoration-neutral-400' : 'text-neutral-800 dark:text-neutral-200'}`}
-                                >
-                                  {p.person_name}
-                                  {isRemoved && (
-                                    <span className="ml-1 text-[9px] uppercase tracking-widest no-underline inline-block">
-                                      (Removed)
-                                    </span>
-                                  )}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
+                                  <div
+                                    className={`flex h-8 w-8 items-center justify-center rounded-xl text-[10px] font-black text-white shadow-xl shadow-black/5 transition-transform ${
+                                      !isRemoved &&
+                                      'group-hover/person:scale-110'
+                                    }`}
+                                    style={{ backgroundColor: p.avatar_color }}
+                                  >
+                                    {p.person_name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span
+                                    className={`text-sm font-bold ${isRemoved ? 'text-neutral-500 line-through decoration-neutral-400' : 'text-neutral-800 dark:text-neutral-200'}`}
+                                  >
+                                    {p.person_name}
+                                    {isRemoved && (
+                                      <span className="ml-1 text-[9px] uppercase tracking-widest no-underline inline-block">
+                                        (Removed)
+                                      </span>
+                                    )}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )
                     )
                   )}
                 </div>
