@@ -684,9 +684,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       toast().addToast('Pairing session saved successfully!', 'success');
 
       // Fire chat webhook if configured
-      const { slackWebhookUrl } = (
-        await import('../../../store/useWorkspacePrefsStore')
-      ).useWorkspacePrefsStore.getState();
+      const { slackWebhookUrl } = useWorkspacePrefsStore.getState();
       if (slackWebhookUrl.trim()) {
         const { boards: currentBoards, people: currentPeople } = get();
         const today = new Date().toLocaleDateString('en-US', {
