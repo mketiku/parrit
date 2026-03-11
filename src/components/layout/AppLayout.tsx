@@ -5,7 +5,7 @@ import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 
 export default function AppLayout() {
-  const { signOut } = useAuthStore();
+  const { signOut, isAdmin } = useAuthStore();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -62,7 +62,7 @@ export default function AppLayout() {
     { to: '/app', label: 'Dashboard', end: true },
     { to: '/app/team', label: 'Team' },
     { to: '/app/history', label: 'History' },
-    { to: '/app/guide', label: 'Guide' },
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
     { to: '/app/settings', label: 'Settings' },
   ];
 
