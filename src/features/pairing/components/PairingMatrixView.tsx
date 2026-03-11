@@ -21,7 +21,7 @@ export function PairingMatrixView({ matrix }: PairingMatrixViewProps) {
 
   return (
     <div className="overflow-x-auto pt-4">
-      <table className="w-full border-separate border-spacing-1">
+      <table className="w-max border-separate border-spacing-1.5 md:border-spacing-2">
         <thead>
           <tr>
             <th className="p-2"></th>
@@ -52,7 +52,7 @@ export function PairingMatrixView({ matrix }: PairingMatrixViewProps) {
                   <td key={colId} className="p-0">
                     <motion.div
                       whileHover={{ scale: 1.1 }}
-                      className={`h-10 w-10 flex items-center justify-center rounded-lg text-xs font-bold transition-colors
+                      className={`h-10 w-10 sm:h-12 sm:w-12 2xl:h-14 2xl:w-14 min-w-[40px] aspect-square flex items-center justify-center rounded-lg text-xs 2xl:text-sm font-bold transition-colors
                         ${rowId === colId ? 'bg-neutral-50 dark:bg-neutral-800/20' : 'bg-neutral-50 dark:bg-neutral-800'}
                       `}
                       style={{

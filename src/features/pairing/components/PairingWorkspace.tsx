@@ -401,7 +401,7 @@ export function PairingWorkspace() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
               {!isExporting && (
                 <div className="flex flex-col">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                  <h1 className="text-xl sm:text-2xl 2xl:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 transition-all">
                     Active Pairing Boards
                   </h1>
                   <div className="flex items-center gap-2 mt-1">
@@ -541,7 +541,7 @@ export function PairingWorkspace() {
                   >
                     <Plus className="h-6 w-6" />
                   </div>
-                  <span className="text-sm font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-300 dark:group-hover:text-brand-400">
+                  <span className="text-sm 2xl:text-base font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-300 dark:group-hover:text-brand-400">
                     Add Board
                   </span>
                 </button>
@@ -594,7 +594,7 @@ export function PairingWorkspace() {
           </div>
 
           {/* Unpaired Sidebar */}
-          <div className="xl:sticky xl:top-6 w-[340px] shrink-0 [html[data-exporting='true']_&]:hidden">
+          <div className="xl:sticky xl:top-6 w-full xl:w-1/4 xl:min-w-[340px] xl:max-w-[450px] shrink-0 [html[data-exporting='true']_&]:hidden">
             <DroppableUnpairedPool
               people={unpairedPeople}
               selectedPersonIds={selectedPersonIds}
@@ -792,8 +792,8 @@ function DroppableUnpairedPool({
     >
       <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
         <div className="flex items-center gap-2">
-          <House className="h-5 w-5 text-neutral-400 dark:text-neutral-400" />
-          <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+          <House className="h-5 w-5 2xl:h-6 2xl:w-6 text-neutral-400 dark:text-neutral-400" />
+          <h3 className="font-semibold 2xl:text-lg text-neutral-900 dark:text-neutral-100">
             Unpaired Pool
           </h3>
         </div>
