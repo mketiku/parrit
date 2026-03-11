@@ -21,7 +21,13 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useToastStore } from '../../../store/useToastStore';
 import { usePairingStore } from '../store/usePairingStore';
-import type { PairingBoard, Person } from '../types';
+import type {
+  PairingBoard,
+  Person,
+  SnapshotData,
+  SnapshotBoard,
+  SnapshotPerson,
+} from '../types';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { PairingMatrixView } from './PairingMatrixView';
 import { PersonInsightsSidebar } from './PersonInsightsSidebar';
@@ -37,6 +43,7 @@ interface HistorySession {
   id: string;
   session_date: string;
   created_at: string;
+  snapshot_data?: SnapshotData;
 }
 
 interface HistoryDetail {
@@ -170,7 +177,7 @@ export function HistoryScreen() {
       else if (!isSilent) setIsLoading(true);
       const { data: sessionData, error: sessionErr } = await supabase
         .from('pairing_sessions')
-        .select('id, session_date, created_at')
+        .select('id, session_date, created_at, snapshot_data')
         .order('session_date', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(currentLimit + 1); // Check for more
@@ -227,6 +234,25 @@ export function HistoryScreen() {
       setDetails([]);
 
       try {
+        // 1. Check if we already have the snapshot in the local session list
+        const session = sessions.find((s) => s.id === sessionId);
+        if (session?.snapshot_data && session.snapshot_data.boards) {
+          const formatted: HistoryDetail[] = [];
+          session.snapshot_data.boards.forEach((b: SnapshotBoard) => {
+            b.people.forEach((p: SnapshotPerson) => {
+              formatted.push({
+                board_name: b.name,
+                person_name: p.name,
+                avatar_color: p.avatar_color,
+              });
+            });
+          });
+          setDetails(formatted);
+          setIsLoadingDetails(false);
+          return;
+        }
+
+        // 2. Fallback to pairing_history (Legacy or missing snapshot)
         const { data, error } = await supabase
           .from('pairing_history')
           .select(
@@ -285,7 +311,7 @@ export function HistoryScreen() {
         setIsLoadingDetails(false);
       }
     },
-    [addToast, storePeople, storeBoards]
+    [addToast, storePeople, storeBoards, sessions]
   );
 
   const handleCloneSession = async () => {

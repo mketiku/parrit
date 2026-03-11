@@ -40,3 +40,28 @@ export interface BoardRecord {
   assigned_person_ids: string[];
   created_at: string;
 }
+
+export interface SnapshotPerson {
+  id: string;
+  name: string;
+  avatar_color: string;
+}
+
+export interface SnapshotBoard {
+  id: string;
+  name: string;
+  goals: string[];
+  meeting_link?: string;
+  people: SnapshotPerson[];
+}
+
+export interface SnapshotData {
+  boards: SnapshotBoard[];
+}
+
+export interface HistoryRowPayload {
+  person_id: string;
+  board_id: string;
+  board_name: string;
+  person_name: string;
+}

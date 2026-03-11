@@ -97,3 +97,15 @@ npx supabase db push
 | **Create migration**   | `npx supabase migration new <name>` |
 | **Push to production** | `npx supabase db push`              |
 | **View status**        | `npx supabase migration list`       |
+
+### Atomic Saves with RPC
+
+To prevent "orphaned" sessions (sessions with no history), we use a database function called `save_pairing_session`.
+
+This function performs the following in a single transaction:
+
+1. Creates the `pairing_sessions` row.
+2. Attaches a full JSON `snapshot_data` (Strategy #2).
+3. Breaks down the snapshot into `pairing_history` rows for analytics.
+
+If you are seeing empty sessions in your DB, ensure this function is correctly deployed.
