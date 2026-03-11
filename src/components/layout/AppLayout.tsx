@@ -237,6 +237,12 @@ export default function AppLayout() {
             >
               About
             </Link>
+            <Link
+              to="/app/guide"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+            >
+              Guide
+            </Link>
             <a
               href="/about#contact"
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
