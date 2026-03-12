@@ -241,9 +241,9 @@ export function HistoryScreen() {
           session.snapshot_data.boards.forEach((b: SnapshotBoard) => {
             b.people.forEach((p: SnapshotPerson) => {
               formatted.push({
-                board_name: b.name,
-                person_name: p.name,
-                avatar_color: p.avatar_color,
+                board_name: b.name || 'Unknown Board',
+                person_name: p.name || 'Unknown Person',
+                avatar_color: p.avatar_color || '#94a3b8',
               });
             });
           });
@@ -1078,12 +1078,12 @@ export function HistoryScreen() {
                                     }`}
                                     style={{ backgroundColor: p.avatar_color }}
                                   >
-                                    {p.person_name.charAt(0).toUpperCase()}
+                                    {(p.person_name?.[0] || '?').toUpperCase()}
                                   </div>
                                   <span
                                     className={`text-sm font-bold ${isRemoved ? 'text-neutral-500 line-through decoration-neutral-400' : 'text-neutral-800 dark:text-neutral-200'}`}
                                   >
-                                    {p.person_name}
+                                    {p.person_name || 'Unknown Person'}
                                     {isRemoved && (
                                       <span className="ml-1 text-[9px] uppercase tracking-widest no-underline inline-block">
                                         (Removed)
