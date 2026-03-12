@@ -1022,11 +1022,9 @@ export function HistoryScreen() {
                   {Object.keys(detailsByBoard).length === 0 ? (
                     <div className="md:col-span-2 flex flex-col items-center justify-center py-20 bg-white dark:bg-neutral-900/40 rounded-[2.5rem] border border-dashed border-neutral-200 dark:border-neutral-800">
                       <ShieldX className="h-12 w-12 text-neutral-300 mb-4" />
-                      <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest">
-                        No pairing assignments in this snapshot
-                      </p>
-                      <p className="text-xs text-neutral-400 mt-2">
-                        Maybe everyone was on a break?
+                      <p className="text-neutral-500 dark:text-neutral-400 font-medium text-center px-6">
+                        RAAA! The nest is empty. Did everyone take a migration
+                        break? 🦜
                       </p>
                     </div>
                   ) : (
