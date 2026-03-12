@@ -52,6 +52,20 @@ interface ExportedSession {
 interface WorkspaceSnapshot {
   version: number;
   exportedAt: string;
+  settings?: {
+    stalePairHighlightingEnabled: boolean;
+    showFullName: boolean;
+    publicViewEnabled: boolean;
+    onboardingCompleted: boolean;
+    stalePairThreshold: number;
+    meetingLinkEnabled: boolean;
+    slackWebhookUrl: string;
+    theme?: string;
+  };
+  templates?: {
+    name: string;
+    boards: unknown;
+  }[];
   people: { name: string; avatarColorHex: string }[];
   boards: {
     name: string;
@@ -905,15 +919,27 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
   },
 
   exportWorkspace: async (includeHistory = true) => {
-    const { people, boards } = get();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return '';
 
+    const { people, boards } = get();
+    // Get latest preferences from store
+    const prefs = useWorkspacePrefsStore.getState();
+
     const snapshot: WorkspaceSnapshot = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
+      settings: {
+        stalePairHighlightingEnabled: prefs.stalePairHighlightingEnabled,
+        showFullName: prefs.showFullName,
+        publicViewEnabled: prefs.publicViewEnabled,
+        onboardingCompleted: prefs.onboardingCompleted,
+        stalePairThreshold: prefs.stalePairThreshold,
+        meetingLinkEnabled: prefs.meetingLinkEnabled,
+        slackWebhookUrl: prefs.slackWebhookUrl,
+      },
       people: people.map((p) => ({
         name: p.name,
         avatarColorHex: p.avatarColorHex,
@@ -925,10 +951,23 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         goals: b.goals,
         meetingLink: b.meetingLink ?? null,
         assignedPersonNames: (b.assignedPersonIds ?? [])
-          .map((id) => people.find((p) => p.id === id)?.name ?? null)
-          .filter((n): n is string => !!n),
+          .map((id) => people.find((p) => p.id === id)?.name)
+          .filter(Boolean) as string[],
       })),
     };
+
+    // Fetch templates
+    const { data: templatesData } = await supabase
+      .from('pairing_templates')
+      .select('name, boards')
+      .eq('user_id', user.id);
+
+    if (templatesData) {
+      snapshot.templates = templatesData.map((t) => ({
+        name: t.name,
+        boards: t.boards,
+      }));
+    }
 
     if (includeHistory) {
       const { data: sessionsData } = await supabase
@@ -997,14 +1036,48 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated.');
 
-      // 1. Delete all existing people, boards, and sessions (cascades to history)
+      // 1. Clear everything
       await Promise.all([
         supabase.from('people').delete().eq('user_id', user.id),
         supabase.from('pairing_boards').delete().eq('user_id', user.id),
         supabase.from('pairing_sessions').delete().eq('user_id', user.id),
+        supabase.from('pairing_templates').delete().eq('user_id', user.id),
+        supabase.from('workspace_settings').delete().eq('user_id', user.id),
       ]);
 
-      // 2. Create new people
+      // 2. Restore settings and prefs if present
+      if (snapshot.settings) {
+        const s = snapshot.settings;
+        const prefs = useWorkspacePrefsStore.getState();
+
+        // Update local store
+        prefs.setStalePairHighlighting(s.stalePairHighlightingEnabled);
+        prefs.setShowFullName(s.showFullName);
+        prefs.setPublicViewEnabled(s.publicViewEnabled);
+        prefs.setOnboardingCompleted(s.onboardingCompleted);
+        prefs.setStalePairThreshold(s.stalePairThreshold);
+        prefs.setMeetingLinkEnabled(s.meetingLinkEnabled);
+        prefs.setSlackWebhookUrl(s.slackWebhookUrl);
+
+        // Update DB workspace_settings
+        await supabase.from('workspace_settings').upsert({
+          user_id: user.id,
+          public_view_enabled: s.publicViewEnabled,
+          onboarding_completed: s.onboardingCompleted,
+        });
+      }
+
+      // 3. Restore templates if present
+      if (snapshot.templates && Array.isArray(snapshot.templates)) {
+        const templateRows = snapshot.templates.map((t) => ({
+          user_id: user.id,
+          name: t.name,
+          boards: t.boards,
+        }));
+        await supabase.from('pairing_templates').insert(templateRows);
+      }
+
+      // 4. Create new people
       const peopleRows = snapshot.people.map((p) => ({
         user_id: user.id,
         name: p.name,
