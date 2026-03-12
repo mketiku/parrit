@@ -46,6 +46,7 @@ interface ExportedSession {
     boardName: string;
     createdAt: string;
   }[];
+  snapshot_data?: SnapshotData | null;
 }
 
 interface WorkspaceSnapshot {
@@ -937,6 +938,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           id,
           session_date,
           created_at,
+          snapshot_data,
           pairing_history (
             person_id,
             board_id,
@@ -954,6 +956,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           sessionsData as unknown as Array<{
             session_date: string;
             created_at: string;
+            snapshot_data: SnapshotData | null;
             pairing_history: Array<{
               people: { name: string };
               pairing_boards: { name: string };
@@ -963,6 +966,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
         ).map((s) => ({
           session_date: s.session_date,
           created_at: s.created_at,
+          snapshot_data: s.snapshot_data,
           history: (s.pairing_history || []).map((h) => ({
             personName: h.people?.name || 'Unknown Person',
             boardName: h.pairing_boards?.name || 'Unknown Board',
@@ -1064,6 +1068,7 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
               user_id: user.id,
               session_date: s.session_date,
               created_at: normalizeDate(s.created_at),
+              snapshot_data: s.snapshot_data ?? {},
             })
             .select()
             .single();
