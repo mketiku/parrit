@@ -981,6 +981,8 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           pairing_history (
             person_id,
             board_id,
+            person_name,
+            board_name,
             created_at,
             people (name),
             pairing_boards (name)
@@ -997,8 +999,10 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             created_at: string;
             snapshot_data: SnapshotData | null;
             pairing_history: Array<{
-              people: { name: string };
-              pairing_boards: { name: string };
+              person_name: string | null;
+              board_name: string | null;
+              people: { name: string } | null;
+              pairing_boards: { name: string } | null;
               created_at: string;
             }>;
           }>
@@ -1007,8 +1011,9 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
           created_at: s.created_at,
           snapshot_data: s.snapshot_data,
           history: (s.pairing_history || []).map((h) => ({
-            personName: h.people?.name || 'Unknown Person',
-            boardName: h.pairing_boards?.name || 'Unknown Board',
+            personName: h.person_name || h.people?.name || 'Unknown Person',
+            boardName:
+              h.board_name || h.pairing_boards?.name || 'Unknown Board',
             createdAt: h.created_at,
           })),
         }));
@@ -1151,15 +1156,15 @@ export const usePairingStore = create<PairingStore>((set, get) => ({
             continue;
           }
 
-          const historyRows = (s.history || [])
-            .map((h) => ({
-              user_id: user.id,
-              session_id: session.id,
-              person_id: nameToId[h.personName.trim()],
-              board_id: boardNameToId[h.boardName.trim()],
-              created_at: normalizeDate(h.createdAt),
-            }))
-            .filter((h) => h.person_id && h.board_id);
+          const historyRows = (s.history || []).map((h) => ({
+            user_id: user.id,
+            session_id: session.id,
+            person_id: nameToId[h.personName.trim()],
+            board_id: boardNameToId[h.boardName.trim()],
+            person_name: h.personName,
+            board_name: h.boardName,
+            created_at: normalizeDate(h.createdAt),
+          }));
 
           if (historyRows.length > 0) {
             const { error: hErr } = await supabase
