@@ -94,88 +94,34 @@ function DroppableBoardComponent({
   ]);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [isEditingExtra, setIsEditingExtra] = useState(false);
+  const [isEditingGoals, setIsEditingGoals] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [extraData, setExtraData] = useState({
-    goalsText: (board.goals || []).join('\n'),
-    meetingLink: board.meetingLink || '',
-  });
+  const [goalsText, setGoalsText] = useState((board.goals || []).join('\n'));
   const [editedName, setEditedName] = useState(board.name);
   const inputRef = useRef<HTMLInputElement>(null);
-  const extraEditRef = useRef<HTMLDivElement>(null);
-
-  // Sync internal state with board props only when entering edit mode
-  const startEditingExtra = () => {
-    setExtraData({
-      goalsText: (board.goals || []).join('\n'),
-      meetingLink: board.meetingLink || '',
-    });
-    setIsEditingExtra(true);
-  };
+  const goalsTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
   }, [isEditing]);
 
-  // Click outside to close extra editing area
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        isEditingExtra &&
-        extraEditRef.current &&
-        !extraEditRef.current.contains(event.target as Node)
-      ) {
-        setIsEditingExtra(false);
-      }
+    if (isEditingGoals) goalsTextareaRef.current?.focus();
+  }, [isEditingGoals]);
+
+  // Auto-save goals on blur
+  const handleGoalsSave = useCallback(() => {
+    const parsedGoals = goalsText
+      .split('\n')
+      .map((g) => g.trim())
+      .filter(Boolean);
+
+    // Only update if something actually changed
+    if (JSON.stringify(parsedGoals) !== JSON.stringify(board.goals || [])) {
+      updateBoard(board.id, { goals: parsedGoals });
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isEditingExtra]);
-
-  // Auto-save helper — checks for actual content changes before hitting DB
-  const autoSave = useCallback(
-    (goalsText: string, meetingLink: string) => {
-      const parsedGoals = goalsText
-        .split('\n')
-        .map((g) => g.trim())
-        .filter(Boolean);
-
-      const trimmedLink = meetingLink.trim() || undefined;
-
-      // Only update if something actually changed to prevent loops/blanking
-      const hasGoalsChanged =
-        JSON.stringify(parsedGoals) !== JSON.stringify(board.goals || []);
-      const hasLinkChanged = trimmedLink !== board.meetingLink;
-
-      if (hasGoalsChanged || hasLinkChanged) {
-        updateBoard(board.id, {
-          goals: parsedGoals,
-          meetingLink: trimmedLink,
-        });
-      }
-    },
-    [board.id, board.goals, board.meetingLink, updateBoard]
-  );
-
-  // Trigger save when finishing the "extra" edit session (clickaway or manual close)
-  const prevIsEditingExtra = useRef(isEditingExtra);
-  useEffect(() => {
-    if (prevIsEditingExtra.current === true && isEditingExtra === false) {
-      autoSave(extraData.goalsText, extraData.meetingLink);
-    }
-    prevIsEditingExtra.current = isEditingExtra;
-  }, [isEditingExtra, extraData, autoSave]);
-
-  // Auto-close goals editor after 30s of inactivity
-  useEffect(() => {
-    if (!isEditingExtra) return;
-
-    const timer = setTimeout(() => {
-      setIsEditingExtra(false);
-    }, 30000); // 30 seconds
-
-    return () => clearTimeout(timer);
-  }, [isEditingExtra, extraData]);
+    setIsEditingGoals(false);
+  }, [goalsText, board.goals, board.id, updateBoard]);
 
   const handleRenameCommit = async () => {
     const trimmed = editedName.trim();
@@ -253,20 +199,9 @@ function DroppableBoardComponent({
                 />
               </div>
             ) : (
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-tight">
-                  {board.name}
-                </h3>
-                {(board.goals || []).length === 0 && (
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
-                    No goals yet · Click{' '}
-                    <span className="text-neutral-600 dark:text-neutral-400">
-                      +
-                    </span>{' '}
-                    to add
-                  </p>
-                )}
-              </div>
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-tight">
+                {board.name}
+              </h3>
             )}
           </div>
 
@@ -288,13 +223,6 @@ function DroppableBoardComponent({
         {/* Board actions + Drag Handle */}
         {!isEditing && (
           <div className="ml-2 flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-10 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
-            <button
-              onClick={startEditingExtra}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
-              title="Edit goals & meeting link"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </button>
             <button
               onClick={() => setIsEditing(true)}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
@@ -337,85 +265,49 @@ function DroppableBoardComponent({
         )}
       </div>
 
-      {/* Goals & Meeting Link Mini-Editor */}
-      <AnimatePresence>
-        {isEditingExtra && (
-          <motion.div
-            ref={extraEditRef}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="mb-4 overflow-hidden rounded-2xl bg-neutral-50 p-3 ring-1 ring-neutral-200 dark:bg-neutral-800/50 dark:ring-neutral-700 [html[data-exporting='true']_&]:hidden"
-          >
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                  Focus / Goals
-                </label>
-                <textarea
-                  value={extraData.goalsText}
-                  onChange={(e) =>
-                    setExtraData((prev) => ({
-                      ...prev,
-                      goalsText: e.target.value,
-                    }))
-                  }
-                  placeholder="What is this pair working on?"
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-900 outline-none focus:border-brand-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-                  rows={3}
-                />
-                <p className="mt-1 text-[9px] text-neutral-400">
-                  One goal per line.
-                </p>
-              </div>
-
-              {meetingLinkEnabled && (
-                <div>
-                  <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                    Meeting Link
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <LinkIcon className="h-3 w-3 text-neutral-400" />
-                    <input
-                      type="url"
-                      value={extraData.meetingLink}
-                      onChange={(e) =>
-                        setExtraData((prev) => ({
-                          ...prev,
-                          meetingLink: e.target.value,
-                        }))
-                      }
-                      placeholder="Zoom, Meet, or Huddle URL..."
-                      className="flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-900 outline-none focus:border-brand-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={() => setIsEditingExtra(false)}
-                className="w-full rounded-xl bg-neutral-900 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-              >
-                Close & Save
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Board Content (Assigned People) */}
+      {/* Board Content (Goals & Assigned People) */}
       <div className="flex flex-1 flex-col">
-        {board.goals && board.goals.length > 0 && (
-          <div className="mb-4 space-y-2">
+        {/* Goals Section - Inline Editable */}
+        {isEditingGoals ? (
+          <div className="mb-4">
+            <textarea
+              ref={goalsTextareaRef}
+              value={goalsText}
+              onChange={(e) => setGoalsText(e.target.value)}
+              onBlur={handleGoalsSave}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setGoalsText((board.goals || []).join('\n'));
+                  setIsEditingGoals(false);
+                }
+              }}
+              placeholder="What is this pair working on? (one goal per line)"
+              className="w-full rounded-xl border-2 border-brand-400 bg-white px-3 py-2 text-[11px] text-neutral-900 outline-none focus:border-brand-500 dark:border-brand-600 dark:bg-neutral-900 dark:text-neutral-100"
+              rows={Math.max(3, goalsText.split('\n').length + 1)}
+            />
+          </div>
+        ) : board.goals && board.goals.length > 0 ? (
+          <div
+            className="mb-4 space-y-2 cursor-pointer group"
+            onClick={() => setIsEditingGoals(true)}
+          >
             {board.goals.map((goal, gIdx) => (
               <div key={gIdx} className="flex items-start gap-2">
                 <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
-                <p className="text-[11px] font-medium leading-relaxed text-neutral-600 dark:text-neutral-400">
+                <p className="text-[11px] font-medium leading-relaxed text-neutral-600 dark:text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                   {goal}
                 </p>
               </div>
             ))}
           </div>
+        ) : (
+          <button
+            onClick={() => setIsEditingGoals(true)}
+            className="mb-4 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Goals
+          </button>
         )}
 
         <div className="flex flex-wrap gap-2.5">
@@ -442,8 +334,8 @@ function DroppableBoardComponent({
         )}
       </div>
 
-      {/* Meeting Link Preview (if not editing) */}
-      {board.meetingLink && !isEditingExtra && (
+      {/* Meeting Link Preview */}
+      {board.meetingLink && (
         <a
           href={board.meetingLink}
           target="_blank"
