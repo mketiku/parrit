@@ -10,7 +10,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
   LayoutDashboard,
-  ShieldX,
   Pencil,
   Trash2,
   Plus,
@@ -19,6 +18,7 @@ import {
   Link as LinkIcon,
   GripVertical,
   AlertTriangle,
+  Moon,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
@@ -182,11 +182,27 @@ function DroppableBoardComponent({
       <div className="mb-3 sm:mb-4 flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            {board.isExempt ? (
-              <ShieldX className="h-4 w-4 shrink-0 text-neutral-400" />
-            ) : (
-              <LayoutDashboard className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-400" />
-            )}
+            <button
+              onClick={() =>
+                updateBoard(board.id, { isExempt: !board.isExempt })
+              }
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all ${
+                board.isExempt
+                  ? 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
+                  : 'text-brand-500 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-900/20'
+              }`}
+              title={
+                board.isExempt
+                  ? 'Mark as Active'
+                  : 'Mark as Out of Office / Exempt'
+              }
+            >
+              {board.isExempt ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <LayoutDashboard className="h-4 w-4" />
+              )}
+            </button>
 
             {isEditing ? (
               <div className="flex flex-1 items-center gap-1">
@@ -208,7 +224,7 @@ function DroppableBoardComponent({
 
           <div className="flex flex-wrap items-center gap-2">
             {board.isExempt && (
-              <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-400 leading-none">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-neutral-50 text-[9px] font-medium uppercase tracking-widest text-neutral-400 border border-neutral-100 dark:bg-neutral-900/50 dark:text-neutral-600 dark:border-neutral-800">
                 Off-Duty
               </span>
             )}
@@ -225,9 +241,7 @@ function DroppableBoardComponent({
         {!isEditing && !isEditingGoals && (
           <div className="ml-2 flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-10 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
             <button
-              onClick={() => {
-                setIsEditing(true);
-              }}
+              onClick={() => setIsEditing(true)}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
               title="Rename board"
             >
