@@ -139,6 +139,10 @@ See `docs/adr/` for documented decisions:
 - [ADR-0001](docs/adr/0001-workspace-pseudonym-authentication.md) — Workspace pseudonym authentication strategy
 - [ADR-0002](docs/adr/0002-historical-snapshot-design.md) — Historical snapshot design
 
+## Design & UX
+
+- [UX Principles](docs/context/ux_principles.md) — Core design patterns and interaction principles to guide future development
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get involved.

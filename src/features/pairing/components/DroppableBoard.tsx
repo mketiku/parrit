@@ -116,9 +116,10 @@ function DroppableBoardComponent({
     // Only update if something actually changed
     if (JSON.stringify(parsedGoals) !== JSON.stringify(board.goals || [])) {
       updateBoard(board.id, { goals: parsedGoals });
+      addToast('Goals updated', 'success');
     }
     setIsEditingGoals(false);
-  }, [goalsText, board.goals, board.id, updateBoard]);
+  }, [goalsText, board.goals, board.id, updateBoard, addToast]);
 
   const handleRenameCommit = async () => {
     const trimmed = editedName.trim();
@@ -133,6 +134,7 @@ function DroppableBoardComponent({
     } else {
       setEditedName(board.name);
     }
+    // Only close title editing if not also editing goals
     setIsEditing(false);
   };
 
@@ -141,6 +143,8 @@ function DroppableBoardComponent({
     if (e.key === 'Escape') {
       setEditedName(board.name);
       setIsEditing(false);
+      setIsEditingGoals(false);
+      setGoalsText((board.goals || []).join('\n'));
     }
   };
 
@@ -218,10 +222,12 @@ function DroppableBoardComponent({
         </div>
 
         {/* Board actions + Drag Handle */}
-        {!isEditing && (
+        {!isEditing && !isEditingGoals && (
           <div className="ml-2 flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-10 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                setIsEditing(true);
+              }}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
               title="Rename board"
             >
@@ -285,25 +291,28 @@ function DroppableBoardComponent({
           </div>
         ) : board.goals && board.goals.length > 0 ? (
           <div
-            className="mb-4 space-y-2 cursor-pointer group"
+            className="mb-4 space-y-2 cursor-pointer group/goals relative rounded-xl p-2 -m-2 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
             onClick={() => setIsEditingGoals(true)}
           >
             {board.goals.map((goal, gIdx) => (
               <div key={gIdx} className="flex items-start gap-2">
                 <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
-                <p className="text-[11px] font-medium leading-relaxed text-neutral-600 dark:text-neutral-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                <p className="text-[11px] font-medium leading-relaxed text-neutral-600 dark:text-neutral-400 pr-6">
                   {goal}
                 </p>
               </div>
             ))}
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/goals:opacity-40 transition-opacity">
+              <Pencil className="h-3.5 w-3.5 text-neutral-400" />
+            </div>
           </div>
         ) : (
           <button
             onClick={() => setIsEditingGoals(true)}
-            className="mb-4 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20 transition-colors"
+            className="mb-4 group/add-goal flex items-center gap-2 px-2 py-1 rounded-lg text-[11px] font-medium text-neutral-400 hover:text-brand-500 hover:bg-brand-50/50 dark:hover:bg-brand-500/10 transition-all"
           >
-            <Plus className="h-4 w-4" />
-            Add Goals
+            <Plus className="h-3 w-3 transition-transform group-hover/add-goal:rotate-90" />
+            <span>Add daily goal...</span>
           </button>
         )}
 
