@@ -131,6 +131,55 @@ export function WorkspaceDashboardDisplay({
           })}
         </AnimatePresence>
       </motion.div>
+
+      {/* Unpaired People (Eliminate "Ghost" members) */}
+      {(() => {
+        const assignedIds = new Set(
+          boards.flatMap((b) => b.assignedPersonIds || [])
+        );
+        const unpaired = people.filter((p) => !assignedIds.has(p.id));
+
+        if (unpaired.length === 0) return null;
+
+        return (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-16 border-t border-neutral-100 pt-12 dark:border-neutral-800"
+          >
+            <div className="flex items-center gap-3 mb-8 px-2">
+              <div className="h-5 w-5 rounded-lg bg-neutral-100 flex items-center justify-center dark:bg-neutral-800">
+                <div className="h-1.5 w-1.5 rounded-full bg-neutral-400 animate-pulse" />
+              </div>
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
+                Teammates on Standby
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-50 text-neutral-400 dark:bg-neutral-900/50">
+                {unpaired.length}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-4 px-2">
+              {unpaired.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center gap-3 rounded-2xl bg-white border border-neutral-100 pl-1.5 pr-4 py-1.5 shadow-sm dark:bg-neutral-900/40 dark:border-neutral-800"
+                >
+                  <div
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-[11px] font-black text-white shadow-sm"
+                    style={{ backgroundColor: p.avatarColorHex }}
+                  >
+                    {p.name.charAt(0)}
+                  </div>
+                  <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                    {p.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        );
+      })()}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { motion } from 'framer-motion';
 import { Moon } from 'lucide-react';
@@ -14,7 +14,7 @@ interface DraggablePersonProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-export function DraggablePerson({
+function DraggablePersonComponent({
   person,
   sourceId,
   isOverlay,
@@ -121,3 +121,5 @@ export function DraggablePerson({
     </motion.div>
   );
 }
+
+export const DraggablePerson = memo(DraggablePersonComponent);

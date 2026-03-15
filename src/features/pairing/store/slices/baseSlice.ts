@@ -9,6 +9,7 @@ export interface BaseSlice {
   error: string | null;
   previousBoards: PairingBoard[] | null;
   _delay: (ms: number) => Promise<void>;
+  _loading?: boolean;
 }
 
 export const createBaseSlice: StateCreator<

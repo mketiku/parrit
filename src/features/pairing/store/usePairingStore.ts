@@ -19,6 +19,10 @@ import {
   createExportImportSlice,
   type ExportImportSlice,
 } from './slices/exportImportSlice';
+import {
+  createStalePairsSlice,
+  type StalePairsSlice,
+} from './slices/stalePairsSlice';
 
 export { AVATAR_COLORS } from './slices/helpers';
 
@@ -29,7 +33,8 @@ export type PairingStore = BaseSlice &
   SessionSlice &
   AlgorithmSlice &
   TemplateSlice &
-  ExportImportSlice;
+  ExportImportSlice &
+  StalePairsSlice;
 
 export const usePairingStore = create<PairingStore>()((...a) => ({
   ...createBaseSlice(...a),
@@ -40,4 +45,5 @@ export const usePairingStore = create<PairingStore>()((...a) => ({
   ...createAlgorithmSlice(...a),
   ...createTemplateSlice(...a),
   ...createExportImportSlice(...a),
+  ...createStalePairsSlice(...a),
 }));

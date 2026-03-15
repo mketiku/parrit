@@ -8,7 +8,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS workspace_settings_share_token_idx
 
 -- Update RLS: allow unauthenticated users to SELECT workspace_settings by share_token
 -- (they can only see public_view_enabled and the token, not sensitive data)
-CREATE POLICY IF NOT EXISTS "Public view by share token"
+DROP POLICY IF EXISTS "Public view by share token" ON workspace_settings;
+CREATE POLICY "Public view by share token"
   ON workspace_settings
   FOR SELECT
   TO anon
