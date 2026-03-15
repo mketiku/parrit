@@ -253,9 +253,20 @@ function DroppableBoardComponent({
                 />
               </div>
             ) : (
-              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-tight">
-                {board.name}
-              </h3>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-tight">
+                  {board.name}
+                </h3>
+                {(board.goals || []).length === 0 && (
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
+                    No goals yet · Click{' '}
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      +
+                    </span>{' '}
+                    to add
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
