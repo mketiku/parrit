@@ -24,6 +24,7 @@ import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { useToastStore } from '../../../store/useToastStore';
 import { DraggablePerson } from './DraggablePerson';
+import { AnimatePresence } from 'framer-motion';
 import type { PairingBoard, Person } from '../types';
 
 interface DroppableBoardProps {
