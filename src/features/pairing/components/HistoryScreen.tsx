@@ -15,7 +15,7 @@ import {
   CheckSquare,
   BarChart3,
   HelpCircle,
-  ShieldX,
+  Moon,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -514,7 +514,7 @@ export function HistoryScreen() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 selection:bg-brand-100 selection:text-brand-900">
+    <main className="max-w-7xl mx-auto px-4 py-8 selection:bg-brand-100 selection:text-brand-900">
       <header className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-xl shadow-brand-500/20">
@@ -524,7 +524,7 @@ export function HistoryScreen() {
             <h1 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
               Pairing History
             </h1>
-            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
+            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
               Archives of your team's tactical growth.
             </p>
           </div>
@@ -544,7 +544,7 @@ export function HistoryScreen() {
           <div className="flex items-center justify-between mb-6 px-1">
             <div className="flex items-center gap-2">
               <Workflow className="h-4 w-4 text-brand-500" />
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
                 Team Evolution Flow
               </h2>
             </div>
@@ -579,7 +579,7 @@ export function HistoryScreen() {
                   >
                     <div className="flex items-center gap-2 mb-8">
                       <BarChart3 className="h-4 w-4 text-brand-500" />
-                      <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
                         Pairing Heatmap
                       </h3>
                     </div>
@@ -653,7 +653,7 @@ export function HistoryScreen() {
                     className={`h-4 w-4 ${selectedBulkIds.size === sessions.length ? 'opacity-100' : 'opacity-0'}`}
                   />
                 </button>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
                   Recent Snapshots
                 </h2>
               </div>
@@ -667,7 +667,7 @@ export function HistoryScreen() {
                 </button>
               )}
             </div>
-            <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-neutral-500 font-bold">
+            <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-neutral-600 dark:text-neutral-400 font-bold">
               {sessions.length} TOTAL
             </span>
           </div>
@@ -698,7 +698,7 @@ export function HistoryScreen() {
                   {Object.entries(groupedSessions).map(
                     ([month, monthSessions]) => (
                       <div key={month} className="space-y-3">
-                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-300 dark:text-neutral-600 px-2">
+                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400 px-2">
                           {month}
                         </h3>
                         {monthSessions.map((session, idx) => (
@@ -802,7 +802,7 @@ export function HistoryScreen() {
                                         'MMM do, yyyy'
                                       )}
                                     </p>
-                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                                    <p className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">
                                       {format(
                                         new Date(session.created_at),
                                         'h:mm a'
@@ -837,7 +837,7 @@ export function HistoryScreen() {
                       <button
                         onClick={handleLoadMore}
                         disabled={isHistoryLoadingMore}
-                        className="w-full py-4 rounded-2xl border-2 border-dashed border-neutral-100 dark:border-neutral-800/40 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-brand-500 hover:border-brand-500/20 hover:bg-brand-50/50 dark:hover:bg-brand-950/10 transition-all disabled:opacity-50"
+                        className="w-full py-4 rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-800 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400 hover:text-brand-500 hover:border-brand-500/20 hover:bg-brand-50/50 dark:hover:bg-brand-950/10 transition-all disabled:opacity-50"
                       >
                         {isHistoryLoadingMore ? (
                           <div className="flex items-center justify-center gap-2">
@@ -1035,7 +1035,7 @@ export function HistoryScreen() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {Object.keys(detailsByBoard).length === 0 ? (
                     <div className="md:col-span-2 flex flex-col items-center justify-center py-20 bg-white dark:bg-neutral-900/40 rounded-[2.5rem] border border-dashed border-neutral-200 dark:border-neutral-800">
-                      <ShieldX className="h-12 w-12 text-neutral-300 mb-4" />
+                      <Moon className="h-12 w-12 text-neutral-300 mb-4" />
                       <p className="text-neutral-500 dark:text-neutral-400 font-medium text-center px-6">
                         RAAA! The nest is empty. Did everyone take a migration
                         break? 🦜
@@ -1274,7 +1274,7 @@ export function HistoryScreen() {
       )}
 
       <ProductTutorial />
-    </div>
+    </main>
   );
 }
 interface TeamFlowProps {
