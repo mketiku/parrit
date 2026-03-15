@@ -751,7 +751,7 @@ export function PairingWorkspace() {
       {showGoalsHint && (
         <ContextualHint
           targetId="board-goals"
-          title="Set your daily focus"
+          title="Set your board focus"
           description="Click here to add goals for this board — great for keeping the pair focused and on track."
           placement="bottom"
           onDismiss={() => setHintGoalsSeen(true)}

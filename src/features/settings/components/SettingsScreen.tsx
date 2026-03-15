@@ -513,8 +513,8 @@ export function SettingsScreen() {
                       Chat Webhook
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      Send daily board assignments to Slack, Discord, or Teams
-                      when you click "Save Session".
+                      Send board assignments to Slack, Discord, or Teams when
+                      you click "Save Session".
                     </p>
                   </div>
                 </div>

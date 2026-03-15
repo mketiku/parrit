@@ -326,7 +326,7 @@ function DroppableBoardComponent({
             className="mb-4 group/add-goal flex items-center gap-2 px-2 py-1 rounded-lg text-[11px] font-medium text-neutral-400 hover:text-brand-500 hover:bg-brand-50/50 dark:hover:bg-brand-500/10 transition-all"
           >
             <Plus className="h-3 w-3 transition-transform group-hover/add-goal:rotate-90" />
-            <span>Add daily goal...</span>
+            <span>Add board focus...</span>
           </button>
         )}
 
