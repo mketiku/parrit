@@ -593,7 +593,7 @@ export function PairingWorkspace() {
                     <button
                       type="button"
                       onClick={() => setIsAddingBoard(false)}
-                      className="text-xs font-bold text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
+                      className="text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
                     >
                       Cancel
                     </button>
@@ -798,51 +798,51 @@ function DroppableUnpairedPool({
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: 'unpaired',
-    data: { type: 'POOL' },
   });
 
   return (
     <div
       ref={setNodeRef}
-      id="unpaired-pool"
-      className={`
-        xl:sticky xl:top-6 flex xl:min-h-[400px] flex-col rounded-2xl border p-3 sm:p-4 xl:p-5 shadow-xs transition-colors
+      className={`relative flex flex-col rounded-3xl border-2 p-5 transition-all duration-300 min-h-[400px] sm:min-h-[500px]
         ${
           isOver
-            ? 'border-brand-400 border-dashed bg-brand-50 dark:border-brand-500/50 dark:bg-brand-950/20'
+            ? 'border-brand-500 bg-brand-50/20 shadow-lg shadow-brand-500/10 ring-4 ring-brand-500/5'
             : isDragActive
-              ? 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ring-2 ring-amber-300/40 ring-offset-1'
-              : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
+              ? 'border-neutral-200 bg-white ring-2 ring-brand-300/40 ring-offset-1 dark:border-neutral-800 dark:bg-neutral-900'
+              : 'border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/40'
         }
       `}
     >
-      <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
-        <div className="flex items-center gap-2">
-          <House className="h-5 w-5 2xl:h-6 2xl:w-6 text-neutral-400 dark:text-neutral-400" />
-          <h3 className="font-semibold 2xl:text-lg text-neutral-900 dark:text-neutral-100">
-            Unpaired Pool
-          </h3>
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm border border-neutral-100 dark:bg-neutral-800 dark:border-neutral-700">
+            <House className="h-5 w-5 text-neutral-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+              Unpaired Pool
+            </h2>
+            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+              {people.length} available
+            </p>
+          </div>
         </div>
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
-          {people.length}
-        </span>
       </div>
 
-      <div className="flex max-h-[150px] overflow-y-auto no-scrollbar xl:max-h-none xl:overflow-visible flex-wrap content-start gap-2 sm:gap-3 flex-1">
+      <div className="flex flex-1 flex-col gap-2">
         {isLoading ? (
-          <>
-            {[...Array(6)].map((_, i) => (
-              <PersonSkeleton key={`person-skeleton-${i}`} />
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="h-10 w-full animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800"
+              />
             ))}
-          </>
-        ) : (
-          <AnimatePresence>
-            {people.length === 0 ? (
-              <span className="flex w-full items-center justify-center text-sm font-medium text-neutral-400 mt-10 dark:text-neutral-400">
-                {isOver ? 'Drop to unpair' : 'The nest is empty!'}
-              </span>
-            ) : (
-              people.map((person) => (
+          </div>
+        ) : people.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <AnimatePresence mode="popLayout">
+              {people.map((person) => (
                 <DraggablePerson
                   key={person.id}
                   person={person}
@@ -850,9 +850,16 @@ function DroppableUnpairedPool({
                   isSelected={selectedPersonIds?.has(person.id)}
                   onClick={(e) => onPersonClick?.(person.id, e)}
                 />
-              ))
-            )}
-          </AnimatePresence>
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <div className="flex flex-1 flex-col items-center justify-center text-center opacity-40">
+            <div className="mb-3 h-12 w-12 rounded-full border-2 border-dashed border-neutral-300 dark:border-neutral-700" />
+            <p className="text-xs font-bold text-neutral-400">
+              Everyone is paired!
+            </p>
+          </div>
         )}
       </div>
     </div>
@@ -861,29 +868,21 @@ function DroppableUnpairedPool({
 
 function BoardSkeleton({ index }: { index: number }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="flex min-h-[200px] sm:min-h-[240px] flex-col rounded-3xl border-2 border-neutral-200 bg-white p-4 sm:p-5 dark:border-neutral-800 dark:bg-neutral-900/50"
+    <div
+      className="flex min-h-[240px] flex-col rounded-3xl border-2 border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
+      style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-10 w-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
-        <div className="h-4 w-32 rounded-lg bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+      <div className="mb-6 flex items-center gap-3">
+        <div className="h-10 w-10 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-2/3 animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-800" />
+          <div className="h-3 w-1/3 animate-pulse rounded-md bg-neutral-50 dark:bg-neutral-800" />
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <div className="h-12 w-24 rounded-2xl bg-neutral-100/50 dark:bg-neutral-800/50 animate-pulse" />
-        <div className="h-12 w-32 rounded-2xl bg-neutral-100/50 dark:bg-neutral-800/50 animate-pulse" />
+        <div className="h-10 w-24 animate-pulse rounded-full bg-neutral-50 dark:bg-neutral-800" />
+        <div className="h-10 w-24 animate-pulse rounded-full bg-neutral-50 dark:bg-neutral-800" />
       </div>
-      <div className="mt-auto pt-6 border-t border-neutral-100 dark:border-neutral-800/50">
-        <div className="h-3 w-full rounded-full bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
-      </div>
-    </motion.div>
-  );
-}
-
-function PersonSkeleton() {
-  return (
-    <div className="h-12 w-32 rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse border border-neutral-200/50 dark:border-neutral-700/30" />
+    </div>
   );
 }
