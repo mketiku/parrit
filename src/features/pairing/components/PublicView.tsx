@@ -193,7 +193,7 @@ export function PublicView() {
       />
 
       <footer className="mt-24 border-t border-neutral-200/50 pt-16 dark:border-neutral-800/50 px-4 text-center">
-        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-300 dark:text-neutral-700">
+        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-500">
           Crafted for Modern Engineering Teams • Parrit
         </p>
       </footer>
