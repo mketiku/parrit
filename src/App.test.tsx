@@ -4,31 +4,21 @@ import App from './App';
 import React from 'react';
 import { useAuthStore } from './features/auth/store/useAuthStore';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
+import { createMockPairingStore } from './test/mocks';
 
 vi.mock('./features/auth/store/useAuthStore');
 vi.mock('./features/pairing/store/usePairingStore');
 
-vi.mocked(usePairingStore).mockReturnValue({
-  people: [],
-  boards: [],
-  isLoading: false,
-  error: null,
-  loadWorkspaceData: vi.fn(),
-  addPerson: vi.fn(),
-  updatePerson: vi.fn(),
-  removePerson: vi.fn(),
-  setBoards: vi.fn(),
-  persistBoardAssignments: vi.fn(),
-  addBoard: vi.fn(),
-  updateBoard: vi.fn(),
-  removeBoard: vi.fn(),
-  subscribeToRealtime: vi.fn().mockReturnValue(vi.fn()),
-});
+const mockPairingState = createMockPairingStore();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+vi.mocked(usePairingStore).mockImplementation((selector?: any) =>
+  selector ? selector(mockPairingState) : mockPairingState
+);
 
 describe('App Root Component', () => {
   it('renders the layout and default dashboard view', () => {
     // Force a logged-in state so the app renders its actual routes
-    vi.mocked(useAuthStore).mockReturnValue({
+    const authState = {
       user: {
         id: 'test-user',
         email: 'test@example.com',
@@ -38,7 +28,11 @@ describe('App Root Component', () => {
       isLoading: false,
       initialize: vi.fn(),
       signOut: vi.fn(),
-    });
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(useAuthStore).mockImplementation((selector?: any) =>
+      selector ? selector(authState) : authState
+    );
 
     render(<App />);
 

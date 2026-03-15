@@ -10,12 +10,16 @@ export type AppTheme =
 interface ThemeState {
   theme: AppTheme;
   setTheme: (theme: AppTheme) => void;
+  isDark: boolean;
+  toggleDark: () => void;
+  applyDark: (dark: boolean) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'macaw-elite',
+      isDark: false,
       setTheme: (theme) => {
         set({ theme });
         // Update data-theme on html tag
@@ -25,6 +29,21 @@ export const useThemeStore = create<ThemeState>()(
           } else {
             document.documentElement.setAttribute('data-theme', theme);
           }
+        }
+      },
+      toggleDark: () => {
+        const newDark = !get().isDark;
+        set({ isDark: newDark });
+        if (typeof document !== 'undefined') {
+          if (newDark) document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
+        }
+      },
+      applyDark: (dark: boolean) => {
+        set({ isDark: dark });
+        if (typeof document !== 'undefined') {
+          if (dark) document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
         }
       },
     }),

@@ -8,7 +8,7 @@ import { WorkspaceDashboardDisplay } from './WorkspaceDashboardDisplay';
 import { Loader2, Lock, ArrowRight } from 'lucide-react';
 
 export function PublicView() {
-  const { userId } = useParams<{ userId: string }>();
+  const { shareToken } = useParams<{ shareToken: string }>();
   const { isAdmin } = useAuthStore();
   const [boards, setBoards] = useState<PairingBoard[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
@@ -18,11 +18,11 @@ export function PublicView() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!userId) return;
+      if (!shareToken) return;
 
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(userId)) {
+      if (!uuidRegex.test(shareToken)) {
         setIsPublic(false);
         setIsLoading(false);
         return;
@@ -31,13 +31,20 @@ export function PublicView() {
       setIsLoading(true);
 
       try {
-        // 1. Check if public view is enabled
+        // 1. Check if public view is enabled (lookup by share_token, get user_id)
         const { data: settings } = await supabase
           .from('workspace_settings')
-          .select('public_view_enabled')
-          .eq('user_id', userId)
+          .select('public_view_enabled, user_id')
+          .eq('share_token', shareToken)
           .maybeSingle();
 
+        if (!settings) {
+          setIsPublic(false);
+          setIsLoading(false);
+          return;
+        }
+
+        const actualUserId = settings.user_id;
         const isPublicEnabled = settings?.public_view_enabled ?? false;
 
         // RBAC Check: Allow access if public or if current user is an admin
@@ -55,7 +62,7 @@ export function PublicView() {
           const { data, error } = await supabase.rpc(
             'admin_get_workspace_data',
             {
-              target_user_id: userId,
+              target_user_id: actualUserId,
             }
           );
 
@@ -92,11 +99,11 @@ export function PublicView() {
           }
         } else {
           const [peopleRes, boardsRes] = await Promise.all([
-            supabase.from('people').select('*').eq('user_id', userId),
+            supabase.from('people').select('*').eq('user_id', actualUserId),
             supabase
               .from('pairing_boards')
               .select('*')
-              .eq('user_id', userId)
+              .eq('user_id', actualUserId)
               .order('sort_order'),
           ]);
 
@@ -136,7 +143,7 @@ export function PublicView() {
     }
 
     fetchData();
-  }, [userId, isAdmin]);
+  }, [shareToken, isAdmin]);
 
   if (isLoading) {
     return (

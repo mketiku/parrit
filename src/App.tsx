@@ -20,8 +20,8 @@ import { AdminShortcutListener } from './features/admin/components/AdminShortcut
 
 // Authenticated dashboard wrapper
 function DashboardView() {
-  const { workspaceName } = useAuthStore();
-  const { isLoading: dataLoading } = usePairingStore();
+  const workspaceName = useAuthStore((s) => s.workspaceName);
+  const dataLoading = usePairingStore((s) => s.isLoading);
   const displayName = workspaceName
     ? workspaceName.charAt(0).toUpperCase() + workspaceName.slice(1)
     : 'Workspace';
@@ -54,21 +54,26 @@ function DashboardView() {
 function App() {
   const { user, isLoading, initialize } = useAuthStore();
   const { loadWorkspaceData, subscribeToRealtime } = usePairingStore();
-  const { theme, setTheme } = useThemeStore();
+  const { theme, setTheme, isDark, applyDark } = useThemeStore();
 
   React.useEffect(() => {
     initialize();
-    // Initialize theme on load
+  }, [initialize]);
+
+  // Handle theme application separately
+  React.useEffect(() => {
     setTheme(theme);
-  }, [initialize, theme, setTheme]);
+    applyDark(isDark);
+  }, [theme, setTheme, isDark, applyDark]);
 
   // Load workspace data and subscribe to live updates when authenticated
+  const userId = user?.id;
   React.useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     loadWorkspaceData();
     const unsubscribe = subscribeToRealtime();
     return unsubscribe;
-  }, [user, loadWorkspaceData, subscribeToRealtime]);
+  }, [userId, loadWorkspaceData, subscribeToRealtime]);
 
   if (isLoading) {
     return (
@@ -91,7 +96,7 @@ function App() {
             />
             <Route path="/about" element={<AboutScreen />} />
             <Route path="/guide" element={<PairingGuide />} />
-            <Route path="/view/:userId" element={<PublicView />} />
+            <Route path="/view/:shareToken" element={<PublicView />} />
             <Route path="/admin" element={<AdminPortal />} />
             <Route
               path="/login"

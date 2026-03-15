@@ -9,6 +9,7 @@ interface AuthState {
   role: string | null;
   isAdmin: boolean;
   isLoading: boolean;
+  _initialized?: boolean;
   initialize: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -22,6 +23,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   initialize: async () => {
+    if (useAuthStore.getState()._initialized) {
+      // Ensure we don't leave the UI in a loading state if initialize is called multiple times
+      set({ isLoading: false });
+      return;
+    }
+    useAuthStore.getState()._initialized = true;
+
     try {
       const {
         data: { session },
@@ -59,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           workspaceName: currentWorkspaceName,
           role: currentRole,
           isAdmin: currentRole === 'admin',
+          isLoading: false, // Ensure loading is off if we get a session change
         });
       });
     } catch (error) {
