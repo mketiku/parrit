@@ -38,6 +38,7 @@ import {
   ChevronDown,
   ArrowRight,
   Download,
+  MousePointer2,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
@@ -64,6 +65,7 @@ export function PairingWorkspace() {
   const { user } = useAuthStore();
   const dashboardRef = useRef<HTMLDivElement>(null);
 
+  const [isSelectMode, setIsSelectMode] = useState(false);
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newBoardIsExempt, setNewBoardIsExempt] = useState(false);
@@ -184,7 +186,7 @@ export function PairingWorkspace() {
   const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
 
   const handlePersonClick = (personId: string, e: React.MouseEvent) => {
-    if (e.metaKey || e.ctrlKey) {
+    if (e.metaKey || e.ctrlKey || isSelectMode) {
       setSelectedPersonIds((prev) => {
         const next = new Set(prev);
         if (next.has(personId)) {
@@ -268,6 +270,9 @@ export function PairingWorkspace() {
     setIsExporting(true);
 
     try {
+      // Let the overlay render before starting heavy DOM work
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Trigger the export mode styles
       document.documentElement.setAttribute('data-exporting', 'true');
 
@@ -415,6 +420,28 @@ export function PairingWorkspace() {
 
               <div className="flex flex-wrap items-center gap-2 [html[data-exporting='true']_&]:hidden">
                 <button
+                  onClick={() => {
+                    const next = !isSelectMode;
+                    setIsSelectMode(next);
+                    if (!next) {
+                      setSelectedPersonIds(new Set());
+                      setLastClickedId(null);
+                    }
+                  }}
+                  className={`flex justify-center items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all shadow-sm
+                    ${
+                      isSelectMode
+                        ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20'
+                        : 'bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800'
+                    }
+                  `}
+                  title="Toggle Select Mode"
+                >
+                  <MousePointer2 className="h-4 w-4" />
+                  Select
+                </button>
+
+                <button
                   id="heatmap-toggle"
                   onClick={() => setShowHeatmap(!showHeatmap)}
                   className={`flex justify-center items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all shadow-sm
@@ -522,6 +549,7 @@ export function PairingWorkspace() {
                         selectedPersonIds={selectedPersonIds}
                         onPersonClick={handlePersonClick}
                         index={index}
+                        isDragActive={!!activeDragItem}
                       />
                     );
                   })}
@@ -600,6 +628,7 @@ export function PairingWorkspace() {
               selectedPersonIds={selectedPersonIds}
               onPersonClick={handlePersonClick}
               isLoading={isStoreLoading}
+              isDragActive={!!activeDragItem}
             />
           </div>
         </div>
@@ -650,6 +679,15 @@ export function PairingWorkspace() {
             {selectedPersonIds.size} teammate
             {selectedPersonIds.size > 1 ? 's' : ''} selected
           </span>
+
+          {isSelectMode && (
+            <>
+              <div className="h-4 w-px bg-white/20" />
+              <span className="text-[10px] font-medium text-white/50 hidden sm:block">
+                Click to select • Shift+Click for range
+              </span>
+            </>
+          )}
 
           <div className="h-4 w-px bg-white/20 mx-2" />
 
@@ -716,6 +754,15 @@ export function PairingWorkspace() {
         </div>
       )}
 
+      {isDownloading && (
+        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm [html[data-exporting='true']_&]:hidden">
+          <Loader2 className="h-10 w-10 animate-spin text-white mb-3" />
+          <span className="text-sm font-bold text-white/80 uppercase tracking-widest">
+            Generating image…
+          </span>
+        </div>
+      )}
+
       <ProductTutorial />
 
       {/* Getting Started Checklist Card (replaces auto-triggered step-by-step tutorial) */}
@@ -766,11 +813,13 @@ function DroppableUnpairedPool({
   selectedPersonIds,
   onPersonClick,
   isLoading,
+  isDragActive,
 }: {
   people: Person[];
   selectedPersonIds?: Set<string>;
   onPersonClick?: (id: string, e: React.MouseEvent) => void;
   isLoading?: boolean;
+  isDragActive?: boolean;
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: 'unpaired',
@@ -786,7 +835,9 @@ function DroppableUnpairedPool({
         ${
           isOver
             ? 'border-brand-400 border-dashed bg-brand-50 dark:border-brand-500/50 dark:bg-brand-950/20'
-            : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
+            : isDragActive
+              ? 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ring-2 ring-amber-300/40 ring-offset-1'
+              : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
         }
       `}
     >

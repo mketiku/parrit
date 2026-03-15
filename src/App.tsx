@@ -54,13 +54,14 @@ function DashboardView() {
 function App() {
   const { user, isLoading, initialize } = useAuthStore();
   const { loadWorkspaceData, subscribeToRealtime } = usePairingStore();
-  const { theme, setTheme } = useThemeStore();
+  const { theme, setTheme, isDark, applyDark } = useThemeStore();
 
   React.useEffect(() => {
     initialize();
     // Initialize theme on load
     setTheme(theme);
-  }, [initialize, theme, setTheme]);
+    applyDark(isDark);
+  }, [initialize, theme, setTheme, isDark, applyDark]);
 
   // Load workspace data and subscribe to live updates when authenticated
   React.useEffect(() => {
@@ -91,7 +92,7 @@ function App() {
             />
             <Route path="/about" element={<AboutScreen />} />
             <Route path="/guide" element={<PairingGuide />} />
-            <Route path="/view/:userId" element={<PublicView />} />
+            <Route path="/view/:shareToken" element={<PublicView />} />
             <Route path="/admin" element={<AdminPortal />} />
             <Route
               path="/login"
