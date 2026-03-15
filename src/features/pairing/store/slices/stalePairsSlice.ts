@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { supabase } from '../../../../lib/supabase';
+import { useWorkspacePrefsStore } from '../../../../store/useWorkspacePrefsStore';
 import type { PairingStore } from '../usePairingStore';
 
 export interface StalePairsSlice {
@@ -113,7 +114,7 @@ export const createStalePairsSlice: StateCreator<
   isRecentPair: (p1: string, p2: string): boolean => {
     const { pairRecency } = get();
     // Move dependency on prefs outside to avoid listener overlap
-    const threshold = get().stalePairThreshold || 3;
+    const threshold = useWorkspacePrefsStore.getState().stalePairThreshold || 3;
 
     const key = [p1, p2].sort().join(':');
     const consecutiveCount = pairRecency[key] || 0;
