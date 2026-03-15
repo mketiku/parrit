@@ -58,11 +58,21 @@ export function TemplateManager() {
     usePairingStore();
   const { addToast } = useToastStore();
 
+  type PendingTemplate =
+    | {
+        type: 'builtin';
+        name: string;
+        boards: { name: string; isExempt: boolean }[];
+      }
+    | { type: 'saved'; id: string; name: string }
+    | null;
+
   const [isOpen, setIsOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+  const [pendingTemplate, setPendingTemplate] = useState<PendingTemplate>(null);
 
   const fetchTemplates = useCallback(async () => {
     setIsLoadingTemplates(true);
@@ -166,8 +176,11 @@ export function TemplateManager() {
                     <button
                       key={preset.name}
                       onClick={() => {
-                        applyBuiltinTemplate(preset.name, preset.boards);
-                        setIsOpen(false);
+                        setPendingTemplate({
+                          type: 'builtin',
+                          name: preset.name,
+                          boards: preset.boards,
+                        });
                       }}
                       className="group flex w-full items-start gap-2.5 rounded-xl border border-neutral-100 bg-gradient-to-r from-brand-50 to-white p-3 text-left transition-all hover:border-brand-300 hover:from-brand-100 hover:to-brand-50 dark:border-neutral-800 dark:from-brand-900/20 dark:to-neutral-900 dark:hover:border-brand-500/50"
                     >
@@ -233,8 +246,11 @@ export function TemplateManager() {
                     <div
                       key={template.id}
                       onClick={() => {
-                        applyTemplate(template.id);
-                        setIsOpen(false);
+                        setPendingTemplate({
+                          type: 'saved',
+                          id: template.id,
+                          name: template.name,
+                        });
                       }}
                       className="group flex flex-col cursor-pointer rounded-xl border border-neutral-100 bg-neutral-50 p-3 transition-all hover:border-brand-300 hover:bg-brand-50 dark:border-neutral-800 dark:bg-neutral-950/50 dark:hover:border-brand-500/50 dark:hover:bg-brand-900/10"
                     >
@@ -267,6 +283,57 @@ export function TemplateManager() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Apply Template Confirmation Dialog */}
+      {pendingTemplate !== null && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-neutral-900 p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 dark:bg-brand-900/20">
+              <Layers className="h-6 w-6 text-brand-500" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-neutral-100">
+              Apply Template?
+            </h3>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-300">
+              Applying{' '}
+              <span className="font-semibold text-neutral-700 dark:text-neutral-200">
+                {pendingTemplate.name}
+              </span>{' '}
+              will replace your current boards and goals. People will be
+              unassigned. This cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  if (pendingTemplate.type === 'builtin') {
+                    applyBuiltinTemplate(
+                      pendingTemplate.name,
+                      pendingTemplate.boards
+                    );
+                  } else {
+                    applyTemplate(pendingTemplate.id);
+                  }
+                  setPendingTemplate(null);
+                  setIsOpen(false);
+                }}
+                className="flex-1 rounded-xl bg-brand-600 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-brand-700 transition-colors"
+              >
+                Apply Template
+              </button>
+              <button
+                onClick={() => setPendingTemplate(null)}
+                className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

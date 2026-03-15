@@ -36,6 +36,10 @@ export const createMockPairingStore = (
   applyBuiltinTemplate: vi.fn().mockResolvedValue(undefined),
   exportWorkspace: vi.fn().mockResolvedValue('{}'),
   importWorkspace: vi.fn().mockResolvedValue(undefined),
+  pairRecency: {} as Record<string, number>,
+  isStaleLoading: false,
+  loadStalePairs: vi.fn().mockResolvedValue(undefined),
+  isRecentPair: vi.fn().mockReturnValue(false),
   ...overrides,
 });
 

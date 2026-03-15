@@ -47,7 +47,11 @@ describe('useHistoryAnalytics Hook', () => {
     ];
 
     mockSelect.mockReturnValue({
-      order: vi.fn().mockResolvedValue({ data: mockHistoryData, error: null }),
+      order: vi.fn().mockReturnValue({
+        limit: vi
+          .fn()
+          .mockResolvedValue({ data: mockHistoryData, error: null }),
+      }),
     } as unknown as ReturnType<typeof mockSelect>);
 
     const { result } = renderHook(() => useHistoryAnalytics(mockPeople));
@@ -67,13 +71,16 @@ describe('useHistoryAnalytics Hook', () => {
 
   it('should handle empty history correctly', async () => {
     mockSelect.mockReturnValue({
-      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      order: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
     } as unknown as ReturnType<typeof mockSelect>);
 
     const { result } = renderHook(() => useHistoryAnalytics(mockPeople));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.personStats['p1'].partnerCounts).toEqual({});
+    // With empty history the hook returns no stats
+    expect(result.current.personStats).toEqual({});
   });
 });

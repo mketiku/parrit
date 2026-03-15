@@ -98,17 +98,18 @@ export function HistoryScreen() {
   const [singleDeleteTarget, setSingleDeleteTarget] = useState<string | null>(
     null
   );
+  const [cloneConfirmOpen, setCloneConfirmOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(7);
   const [hasMore, setHasMore] = useState(true);
   const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
   const { addToast } = useToastStore();
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+  const [showInsights, setShowInsights] = useState(false);
   const {
     personStats,
     matrix,
     isLoading: isAnalyzing,
   } = useHistoryAnalytics(storePeople, showInsights || !!selectedPersonId);
-  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
-  const [showInsights, setShowInsights] = useState(false);
   const { startTutorial } = useTutorialStore();
 
   const handleUpdateDate = async () => {
@@ -208,7 +209,9 @@ export function HistoryScreen() {
           board_id,
           session_id,
           person_name,
-          board_name
+          board_name,
+          people (name, avatar_color_hex),
+          pairing_boards (name)
         `
           )
           .in(
@@ -321,14 +324,13 @@ export function HistoryScreen() {
     [addToast, storePeople, storeBoards, sessions]
   );
 
-  const handleCloneSession = async () => {
+  const handleCloneSession = () => {
     if (!selectedSessionId || details.length === 0) return;
+    setCloneConfirmOpen(true);
+  };
 
-    const confirmClone = confirm(
-      'This will replace your current workspace boards with the configuration from this snapshot. People will be reassigned where possible. Continue?'
-    );
-    if (!confirmClone) return;
-
+  const executeCloneSession = async () => {
+    setCloneConfirmOpen(false);
     try {
       const { people: storePeople, boards: currentBoards } =
         usePairingStore.getState();
@@ -453,6 +455,13 @@ export function HistoryScreen() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (sessions.length === 0) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        (e.target as HTMLElement).isContentEditable
+      )
+        return;
 
       const currentIndex = sessions.findIndex(
         (s) => s.id === selectedSessionId
@@ -1197,6 +1206,43 @@ export function HistoryScreen() {
               </button>
               <button
                 onClick={() => setSingleDeleteTarget(null)}
+                className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clone Snapshot Confirmation Dialog */}
+      {cloneConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-neutral-900 p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/20">
+              <Copy className="h-6 w-6 text-amber-500" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-neutral-100">
+              Clone Snapshot?
+            </h3>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-300">
+              This will replace your current workspace boards with the
+              configuration from this snapshot. People will be reassigned where
+              possible. This cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={executeCloneSession}
+                className="flex-1 rounded-xl bg-brand-600 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-brand-700 transition-colors"
+              >
+                Clone Snapshot
+              </button>
+              <button
+                onClick={() => setCloneConfirmOpen(false)}
                 className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
               >
                 Cancel

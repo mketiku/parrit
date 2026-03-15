@@ -28,11 +28,13 @@ const mockBoards = [
 
 describe('PairingWorkspace Component', () => {
   it('renders the unpaired pool and boards', () => {
-    vi.mocked(usePairingStore).mockReturnValue(
-      createMockPairingStore({
-        people: mockPeople,
-        boards: mockBoards,
-      })
+    const mockStore = createMockPairingStore({
+      people: mockPeople,
+      boards: mockBoards,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(usePairingStore).mockImplementation((selector?: any) =>
+      selector ? selector(mockStore) : mockStore
     );
 
     render(<PairingWorkspace />);
