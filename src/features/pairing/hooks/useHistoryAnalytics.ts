@@ -66,13 +66,20 @@ export function useHistoryAnalytics(people: Person[]) {
     fetchAllHistory();
   }, [fetchAllHistory]);
 
+  const peopleKey = useMemo(
+    () => people.map((p) => `${p.id}:${p.name}:${p.avatarColorHex}`).join(','),
+    [people]
+  );
+
+  const stablePeople = useMemo(() => people, [peopleKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const analytics = useMemo(() => {
     const personStats: Record<string, PersonStats> = {};
     const matrix: Record<string, Record<string, number>> = {};
     const personNames: Record<string, string> = {};
 
     // Initialize stats for current people
-    people.forEach((p) => {
+    stablePeople.forEach((p) => {
       personStats[p.id] = {
         id: p.id,
         name: p.name,
@@ -173,12 +180,12 @@ export function useHistoryAnalytics(people: Person[]) {
       personStats,
       sessionCount,
       matrix: {
-        personIds: people.map((p) => p.id),
+        personIds: stablePeople.map((p) => p.id),
         personNames,
         counts: matrix,
       },
     };
-  }, [history, people]);
+  }, [history, stablePeople]);
 
   return { ...analytics, isLoading, refreshHistory: fetchAllHistory };
 }

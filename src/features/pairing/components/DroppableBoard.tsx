@@ -26,6 +26,7 @@ interface DroppableBoardProps {
   selectedPersonIds?: Set<string>;
   onPersonClick?: (id: string, e: React.MouseEvent) => void;
   index?: number;
+  isDragActive?: boolean;
 }
 
 export function DroppableBoard({
@@ -34,6 +35,7 @@ export function DroppableBoard({
   selectedPersonIds,
   onPersonClick,
   index,
+  isDragActive,
 }: DroppableBoardProps) {
   const {
     attributes,
@@ -177,9 +179,13 @@ export function DroppableBoard({
         ${
           isOver
             ? 'border-brand-500 bg-brand-50/20 shadow-lg shadow-brand-500/10 ring-4 ring-brand-500/5'
-            : board.isExempt
-              ? 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/20'
-              : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
+            : isDragActive && !isDragging
+              ? board.isExempt
+                ? 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/20 ring-2 ring-brand-300/40 ring-offset-1'
+                : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ring-2 ring-brand-300/40 ring-offset-1'
+              : board.isExempt
+                ? 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/20'
+                : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
         }
         ${isDragging ? 'cursor-grabbing opacity-80 shadow-2xl z-50' : ''}
         [html[data-exporting='true']_&]:min-h-0 [html[data-exporting='true']_&]:p-5 [html[data-exporting='true']_&]:shadow-none
@@ -369,13 +375,23 @@ export function DroppableBoard({
                   }
                 }}
                 onClick={(e) => e.stopPropagation()}
-                className={`flex items-center gap-1.5 ${(board.goals || []).length > 0 ? 'opacity-0 group-hover/extra:opacity-100' : ''}`}
+                className={
+                  (board.goals || []).length > 0
+                    ? 'flex items-center gap-1.5 opacity-0 group-hover/extra:opacity-100'
+                    : 'flex items-center gap-1.5 rounded-lg px-2 py-1.5 border border-dashed border-neutral-200 dark:border-neutral-700 hover:border-brand-300 dark:hover:border-brand-700 transition-colors'
+                }
               >
-                <Plus className="h-3 w-3 text-neutral-400" />
+                <Plus
+                  className={`h-3 w-3 ${(board.goals || []).length > 0 ? 'text-neutral-400' : 'text-neutral-400'}`}
+                />
                 <input
                   name="quick-goal"
-                  placeholder="Add daily goal..."
-                  className="w-full bg-transparent text-[10px] font-medium text-neutral-600 outline-none"
+                  placeholder={
+                    (board.goals || []).length > 0
+                      ? 'Add daily goal...'
+                      : '＋ Add a goal for today...'
+                  }
+                  className={`w-full bg-transparent text-[10px] font-medium outline-none ${(board.goals || []).length > 0 ? 'text-neutral-600' : 'text-neutral-500 dark:text-neutral-400'}`}
                 />
               </form>
               {meetingLinkEnabled && board.meetingLink && (
@@ -412,7 +428,11 @@ export function DroppableBoard({
         <AnimatePresence>
           {people.length === 0 ? (
             <span className="flex w-full min-h-[48px] items-center justify-center text-sm font-medium text-neutral-400">
-              {isOver ? 'Drop to assign' : 'Empty Board'}
+              {isOver
+                ? 'Drop to assign'
+                : isDragActive
+                  ? 'Drop here'
+                  : 'Empty Board'}
             </span>
           ) : (
             people.map((person) => (

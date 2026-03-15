@@ -30,6 +30,8 @@ export interface WorkspacePrefsState {
   setHintHeatmapSeen: (seen: boolean) => void;
   slackWebhookUrl: string;
   setSlackWebhookUrl: (url: string) => void;
+  shareToken: string;
+  setShareToken: (token: string) => void;
 }
 
 export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
@@ -63,6 +65,8 @@ export const useWorkspacePrefsStore = create<WorkspacePrefsState>()(
       setHintHeatmapSeen: (seen) => set({ hintHeatmapSeen: seen }),
       slackWebhookUrl: '',
       setSlackWebhookUrl: (url) => set({ slackWebhookUrl: url }),
+      shareToken: '',
+      setShareToken: (token) => set({ shareToken: token }),
     }),
     {
       name: 'parrit-workspace-prefs',

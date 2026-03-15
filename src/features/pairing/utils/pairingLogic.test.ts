@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import * as fc from 'fast-check';
 import { calculateRecommendations } from './pairingLogic';
 import type { Person, PairingBoard } from '../types';
 
@@ -125,5 +126,169 @@ describe('Pairing Recommendation Algorithm', () => {
       const pairedWith1 = p1.includes('1') ? p1 : p2;
       expect(pairedWith1).not.toContain('2');
     }
+  });
+});
+
+describe('Pairing Algorithm — Property-Based Tests', () => {
+  // Arbitraries
+  const personArb = fc.record({
+    id: fc.uuid(),
+    name: fc.string({ minLength: 1, maxLength: 20 }),
+    avatarColorHex: fc.constant('#000'),
+  });
+
+  const boardArb = fc.record({
+    id: fc.uuid(),
+    name: fc.string({ minLength: 1, maxLength: 20 }),
+    isExempt: fc.boolean(),
+    isLocked: fc.constant(false),
+    sortOrder: fc.nat(),
+    goals: fc.constant([]),
+    assignedPersonIds: fc.constant([]),
+  });
+
+  it('should never assign a person to more than one active board', () => {
+    fc.assert(
+      fc.property(
+        fc.array(personArb, { minLength: 2, maxLength: 8 }),
+        fc.array(
+          boardArb.map((b) => ({ ...b, isExempt: false, isLocked: false })),
+          { minLength: 1, maxLength: 4 }
+        ),
+        (people, boards) => {
+          // Ensure unique IDs
+          const uniquePeople = people.filter(
+            (p, i, arr) => arr.findIndex((x) => x.id === p.id) === i
+          );
+          const uniqueBoards = boards.filter(
+            (b, i, arr) => arr.findIndex((x) => x.id === b.id) === i
+          );
+          if (uniquePeople.length < 2 || uniqueBoards.length < 1) return true;
+
+          const result = calculateRecommendations(
+            uniquePeople,
+            uniqueBoards,
+            []
+          );
+          const assignedIds = result.flatMap((b) => b.assignedPersonIds ?? []);
+          const uniqueAssigned = new Set(assignedIds);
+          // No person should appear twice
+          return assignedIds.length === uniqueAssigned.size;
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('should assign every person to exactly one location', () => {
+    fc.assert(
+      fc.property(
+        fc.array(personArb, { minLength: 2, maxLength: 8 }),
+        fc.array(
+          boardArb.map((b) => ({ ...b, isExempt: false, isLocked: false })),
+          { minLength: 1, maxLength: 4 }
+        ),
+        (people, boards) => {
+          const uniquePeople = people.filter(
+            (p, i, arr) => arr.findIndex((x) => x.id === p.id) === i
+          );
+          const uniqueBoards = boards.filter(
+            (b, i, arr) => arr.findIndex((x) => x.id === b.id) === i
+          );
+          if (uniquePeople.length < 2 || uniqueBoards.length < 1) return true;
+
+          const result = calculateRecommendations(
+            uniquePeople,
+            uniqueBoards,
+            []
+          );
+          const assignedIds = new Set(
+            result.flatMap((b) => b.assignedPersonIds ?? [])
+          );
+          // All people should be assigned
+          return uniquePeople.every((p) => assignedIds.has(p.id));
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('should never move people off exempt or locked boards', () => {
+    fc.assert(
+      fc.property(
+        fc.array(personArb, { minLength: 2, maxLength: 8 }),
+        fc.array(boardArb, { minLength: 2, maxLength: 5 }),
+        (people, boards) => {
+          const uniquePeople = people.filter(
+            (p, i, arr) => arr.findIndex((x) => x.id === p.id) === i
+          );
+          const uniqueBoards = boards.filter(
+            (b, i, arr) => arr.findIndex((x) => x.id === b.id) === i
+          );
+          if (uniquePeople.length < 2 || uniqueBoards.length < 1) return true;
+
+          // Assign some people to exempt/locked boards
+          const boardsWithAssignments = uniqueBoards.map((b, i) => ({
+            ...b,
+            assignedPersonIds:
+              i < uniquePeople.length
+                ? [uniquePeople[i % uniquePeople.length].id]
+                : [],
+          }));
+
+          const result = calculateRecommendations(
+            uniquePeople,
+            boardsWithAssignments,
+            []
+          );
+
+          // For each exempt or locked board, their assignments must remain unchanged
+          for (const original of boardsWithAssignments.filter(
+            (b) => b.isExempt || b.isLocked
+          )) {
+            const updated = result.find((b) => b.id === original.id);
+            if (!updated) return false;
+            const origIds = new Set(original.assignedPersonIds);
+            const updIds = new Set(updated.assignedPersonIds ?? []);
+            for (const id of origIds) {
+              if (!updIds.has(id)) return false;
+            }
+          }
+          return true;
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('result boards should have the same IDs as input boards', () => {
+    fc.assert(
+      fc.property(
+        fc.array(personArb, { minLength: 2, maxLength: 6 }),
+        fc.array(boardArb, { minLength: 1, maxLength: 4 }),
+        (people, boards) => {
+          const uniquePeople = people.filter(
+            (p, i, arr) => arr.findIndex((x) => x.id === p.id) === i
+          );
+          const uniqueBoards = boards.filter(
+            (b, i, arr) => arr.findIndex((x) => x.id === b.id) === i
+          );
+          if (uniquePeople.length < 2 || uniqueBoards.length < 1) return true;
+
+          const result = calculateRecommendations(
+            uniquePeople,
+            uniqueBoards,
+            []
+          );
+          const inputIds = new Set(uniqueBoards.map((b) => b.id));
+          const outputIds = new Set(result.map((b) => b.id));
+          return (
+            inputIds.size === outputIds.size &&
+            [...inputIds].every((id) => outputIds.has(id))
+          );
+        }
+      ),
+      { numRuns: 100 }
+    );
   });
 });
