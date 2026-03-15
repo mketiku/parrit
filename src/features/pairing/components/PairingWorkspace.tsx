@@ -385,7 +385,7 @@ export function PairingWorkspace() {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-start pb-24 sm:pb-0">
+        <main className="flex flex-col gap-6 xl:flex-row xl:items-start pb-24 sm:pb-0">
           {/* Main Workspaces Column */}
           <div
             ref={dashboardRef}
@@ -412,7 +412,7 @@ export function PairingWorkspace() {
                   </h1>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
                       Live Session
                     </span>
                   </div>
@@ -483,7 +483,7 @@ export function PairingWorkspace() {
                   <div className="rounded-3xl border-2 border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-900/40 overflow-x-auto">
                     <div className="flex items-center gap-2 mb-8">
                       <BarChart3 className="h-4 w-4 text-brand-500" />
-                      <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
                         Pairing Heatmap
                       </h3>
                     </div>
@@ -550,7 +550,7 @@ export function PairingWorkspace() {
                   >
                     <Plus className="h-6 w-6" />
                   </div>
-                  <span className="text-sm 2xl:text-base font-semibold text-neutral-500 group-hover:text-brand-600 dark:text-neutral-300 dark:group-hover:text-brand-400">
+                  <span className="text-sm 2xl:text-base font-semibold text-neutral-600 dark:text-neutral-300 dark:group-hover:text-brand-400">
                     Add Board
                   </span>
                 </button>
@@ -586,14 +586,14 @@ export function PairingWorkspace() {
                         onChange={(e) => setNewBoardIsExempt(e.target.checked)}
                         className="h-4 w-4 rounded border-neutral-300 text-brand-500 focus:ring-brand-500/20"
                       />
-                      <span className="text-xs font-bold text-neutral-400 group-hover/exempt:text-neutral-600 dark:text-neutral-500 dark:group-hover/exempt:text-neutral-300 transition-colors">
+                      <span className="text-xs font-bold text-neutral-500 group-hover/exempt:text-neutral-700 dark:text-neutral-400 dark:group-hover/exempt:text-neutral-200 transition-colors">
                         Exempt (Out of Office)
                       </span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsAddingBoard(false)}
-                      className="text-xs font-bold text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+                      className="text-xs font-bold text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
                     >
                       Cancel
                     </button>
@@ -613,7 +613,7 @@ export function PairingWorkspace() {
               isDragActive={!!activeDragItem}
             />
           </div>
-        </div>
+        </main>
 
         {/* Global Drag Overlay */}
         <DragOverlay dropAnimation={null}>
@@ -667,6 +667,8 @@ export function PairingWorkspace() {
           <div className="relative">
             <button
               onClick={() => setIsMoveMenuOpen(!isMoveMenuOpen)}
+              aria-expanded={isMoveMenuOpen}
+              aria-haspopup="true"
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${isMoveMenuOpen ? 'bg-white text-neutral-900 shadow-lg' : 'bg-white/10 hover:bg-white/20'}`}
             >
               Move to...
@@ -683,7 +685,7 @@ export function PairingWorkspace() {
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
                   className="absolute bottom-full left-0 mb-3 w-56 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 py-2.5 z-[100]"
                 >
-                  <p className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-50 dark:border-neutral-800 mb-2">
+                  <p className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400 border-b border-neutral-50 dark:border-neutral-800 mb-2">
                     Select Target Board
                   </p>
                   <div className="max-h-64 overflow-y-auto px-2 space-y-1">
