@@ -1,0 +1,24 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Dev (Vite)",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["/opt/homebrew/bin/npm", "run", "dev"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "Preview (Vite build)",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["/opt/homebrew/bin/npm", "run", "preview"],
+      "port": 4173
+    },
+    {
+      "name": "Test (Vitest)",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["/opt/homebrew/bin/npm", "run", "test"],
+      "port": 51204
+    }
+  ]
+}
