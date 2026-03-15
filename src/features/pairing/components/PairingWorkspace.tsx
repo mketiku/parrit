@@ -502,7 +502,7 @@ export function PairingWorkspace() {
             {/* Main grid region */}
             <div
               id="board-list"
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5 5xl:grid-cols-6 gap-6"
+              className="grid items-start grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5 5xl:grid-cols-6 gap-6"
             >
               {/* Loading State: Skeleton Screens */}
               {isStoreLoading && (
