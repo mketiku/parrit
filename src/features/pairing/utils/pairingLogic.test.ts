@@ -143,8 +143,8 @@ describe('Pairing Algorithm — Property-Based Tests', () => {
     isExempt: fc.boolean(),
     isLocked: fc.constant(false),
     sortOrder: fc.nat(),
-    goals: fc.constant([]),
-    assignedPersonIds: fc.constant([]),
+    goals: fc.constant([] as string[]),
+    assignedPersonIds: fc.constant([] as string[]),
   });
 
   it('should never assign a person to more than one active board', () => {

@@ -69,5 +69,7 @@ export const createMockWorkspacePrefsStore = (
   setHintHeatmapSeen: vi.fn(),
   slackWebhookUrl: '',
   setSlackWebhookUrl: vi.fn(),
+  shareToken: '',
+  setShareToken: vi.fn(),
   ...overrides,
 });
