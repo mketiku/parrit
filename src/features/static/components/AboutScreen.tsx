@@ -47,8 +47,8 @@ export function AboutScreen() {
             The Story of <span className="text-brand-500">Parrit</span>
           </h1>
           <p className="mx-auto max-w-xl text-lg font-medium text-neutral-500 dark:text-neutral-300 leading-relaxed">
-            A dedicated space for engineering teams to manage their daily
-            pairing rotations. Early birds and night owls welcome.
+            A dedicated space for engineering teams to manage their pairing
+            rotations. Early birds and night owls welcome.
           </p>
         </div>
 

@@ -122,7 +122,7 @@ export const createSessionSlice: StateCreator<
           return `• *${b.name}*: ${names}${goalLines}`;
         });
 
-      const text = `:hatching_chick: *Parrit Daily Pairing Status — ${today}*\n${boardLines.join('\n')}`;
+      const text = `:hatching_chick: *Parrit Pairing Status — ${today}*\n${boardLines.join('\n')}`;
 
       // Support Slack (use 'text'), Discord (use 'content'), and Teams (use 'text')
       try {

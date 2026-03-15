@@ -39,7 +39,7 @@ export function WorkspaceDashboardDisplay({
             <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-brand-500">
               Team Dashboard
               <span className="h-4 w-px bg-neutral-200 dark:bg-neutral-800" />
-              <span className="text-neutral-400 dark:text-neutral-600">
+              <span className="text-neutral-500 dark:text-neutral-400">
                 Read-Only
               </span>
             </p>
@@ -100,7 +100,7 @@ export function WorkspaceDashboardDisplay({
                   </div>
                 ) : (
                   <div className="mb-8 flex-1 flex items-center justify-center border-2 border-dashed border-neutral-100 rounded-2xl dark:border-neutral-800/20 py-10">
-                    <span className="text-[10px] font-black tracking-widest text-neutral-300">
+                    <span className="text-[10px] font-black tracking-widest text-neutral-500 dark:text-neutral-400">
                       NO ACTIVE FOCUS
                     </span>
                   </div>
@@ -151,10 +151,10 @@ export function WorkspaceDashboardDisplay({
               <div className="h-5 w-5 rounded-lg bg-neutral-100 flex items-center justify-center dark:bg-neutral-800">
                 <div className="h-1.5 w-1.5 rounded-full bg-neutral-400 animate-pulse" />
               </div>
-              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
                 Teammates on Standby
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-50 text-neutral-400 dark:bg-neutral-900/50">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                 {unpaired.length}
               </span>
             </div>
@@ -171,7 +171,7 @@ export function WorkspaceDashboardDisplay({
                   >
                     {p.name.charAt(0)}
                   </div>
-                  <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
                     {p.name}
                   </span>
                 </div>
