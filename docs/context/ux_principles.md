@@ -272,3 +272,25 @@ vi.mocked(usePairingStore).mockImplementation((selector?: any) =>
 - **Escape:** Cancel/close editor
 
 **Files:** All inline editors
+
+---
+
+## Semantic Status vs Utility Actions
+
+**Pattern:** Separate high-level "Operational Modes" (e.g., Active vs. Off-Duty) from specific "Utility Actions" (e.g., Lock, Rename).
+
+**Why:** Prevents "Action Overload." If every button looks like a small icon in a group, the user has to stop and think about the meaning of each. By moving the mode toggle to the **Board Icon** and using a dedicated **Status Badge**, we create a clear hierarchy: "What is this board's role?" vs "What do I want to do to this board right now?"
+
+**Files:** `DroppableBoard.tsx`
+
+---
+
+## Silent Defaults (Exception-first Design)
+
+**Pattern:** Avoid labeling the standard or "ideal" state (e.g., "Active," "Normal," "Connected"). Only label the **Exceptions**.
+
+**Why:** Reduces visual noise. If 80% of your boards are "Active," having 8 labels that say "Active" provides zero new information while creating massive clutter. By keeping the default state "Silent," we ensure that when an exception _does_ appear (like "Off-Duty" or "Stale Pair"), it captures the user's attention effectively.
+
+**Contrast Rule:** Non-critical status exceptions (like "Off-Duty") should use low-contrast, neutral tones (`neutral-400`) to signal their status without competing with primary data or critical alerts.
+
+**Files:** `DroppableBoard.tsx`
