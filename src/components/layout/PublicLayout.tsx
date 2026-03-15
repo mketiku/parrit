@@ -30,7 +30,7 @@ export default function PublicLayout() {
     <div className="flex min-h-screen w-full flex-col font-sans selection:bg-brand-500/30 bg-white dark:bg-neutral-950">
       {/* Header */}
       <header className="sticky top-0 z-50 shrink-0 border-b border-neutral-200/60 bg-white/70 backdrop-blur-md dark:border-neutral-800/60 dark:bg-neutral-950/70">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-[2200px] items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
           {/* Logo */}
           <Link
             to="/"
@@ -182,16 +182,8 @@ export default function PublicLayout() {
       </main>
 
       {/* Footer */}
-      <footer className="shrink-0 border-t border-neutral-200 bg-white/50 py-8 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/50">
-        <div className="mx-auto flex flex-col md:flex-row w-full max-w-6xl items-center justify-between px-4 sm:px-6 gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-500 text-white">
-              <Bird className="h-3.5 w-3.5" />
-            </div>
-            <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-              Parrit
-            </span>
-          </div>
+      <footer className="shrink-0 border-t border-neutral-200 bg-white/50 py-6 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/50">
+        <div className="mx-auto flex flex-col md:flex-row w-full max-w-[2200px] items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12 gap-4">
           <div className="flex items-center gap-6">
             <Link
               to="/about"

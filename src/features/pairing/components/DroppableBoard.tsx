@@ -1,4 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  memo,
+} from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -15,6 +22,7 @@ import {
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
+import { useToastStore } from '../../../store/useToastStore';
 import { DraggablePerson } from './DraggablePerson';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PairingBoard, Person } from '../types';
@@ -54,20 +62,40 @@ function DroppableBoardComponent({
     opacity: isDragging ? 0.3 : 1,
   };
 
-  const { removeBoard, updateBoard, isRecentPair } = usePairingStore();
-  const { stalePairHighlightingEnabled, meetingLinkEnabled } =
-    useWorkspacePrefsStore();
+  const { removeBoard, updateBoard, pairRecency } = usePairingStore();
+  const {
+    stalePairHighlightingEnabled,
+    meetingLinkEnabled,
+    stalePairThreshold,
+  } = useWorkspacePrefsStore();
+  const { addToast } = useToastStore();
 
-  const hasStalePairs =
-    stalePairHighlightingEnabled &&
-    !board.isExempt &&
-    people.length >= 2 &&
-    people.some((p1, i) =>
-      people.slice(i + 1).some((p2) => isRecentPair(p1.id, p2.id))
-    );
+  const hasStalePairs = useMemo(() => {
+    if (!stalePairHighlightingEnabled || board.isExempt || people.length < 2)
+      return false;
+    const threshold = stalePairThreshold || 3;
+    const boardPeopleIds = new Set(people.map((p) => p.id));
+    // O(s): iterate the stale pairs set and check if both members are on this board,
+    // rather than checking all O(n²) board-member combinations.
+    for (const [key, count] of Object.entries(pairRecency)) {
+      if (count < threshold) continue;
+      const sep = key.indexOf(':');
+      const a = key.slice(0, sep);
+      const b = key.slice(sep + 1);
+      if (boardPeopleIds.has(a) && boardPeopleIds.has(b)) return true;
+    }
+    return false;
+  }, [
+    stalePairHighlightingEnabled,
+    board.isExempt,
+    people,
+    pairRecency,
+    stalePairThreshold,
+  ]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingExtra, setIsEditingExtra] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [extraData, setExtraData] = useState({
     goalsText: (board.goals || []).join('\n'),
     meetingLink: board.meetingLink || '',
@@ -152,7 +180,13 @@ function DroppableBoardComponent({
   const handleRenameCommit = async () => {
     const trimmed = editedName.trim();
     if (trimmed && trimmed !== board.name) {
-      await updateBoard(board.id, { name: trimmed });
+      try {
+        await updateBoard(board.id, { name: trimmed });
+        addToast('Board renamed', 'success');
+      } catch {
+        setEditedName(board.name);
+        addToast('Failed to rename board', 'error');
+      }
     } else {
       setEditedName(board.name);
     }
@@ -275,7 +309,7 @@ function DroppableBoardComponent({
               )}
             </button>
             <button
-              onClick={() => removeBoard(board.id)}
+              onClick={() => setDeleteConfirmOpen(true)}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
               title="Delete board"
             >
@@ -408,6 +442,49 @@ function DroppableBoardComponent({
           <LinkIcon className="h-3 w-3" />
           <span className="truncate">Join Pairing Session</span>
         </a>
+      )}
+
+      {/* Delete Board Confirmation Dialog */}
+      {deleteConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-neutral-900 p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
+              <Trash2 className="h-6 w-6 text-red-500" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-neutral-100">
+              Delete Board?
+            </h3>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-300">
+              This will permanently delete{' '}
+              <span className="font-semibold text-neutral-700 dark:text-neutral-200">
+                {board.name}
+              </span>{' '}
+              and move all its members back to the unassigned pool. This cannot
+              be undone.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  removeBoard(board.id);
+                }}
+                className="flex-1 rounded-xl bg-red-600 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-red-700 transition-colors"
+              >
+                Delete Board
+              </button>
+              <button
+                onClick={() => setDeleteConfirmOpen(false)}
+                className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

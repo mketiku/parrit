@@ -423,7 +423,7 @@ export function PairingWorkspace() {
                 <button
                   id="heatmap-toggle"
                   onClick={() => setShowHeatmap(!showHeatmap)}
-                  className={`flex items-center gap-2 h-10 px-4 rounded-xl border text-sm font-semibold transition-all shadow-sm
+                  className={`flex items-center justify-center gap-2 h-10 px-4 min-w-[130px] rounded-xl border text-sm font-semibold transition-all shadow-sm
                     ${
                       showHeatmap
                         ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20'
@@ -440,29 +440,34 @@ export function PairingWorkspace() {
                 <button
                   id="recommend-btn"
                   onClick={() => recommendPairs()}
-                  disabled={isStoreLoading || isRecommending}
-                  className="flex items-center gap-2 h-10 rounded-xl bg-white px-4 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                  disabled={
+                    isStoreLoading ||
+                    isRecommending ||
+                    boards.length === 0 ||
+                    people.length < 2
+                  }
+                  className="flex items-center justify-center gap-2 h-10 rounded-xl bg-white px-4 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
                 >
                   {isRecommending ? (
                     <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
                   ) : (
                     <Sparkles className="h-4 w-4 text-amber-500" />
                   )}
-                  {isRecommending ? 'Thinking...' : 'Recommend Pairs'}
+                  Recommend Pairs
                 </button>
 
                 <button
                   id="save-session-btn"
                   onClick={saveSession}
                   disabled={isSaving}
-                  className="flex h-10 items-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50"
+                  className="flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 disabled:scale-100 transition-all disabled:opacity-50"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <History className="h-4 w-4" />
                   )}
-                  {isSaving ? 'Saving...' : 'Save Session'}
+                  Save Session
                 </button>
               </div>
             </div>

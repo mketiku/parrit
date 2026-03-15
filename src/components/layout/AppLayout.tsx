@@ -185,10 +185,10 @@ export default function AppLayout() {
             {/* Desktop sign out only — mobile sign out is in the drawer */}
             <button
               onClick={() => signOut()}
-              className="hidden sm:flex h-9 items-center gap-2 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white transition-all hover:bg-neutral-700 active:scale-95 dark:bg-brand-500 dark:hover:bg-brand-600"
+              className="hidden sm:flex items-center gap-2 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-neutral-700 active:scale-95 dark:bg-brand-500 dark:hover:bg-brand-600"
               title="Sign Out"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-4 w-4" />
               Sign Out
             </button>
           </div>
