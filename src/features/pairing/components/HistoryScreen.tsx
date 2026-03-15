@@ -74,8 +74,9 @@ interface HistoryRowData {
 }
 
 export function HistoryScreen() {
-  const { user } = useAuthStore();
-  const { people: storePeople, boards: storeBoards } = usePairingStore();
+  const user = useAuthStore((s) => s.user);
+  const storePeople = usePairingStore((s) => s.people);
+  const storeBoards = usePairingStore((s) => s.boards);
   const [sessions, setSessions] = useState<HistorySession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null
@@ -105,7 +106,7 @@ export function HistoryScreen() {
     personStats,
     matrix,
     isLoading: isAnalyzing,
-  } = useHistoryAnalytics(storePeople);
+  } = useHistoryAnalytics(storePeople, showInsights || !!selectedPersonId);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [showInsights, setShowInsights] = useState(false);
   const { startTutorial } = useTutorialStore();
@@ -207,9 +208,7 @@ export function HistoryScreen() {
           board_id,
           session_id,
           person_name,
-          board_name,
-          people (name, avatar_color_hex),
-          pairing_boards (name)
+          board_name
         `
           )
           .in(

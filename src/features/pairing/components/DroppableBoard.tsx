@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -14,10 +14,9 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
-import { useStalePairsDetector } from './useStalePairsDetector';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { DraggablePerson } from './DraggablePerson';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { PairingBoard, Person } from '../types';
 
 interface DroppableBoardProps {
@@ -25,16 +24,14 @@ interface DroppableBoardProps {
   people: Person[];
   selectedPersonIds?: Set<string>;
   onPersonClick?: (id: string, e: React.MouseEvent) => void;
-  index?: number;
   isDragActive?: boolean;
 }
 
-export function DroppableBoard({
+function DroppableBoardComponent({
   board,
   people,
   selectedPersonIds,
   onPersonClick,
-  index,
   isDragActive,
 }: DroppableBoardProps) {
   const {
@@ -57,10 +54,9 @@ export function DroppableBoard({
     opacity: isDragging ? 0.3 : 1,
   };
 
-  const { removeBoard, updateBoard } = usePairingStore();
+  const { removeBoard, updateBoard, isRecentPair } = usePairingStore();
   const { stalePairHighlightingEnabled, meetingLinkEnabled } =
     useWorkspacePrefsStore();
-  const { isRecentPair } = useStalePairsDetector();
 
   const hasStalePairs =
     stalePairHighlightingEnabled &&
@@ -248,35 +244,29 @@ export function DroppableBoard({
         {!isEditing && (
           <div className="ml-2 flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-10 sm:group-hover:opacity-100 transition-opacity [html[data-exporting='true']_&]:hidden">
             <button
-              {...attributes}
-              {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
-              title="Drag to reorder"
-              aria-label={`Drag to reorder board ${board.name}`}
+              onClick={startEditingExtra}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+              title="Edit goals & meeting link"
             >
-              <GripVertical className="h-3.5 w-3.5" />
+              <Plus className="h-3.5 w-3.5" />
             </button>
-            <div className="w-[1px] h-3 bg-neutral-200 dark:bg-neutral-800 mx-0.5" />
             <button
               onClick={() => setIsEditing(true)}
-              className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+              title="Rename board"
             >
               <Pencil className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() =>
-                updateBoard(board.id, { isExempt: !board.isExempt })
-              }
-              className={`rounded-md p-1 transition-colors ${board.isExempt ? 'text-amber-500' : 'text-neutral-500 hover:text-amber-500'}`}
-            >
-              <ShieldX className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() =>
                 updateBoard(board.id, { isLocked: !board.isLocked })
               }
-              disabled={board.isExempt}
-              className={`rounded-md p-1 transition-colors ${board.isLocked ? 'text-brand-500' : 'text-neutral-500 hover:text-brand-600'}`}
+              className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                board.isLocked
+                  ? 'text-brand-500 bg-brand-50 hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20'
+                  : 'text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300'
+              }`}
+              title={board.isLocked ? 'Unlock board' : 'Lock board assignments'}
             >
               {board.isLocked ? (
                 <Lock className="h-3.5 w-3.5" />
@@ -286,24 +276,36 @@ export function DroppableBoard({
             </button>
             <button
               onClick={() => removeBoard(board.id)}
-              className="rounded-md p-1 text-neutral-500 hover:text-red-500"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
+              title="Delete board"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
+            <div
+              {...attributes}
+              {...listeners}
+              className="flex h-7 w-7 cursor-grab items-center justify-center rounded-lg text-neutral-300 hover:bg-neutral-100 hover:text-neutral-400 active:cursor-grabbing dark:text-neutral-600 dark:hover:bg-neutral-800"
+            >
+              <GripVertical className="h-4 w-4" />
+            </div>
           </div>
         )}
       </div>
 
-      {!board.isExempt && (
-        <div className="mb-4">
-          {isEditingExtra ? (
-            <div
-              ref={extraEditRef}
-              className="flex flex-col gap-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800"
-            >
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Daily Goals
+      {/* Goals & Meeting Link Mini-Editor */}
+      <AnimatePresence>
+        {isEditingExtra && (
+          <motion.div
+            ref={extraEditRef}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="mb-4 overflow-hidden rounded-2xl bg-neutral-50 p-3 ring-1 ring-neutral-200 dark:bg-neutral-800/50 dark:ring-neutral-700 [html[data-exporting='true']_&]:hidden"
+          >
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  Focus / Goals
                 </label>
                 <textarea
                   value={extraData.goalsText}
@@ -313,18 +315,24 @@ export function DroppableBoard({
                       goalsText: e.target.value,
                     }))
                   }
-                  placeholder="- Ship feature..."
-                  className="w-full min-h-[80px] rounded-lg border border-neutral-200 bg-white py-2 px-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
+                  placeholder="What is this pair working on?"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-900 outline-none focus:border-brand-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  rows={3}
                 />
+                <p className="mt-1 text-[9px] text-neutral-400">
+                  One goal per line.
+                </p>
               </div>
+
               {meetingLinkEnabled && (
-                <div className="flex flex-col gap-1.5 pt-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                <div>
+                  <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-neutral-400">
                     Meeting Link
                   </label>
-                  <div className="relative">
-                    <LinkIcon className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="h-3 w-3 text-neutral-400" />
                     <input
+                      type="url"
                       value={extraData.meetingLink}
                       onChange={(e) =>
                         setExtraData((prev) => ({
@@ -332,122 +340,77 @@ export function DroppableBoard({
                           meetingLink: e.target.value,
                         }))
                       }
-                      placeholder="Zoom / Meet..."
-                      className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-xs outline-none focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900"
+                      placeholder="Zoom, Meet, or Huddle URL..."
+                      className="flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-900 outline-none focus:border-brand-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
                     />
                   </div>
                 </div>
               )}
-            </div>
-          ) : (
-            <div
-              id={index === 0 ? 'board-goals' : undefined}
-              onClick={startEditingExtra}
-              className="group/extra cursor-pointer space-y-2 rounded-xl border border-transparent p-2 hover:bg-neutral-50 dark:hover:bg-neutral-950/50"
-            >
-              {(board.goals || []).length > 0 && (
-                <ul className="flex flex-col gap-1">
-                  {board.goals.map((g, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-300"
-                    >
-                      <div className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-500" />
-                      <div className="flex-1 leading-relaxed break-words">
-                        {g}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const input = e.currentTarget.elements.namedItem(
-                    'quick-goal'
-                  ) as HTMLInputElement;
-                  if (input.value.trim()) {
-                    updateBoard(board.id, {
-                      goals: [...board.goals, input.value.trim()],
-                    });
-                    input.value = '';
-                    requestAnimationFrame(() => input.focus());
-                  }
-                }}
-                onClick={(e) => e.stopPropagation()}
-                className={
-                  (board.goals || []).length > 0
-                    ? 'flex items-center gap-1.5 opacity-0 group-hover/extra:opacity-100'
-                    : 'flex items-center gap-1.5 rounded-lg px-2 py-1.5 border border-dashed border-neutral-200 dark:border-neutral-700 hover:border-brand-300 dark:hover:border-brand-700 transition-colors'
-                }
-              >
-                <Plus
-                  className={`h-3 w-3 ${(board.goals || []).length > 0 ? 'text-neutral-400' : 'text-neutral-400'}`}
-                />
-                <input
-                  name="quick-goal"
-                  placeholder={
-                    (board.goals || []).length > 0
-                      ? 'Add daily goal...'
-                      : '＋ Add a goal for today...'
-                  }
-                  className={`w-full bg-transparent text-[10px] font-medium outline-none ${(board.goals || []).length > 0 ? 'text-neutral-600' : 'text-neutral-500 dark:text-neutral-400'}`}
-                />
-              </form>
-              {meetingLinkEnabled && board.meetingLink && (
-                <div className="flex items-center gap-1.5 pt-1">
-                  <a
-                    href={board.meetingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-brand-50 px-2 py-1 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400"
-                  >
-                    <LinkIcon className="h-3 w-3" />
-                    <span className="text-[10px] font-extrabold uppercase tracking-tighter hover:underline">
-                      Join Meeting
-                    </span>
-                  </a>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* Draggable Zone */}
-      <div
-        className={`flex flex-1 flex-wrap gap-1.5 sm:gap-2 rounded-xl p-2 sm:p-3 border-2 border-transparent transition-all ${
-          isOver
-            ? 'bg-brand-100/30 border-brand-300 border-dashed dark:bg-brand-900/10'
-            : board.isExempt
-              ? 'bg-neutral-100/50 dark:bg-neutral-950/20'
-              : 'bg-neutral-50 dark:bg-neutral-950'
-        }`}
-      >
-        <AnimatePresence>
-          {people.length === 0 ? (
-            <span className="flex w-full min-h-[48px] items-center justify-center text-sm font-medium text-neutral-400">
-              {isOver
-                ? 'Drop to assign'
-                : isDragActive
-                  ? 'Drop here'
-                  : 'Empty Board'}
-            </span>
-          ) : (
-            people.map((person) => (
+              <button
+                onClick={() => setIsEditingExtra(false)}
+                className="w-full rounded-xl bg-neutral-900 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+              >
+                Close & Save
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Board Content (Assigned People) */}
+      <div className="flex flex-1 flex-col">
+        {board.goals && board.goals.length > 0 && (
+          <div className="mb-4 space-y-2">
+            {board.goals.map((goal, gIdx) => (
+              <div key={gIdx} className="flex items-start gap-2">
+                <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
+                <p className="text-[11px] font-medium leading-relaxed text-neutral-600 dark:text-neutral-400">
+                  {goal}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2.5">
+          <AnimatePresence mode="popLayout">
+            {people.map((person) => (
               <DraggablePerson
                 key={person.id}
                 person={person}
                 sourceId={board.id}
-                isExempt={board.isExempt}
                 isSelected={selectedPersonIds?.has(person.id)}
+                isExempt={board.isExempt}
                 onClick={(e) => onPersonClick?.(person.id, e)}
               />
-            ))
-          )}
-        </AnimatePresence>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {people.length === 0 && !isOver && (
+          <div className="flex flex-1 items-center justify-center p-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-300 dark:text-neutral-700">
+              Empty Board
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Meeting Link Preview (if not editing) */}
+      {board.meetingLink && !isEditingExtra && (
+        <a
+          href={board.meetingLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 flex items-center gap-2 rounded-xl bg-brand-50/50 px-3 py-2 text-[10px] font-bold text-brand-600 transition-colors hover:bg-brand-50 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20 [html[data-exporting='true']_&]:hidden"
+        >
+          <LinkIcon className="h-3 w-3" />
+          <span className="truncate">Join Pairing Session</span>
+        </a>
+      )}
     </div>
   );
 }
+
+export const DroppableBoard = memo(DroppableBoardComponent);

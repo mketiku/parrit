@@ -33,6 +33,7 @@ export function TeamScreen() {
   // "Add" form state
   const [newName, setNewName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const addInputRef = React.useRef<HTMLInputElement>(null);
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -44,7 +45,8 @@ export function TeamScreen() {
     if (!newName.trim() || atLimit) return;
     addPerson(newName.trim());
     setNewName('');
-    setIsAdding(false);
+    // Keep isAdding true and refocus for consecutive adds
+    addInputRef.current?.focus();
   };
 
   const startEdit = (id: string, name: string, color: string) => {
@@ -110,6 +112,7 @@ export function TeamScreen() {
           className="flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-900 dark:bg-brand-500/10"
         >
           <input
+            ref={addInputRef}
             autoFocus
             type="text"
             placeholder="Full name (e.g. Peter Parker)"

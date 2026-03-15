@@ -20,8 +20,8 @@ import { AdminShortcutListener } from './features/admin/components/AdminShortcut
 
 // Authenticated dashboard wrapper
 function DashboardView() {
-  const { workspaceName } = useAuthStore();
-  const { isLoading: dataLoading } = usePairingStore();
+  const workspaceName = useAuthStore((s) => s.workspaceName);
+  const dataLoading = usePairingStore((s) => s.isLoading);
   const displayName = workspaceName
     ? workspaceName.charAt(0).toUpperCase() + workspaceName.slice(1)
     : 'Workspace';
@@ -58,18 +58,22 @@ function App() {
 
   React.useEffect(() => {
     initialize();
-    // Initialize theme on load
+  }, [initialize]);
+
+  // Handle theme application separately
+  React.useEffect(() => {
     setTheme(theme);
     applyDark(isDark);
-  }, [initialize, theme, setTheme, isDark, applyDark]);
+  }, [theme, setTheme, isDark, applyDark]);
 
   // Load workspace data and subscribe to live updates when authenticated
+  const userId = user?.id;
   React.useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     loadWorkspaceData();
     const unsubscribe = subscribeToRealtime();
     return unsubscribe;
-  }, [user, loadWorkspaceData, subscribeToRealtime]);
+  }, [userId, loadWorkspaceData, subscribeToRealtime]);
 
   if (isLoading) {
     return (
