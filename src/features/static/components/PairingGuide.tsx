@@ -338,7 +338,7 @@ export function PairingGuide() {
               },
               {
                 title: 'Wrap Up Early',
-                desc: 'I recommend finishing up the "pairing portion" of your day early (e.g., 4:30pm), giving you time to catch up on other personal tasks, trainings, etc.',
+                desc: 'We recommend finishing up the "pairing portion" of your day early (e.g., 4:30pm), giving you time to catch up on other personal tasks, trainings, etc.',
                 icon: Coffee,
               },
             ].map((item, i) => (

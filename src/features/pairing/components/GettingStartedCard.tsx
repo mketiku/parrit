@@ -60,7 +60,7 @@ export function GettingStartedCard({
     {
       id: 'add-goal',
       label: 'Add a goal to a board',
-      detail: 'Click the goals area on any board to add daily focus items.',
+      detail: 'Click the goals area on any board to add focus items.',
       done: hasGoalAdded,
     },
     {
