@@ -74,8 +74,9 @@ interface HistoryRowData {
 }
 
 export function HistoryScreen() {
-  const { user } = useAuthStore();
-  const { people: storePeople, boards: storeBoards } = usePairingStore();
+  const user = useAuthStore((s) => s.user);
+  const storePeople = usePairingStore((s) => s.people);
+  const storeBoards = usePairingStore((s) => s.boards);
   const [sessions, setSessions] = useState<HistorySession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null
@@ -93,17 +94,22 @@ export function HistoryScreen() {
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
     null
   );
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [singleDeleteTarget, setSingleDeleteTarget] = useState<string | null>(
+    null
+  );
+  const [cloneConfirmOpen, setCloneConfirmOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(7);
   const [hasMore, setHasMore] = useState(true);
   const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
   const { addToast } = useToastStore();
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+  const [showInsights, setShowInsights] = useState(false);
   const {
     personStats,
     matrix,
     isLoading: isAnalyzing,
-  } = useHistoryAnalytics(storePeople);
-  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
-  const [showInsights, setShowInsights] = useState(false);
+  } = useHistoryAnalytics(storePeople, showInsights || !!selectedPersonId);
   const { startTutorial } = useTutorialStore();
 
   const handleUpdateDate = async () => {
@@ -138,11 +144,15 @@ export function HistoryScreen() {
     }
   };
 
-  const deleteSession = async (e: React.MouseEvent, sessionId: string) => {
+  const handleSingleDeleteRequest = (
+    e: React.MouseEvent,
+    sessionId: string
+  ) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this session snapshot?'))
-      return;
+    setSingleDeleteTarget(sessionId);
+  };
 
+  const deleteSession = async (sessionId: string) => {
     const { error } = await supabase
       .from('pairing_sessions')
       .delete()
@@ -314,14 +324,13 @@ export function HistoryScreen() {
     [addToast, storePeople, storeBoards, sessions]
   );
 
-  const handleCloneSession = async () => {
+  const handleCloneSession = () => {
     if (!selectedSessionId || details.length === 0) return;
+    setCloneConfirmOpen(true);
+  };
 
-    const confirmClone = confirm(
-      'This will replace your current workspace boards with the configuration from this snapshot. People will be reassigned where possible. Continue?'
-    );
-    if (!confirmClone) return;
-
+  const executeCloneSession = async () => {
+    setCloneConfirmOpen(false);
     try {
       const { people: storePeople, boards: currentBoards } =
         usePairingStore.getState();
@@ -410,14 +419,10 @@ export function HistoryScreen() {
     }
   };
 
+  const handleBulkDeleteRequest = () => setBulkDeleteConfirmOpen(true);
+
   const deleteBulkSessions = async () => {
     if (selectedBulkIds.size === 0) return;
-    if (
-      !confirm(
-        `Are you sure you want to delete ${selectedBulkIds.size} session snapshots?`
-      )
-    )
-      return;
 
     const ids = Array.from(selectedBulkIds);
     const { error } = await supabase
@@ -450,6 +455,13 @@ export function HistoryScreen() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (sessions.length === 0) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        (e.target as HTMLElement).isContentEditable
+      )
+        return;
 
       const currentIndex = sessions.findIndex(
         (s) => s.id === selectedSessionId
@@ -647,7 +659,7 @@ export function HistoryScreen() {
               </div>
               {selectedBulkIds.size > 0 && (
                 <button
-                  onClick={deleteBulkSessions}
+                  onClick={handleBulkDeleteRequest}
                   className="text-[10px] font-black uppercase text-red-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded-lg active:scale-95"
                 >
                   <Trash2 className="h-3 w-3" />
@@ -805,7 +817,9 @@ export function HistoryScreen() {
                               </button>
                             </div>
                             <button
-                              onClick={(e) => deleteSession(e, session.id)}
+                              onClick={(e) =>
+                                handleSingleDeleteRequest(e, session.id)
+                              }
                               className="absolute -right-2 -top-2 flex h-8 w-8 scale-0 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-xl border border-neutral-100 hover:text-red-500 hover:border-red-200 transition-all dark:bg-neutral-800 dark:border-neutral-700 group-hover:scale-100 active:scale-90"
                               title="Delete Session"
                               aria-label={`Delete session on ${format(parseLocalDate(session.session_date), 'MMM do')}`}
@@ -1118,6 +1132,126 @@ export function HistoryScreen() {
           </AnimatePresence>
         </div>
       </div>
+      {/* Bulk Delete Confirmation Dialog */}
+      {bulkDeleteConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-neutral-900 p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
+              <Trash2 className="h-6 w-6 text-red-500" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-neutral-100">
+              Delete Sessions?
+            </h3>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-300">
+              This will permanently delete{' '}
+              <strong>
+                {selectedBulkIds.size} session
+                {selectedBulkIds.size !== 1 ? 's' : ''}
+              </strong>{' '}
+              and all associated pairing history. This cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setBulkDeleteConfirmOpen(false);
+                  deleteBulkSessions();
+                }}
+                className="flex-1 rounded-xl bg-red-600 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-red-700 transition-colors"
+              >
+                Delete Forever
+              </button>
+              <button
+                onClick={() => setBulkDeleteConfirmOpen(false)}
+                className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Single Delete Confirmation Dialog */}
+      {singleDeleteTarget !== null && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-neutral-900 p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
+              <Trash2 className="h-6 w-6 text-red-500" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-neutral-100">
+              Delete Session?
+            </h3>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-300">
+              This will permanently delete this session snapshot and all
+              associated pairing history. This cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  const id = singleDeleteTarget;
+                  setSingleDeleteTarget(null);
+                  deleteSession(id);
+                }}
+                className="flex-1 rounded-xl bg-red-600 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-red-700 transition-colors"
+              >
+                Delete Forever
+              </button>
+              <button
+                onClick={() => setSingleDeleteTarget(null)}
+                className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clone Snapshot Confirmation Dialog */}
+      {cloneConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-neutral-900 p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/20">
+              <Copy className="h-6 w-6 text-amber-500" />
+            </div>
+            <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-neutral-100">
+              Clone Snapshot?
+            </h3>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-300">
+              This will replace your current workspace boards with the
+              configuration from this snapshot. People will be reassigned where
+              possible. This cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={executeCloneSession}
+                className="flex-1 rounded-xl bg-brand-600 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-brand-700 transition-colors"
+              >
+                Clone Snapshot
+              </button>
+              <button
+                onClick={() => setCloneConfirmOpen(false)}
+                className="px-6 py-3 text-xs font-black uppercase tracking-widest text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Person Insights Sidebar */}
       <PersonInsightsSidebar
         stats={selectedPersonId ? personStats[selectedPersonId] : null}

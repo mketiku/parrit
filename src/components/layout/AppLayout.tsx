@@ -3,30 +3,13 @@ import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Bird, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
+import { useThemeStore } from '../../store/useThemeStore';
 
 export default function AppLayout() {
   const { signOut, isAdmin } = useAuthStore();
+  const { isDark, toggleDark } = useThemeStore();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return (
-        document.documentElement.classList.contains('dark') ||
-        (window.matchMedia &&
-          window.matchMedia('(prefers-color-scheme: dark)').matches)
-      );
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -55,8 +38,6 @@ export default function AppLayout() {
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
-
-  const toggleTheme = () => setIsDark(!isDark);
 
   const navLinks = [
     { to: '/app', label: 'Dashboard', end: true },
@@ -191,7 +172,7 @@ export default function AppLayout() {
           {/* Right actions */}
           <div className="flex items-center gap-2">
             <button
-              onClick={toggleTheme}
+              onClick={toggleDark}
               className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
               aria-label="Toggle Dark Mode"
             >
@@ -204,10 +185,10 @@ export default function AppLayout() {
             {/* Desktop sign out only — mobile sign out is in the drawer */}
             <button
               onClick={() => signOut()}
-              className="hidden sm:flex h-9 items-center gap-2 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white transition-all hover:bg-neutral-700 active:scale-95 dark:bg-brand-500 dark:hover:bg-brand-600"
+              className="hidden sm:flex items-center gap-2 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-neutral-700 active:scale-95 dark:bg-brand-500 dark:hover:bg-brand-600"
               title="Sign Out"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-4 w-4" />
               Sign Out
             </button>
           </div>

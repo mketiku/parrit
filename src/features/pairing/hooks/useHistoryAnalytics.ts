@@ -28,13 +28,13 @@ export interface PairingMatrix {
   counts: Record<string, Record<string, number>>;
 }
 
-export function useHistoryAnalytics(people: Person[]) {
+export function useHistoryAnalytics(people: Person[], enabled: boolean = true) {
   const { user } = useAuthStore();
   const [history, setHistory] = useState<HistoryRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchAllHistory = useCallback(async () => {
-    if (!user) return;
+    if (!user || !enabled) return;
     setIsLoading(true);
 
     try {
@@ -51,7 +51,8 @@ export function useHistoryAnalytics(people: Person[]) {
           people (name, avatar_color_hex)
         `
         )
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
       if (error) throw error;
       setHistory((data as unknown as HistoryRecord[]) || []);
@@ -60,19 +61,40 @@ export function useHistoryAnalytics(people: Person[]) {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, enabled]);
 
   useEffect(() => {
-    fetchAllHistory();
-  }, [fetchAllHistory]);
+    if (enabled) {
+      fetchAllHistory();
+    }
+  }, [fetchAllHistory, enabled]);
+
+  const peopleKey = useMemo(
+    () => people.map((p) => `${p.id}:${p.name}:${p.avatarColorHex}`).join(','),
+    [people]
+  );
+
+  const stablePeople = useMemo(() => people, [peopleKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const analytics = useMemo(() => {
+    if (!history.length || !enabled) {
+      return {
+        personStats: {},
+        sessionCount: 0,
+        matrix: {
+          personIds: stablePeople.map((p) => p.id),
+          personNames: {},
+          counts: {},
+        },
+      };
+    }
+
     const personStats: Record<string, PersonStats> = {};
     const matrix: Record<string, Record<string, number>> = {};
     const personNames: Record<string, string> = {};
 
     // Initialize stats for current people
-    people.forEach((p) => {
+    stablePeople.forEach((p) => {
       personStats[p.id] = {
         id: p.id,
         name: p.name,
@@ -86,18 +108,17 @@ export function useHistoryAnalytics(people: Person[]) {
     });
 
     // Group by session + board
-    const pairs: Record<string, Record<string, HistoryRecord[]>> = {}; // session -> board -> records
+    const pairs: Record<string, Record<string, HistoryRecord[]>> = {};
 
     history.forEach((row) => {
       if (!pairs[row.session_id]) pairs[row.session_id] = {};
-      // Use board_id if available, fallback to board_name if the board was deleted
       const groupingKey = row.board_id || row.board_name || 'unknown_board';
       if (!pairs[row.session_id][groupingKey])
         pairs[row.session_id][groupingKey] = [];
       pairs[row.session_id][groupingKey].push(row);
     });
 
-    // Process pairs
+    // Process sessions
     Object.keys(pairs).forEach((sessionId) => {
       const boards = pairs[sessionId];
       Object.keys(boards).forEach((boardId) => {
@@ -105,10 +126,7 @@ export function useHistoryAnalytics(people: Person[]) {
 
         peopleRecordsOnBoard.forEach((record) => {
           const pId = record.person_id;
-          if (!personStats[pId]) {
-            // Person might have been deleted but exists in history
-            return;
-          }
+          if (!pId || !personStats[pId]) return;
 
           const others = peopleRecordsOnBoard.filter(
             (o) => o.person_id !== pId
@@ -118,13 +136,9 @@ export function useHistoryAnalytics(people: Person[]) {
           others.forEach((otherRecord) => {
             const otherId = otherRecord.person_id;
             const otherName =
-              otherRecord.person_name ||
-              otherRecord.people?.name ||
-              'Unknown (Removed)';
+              otherRecord.person_name || otherRecord.people?.name || 'Unknown';
 
-            // If the other person is still active in the store
-            if (personStats[otherId]) {
-              // Update partner counts
+            if (otherId && personStats[otherId]) {
               if (!personStats[pId].partnerCounts[otherId]) {
                 personStats[pId].partnerCounts[otherId] = {
                   count: 0,
@@ -132,12 +146,8 @@ export function useHistoryAnalytics(people: Person[]) {
                 };
               }
               personStats[pId].partnerCounts[otherId].count += 1;
-
-              // Update matrix
-              if (!matrix[pId]) matrix[pId] = {};
               matrix[pId][otherId] = (matrix[pId][otherId] || 0) + 1;
             } else {
-              // The partner was deleted. We still want to track the explicit count but we can use a synthetic ID
               const synthId = `deleted-${otherName}`;
               if (!personStats[pId].partnerCounts[synthId]) {
                 personStats[pId].partnerCounts[synthId] = {
@@ -149,36 +159,28 @@ export function useHistoryAnalytics(people: Person[]) {
             }
           });
 
-          // Update timeline
-          const firstRow = history.find((r) => r.session_id === sessionId);
-          if (firstRow) {
-            personStats[pId].timeline.push({
-              date: firstRow.created_at,
-              partnerName:
-                others
-                  .map(
-                    (o) =>
-                      o.person_name || o.people?.name || 'Unknown (Removed)'
-                  )
-                  .join(', ') || 'Solo',
-            });
-          }
+          // Optimized timeline update: Use the record's date directly
+          personStats[pId].timeline.push({
+            date: record.created_at,
+            partnerName:
+              others
+                .map((o) => o.person_name || o.people?.name || 'Unknown')
+                .join(', ') || 'Solo',
+          });
         });
       });
     });
 
-    const sessionCount = Object.keys(pairs).length;
-
     return {
       personStats,
-      sessionCount,
+      sessionCount: Object.keys(pairs).length,
       matrix: {
-        personIds: people.map((p) => p.id),
+        personIds: stablePeople.map((p) => p.id),
         personNames,
         counts: matrix,
       },
     };
-  }, [history, people]);
+  }, [history, stablePeople, enabled]);
 
   return { ...analytics, isLoading, refreshHistory: fetchAllHistory };
 }

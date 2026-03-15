@@ -68,6 +68,7 @@ export function SettingsScreen() {
     setMeetingLinkEnabled,
     slackWebhookUrl,
     setSlackWebhookUrl,
+    shareToken,
   } = useWorkspacePrefsStore();
   const {
     exportWorkspace,
@@ -454,14 +455,14 @@ export function SettingsScreen() {
                           Public Link
                         </span>
                         <p className="font-mono text-xs text-neutral-500 truncate">
-                          {window.location.origin}/view/{user.id}
+                          {window.location.origin}/view/{shareToken || user.id}
                         </p>
                       </div>
                       <div className="flex shrink-0 gap-2">
                         <button
                           onClick={async () => {
                             await navigator.clipboard.writeText(
-                              `${window.location.origin}/view/${user.id}`
+                              `${window.location.origin}/view/${shareToken || user.id}`
                             );
                             setJustCopied(true);
                             setTimeout(() => setJustCopied(false), 2000);
@@ -476,7 +477,7 @@ export function SettingsScreen() {
                           {justCopied ? 'Copied' : 'Copy'}
                         </button>
                         <a
-                          href={`/view/${user.id}`}
+                          href={`/view/${shareToken || user.id}`}
                           target="_blank"
                           rel="noreferrer"
                           className="flex h-10 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-xs font-bold text-white transition-all hover:bg-neutral-800 dark:bg-brand-500 dark:hover:bg-brand-600"

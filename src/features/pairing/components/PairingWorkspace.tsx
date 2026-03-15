@@ -49,21 +49,20 @@ import { PairingMatrixView } from './PairingMatrixView';
 import { BarChart3 } from 'lucide-react';
 
 export function PairingWorkspace() {
-  const {
-    people,
-    boards,
-    setBoards,
-    addBoard,
-    saveSession,
-    recommendPairs,
-    moveBoard,
-    isLoading: isStoreLoading,
-    isSaving,
-    isRecommending,
-  } = usePairingStore();
+  const people = usePairingStore((s) => s.people);
+  const boards = usePairingStore((s) => s.boards);
+  const setBoards = usePairingStore((s) => s.setBoards);
+  const addBoard = usePairingStore((s) => s.addBoard);
+  const saveSession = usePairingStore((s) => s.saveSession);
+  const recommendPairs = usePairingStore((s) => s.recommendPairs);
+  const moveBoard = usePairingStore((s) => s.moveBoard);
+  const isStoreLoading = usePairingStore((s) => s.isLoading);
+  const isSaving = usePairingStore((s) => s.isSaving);
+  const isRecommending = usePairingStore((s) => s.isRecommending);
   const { user } = useAuthStore();
   const dashboardRef = useRef<HTMLDivElement>(null);
 
+  // const [isSelectMode, setIsSelectMode] = useState(false); // Removed per user request
   const [isAddingBoard, setIsAddingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newBoardIsExempt, setNewBoardIsExempt] = useState(false);
@@ -83,18 +82,22 @@ export function PairingWorkspace() {
     sessionCount,
     isLoading: isAnalyzing,
     refreshHistory,
-  } = useHistoryAnalytics(people);
+  } = useHistoryAnalytics(people, showHeatmap);
 
   const { startTutorial } = useTutorialStore();
-  const {
-    hintGoalsSeen,
-    setHintGoalsSeen,
-    gettingStartedDismissed,
-    hintHistorySeen,
-    setHintHistorySeen,
-    hintHeatmapSeen,
-    setHintHeatmapSeen,
-  } = useWorkspacePrefsStore();
+  const hintGoalsSeen = useWorkspacePrefsStore((s) => s.hintGoalsSeen);
+  const setHintGoalsSeen = useWorkspacePrefsStore((s) => s.setHintGoalsSeen);
+  const gettingStartedDismissed = useWorkspacePrefsStore(
+    (s) => s.gettingStartedDismissed
+  );
+  const hintHistorySeen = useWorkspacePrefsStore((s) => s.hintHistorySeen);
+  const setHintHistorySeen = useWorkspacePrefsStore(
+    (s) => s.setHintHistorySeen
+  );
+  const hintHeatmapSeen = useWorkspacePrefsStore((s) => s.hintHeatmapSeen);
+  const setHintHeatmapSeen = useWorkspacePrefsStore(
+    (s) => s.setHintHeatmapSeen
+  );
 
   // Derive contextual hint visibility
   // Only one hint shows at a time, in priority order: goals → history → heatmap
@@ -268,6 +271,9 @@ export function PairingWorkspace() {
     setIsExporting(true);
 
     try {
+      // Let the overlay render before starting heavy DOM work
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Trigger the export mode styles
       document.documentElement.setAttribute('data-exporting', 'true');
 
@@ -398,7 +404,7 @@ export function PairingWorkspace() {
               </div>
             )}
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
               {!isExporting && (
                 <div className="flex flex-col">
                   <h1 className="text-xl sm:text-2xl 2xl:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 transition-all">
@@ -413,11 +419,11 @@ export function PairingWorkspace() {
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center gap-2 [html[data-exporting='true']_&]:hidden">
+              <div className="flex flex-wrap items-center gap-3 [html[data-exporting='true']_&]:hidden sm:flex-nowrap">
                 <button
                   id="heatmap-toggle"
                   onClick={() => setShowHeatmap(!showHeatmap)}
-                  className={`flex justify-center items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all shadow-sm
+                  className={`flex items-center justify-center gap-2 h-10 px-4 min-w-[130px] rounded-xl border text-sm font-semibold transition-all shadow-sm
                     ${
                       showHeatmap
                         ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20'
@@ -431,34 +437,37 @@ export function PairingWorkspace() {
 
                 <TemplateManager />
 
-                <div className="flex flex-col items-center gap-1 w-full sm:w-auto relative">
-                  <button
-                    id="recommend-btn"
-                    onClick={() => recommendPairs()}
-                    disabled={isStoreLoading || isRecommending}
-                    className="w-full sm:min-w-[170px] flex justify-center items-center gap-2 rounded-xl bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-                  >
-                    {isRecommending ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
-                    ) : (
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                    )}
-                    {isRecommending ? 'Recommending...' : 'Recommend Pairs'}
-                  </button>
-                </div>
+                <button
+                  id="recommend-btn"
+                  onClick={() => recommendPairs()}
+                  disabled={
+                    isStoreLoading ||
+                    isRecommending ||
+                    boards.length === 0 ||
+                    people.length < 2
+                  }
+                  className="flex items-center justify-center gap-2 h-10 rounded-xl bg-white px-4 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                >
+                  {isRecommending ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                  )}
+                  Recommend Pairs
+                </button>
 
                 <button
                   id="save-session-btn"
                   onClick={saveSession}
                   disabled={isSaving}
-                  className="flex flex-1 sm:flex-none sm:min-w-[145px] justify-center items-center gap-2 rounded-xl bg-brand-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                  className="flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 disabled:scale-100 transition-all disabled:opacity-50"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <History className="h-4 w-4" />
                   )}
-                  {isSaving ? 'Saving...' : 'Save Session'}
+                  Save Session
                 </button>
               </div>
             </div>
@@ -493,7 +502,7 @@ export function PairingWorkspace() {
             {/* Main grid region */}
             <div
               id="board-list"
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-6"
+              className="grid items-start grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5 5xl:grid-cols-6 gap-6"
             >
               {/* Loading State: Skeleton Screens */}
               {isStoreLoading && (
@@ -509,7 +518,7 @@ export function PairingWorkspace() {
                   items={boards.map((b) => b.id)}
                   strategy={rectSortingStrategy}
                 >
-                  {boards.map((board, index) => {
+                  {boards.map((board) => {
                     const assignedPeople = (board.assignedPersonIds || [])
                       .map((id) => people.find((p) => p.id === id))
                       .filter((p): p is Person => !!p);
@@ -521,7 +530,7 @@ export function PairingWorkspace() {
                         people={assignedPeople}
                         selectedPersonIds={selectedPersonIds}
                         onPersonClick={handlePersonClick}
-                        index={index}
+                        isDragActive={!!activeDragItem}
                       />
                     );
                   })}
@@ -553,40 +562,41 @@ export function PairingWorkspace() {
                   onSubmit={handleAddBoard}
                   className="flex min-h-[160px] flex-col rounded-2xl border-2 border-brand-400 bg-white p-5 shadow-lg ring-4 ring-brand-500/10 animate-in zoom-in-95 duration-200 dark:bg-neutral-900 dark:border-brand-500/50"
                 >
-                  <input
-                    autoFocus
-                    placeholder="Board name..."
-                    value={newBoardName}
-                    onChange={(e) => setNewBoardName(e.target.value)}
-                    className="mb-4 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
-                  />
-                  <div className="flex items-center justify-between mt-auto pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <div className="flex gap-2">
+                    <input
+                      autoFocus
+                      placeholder="Board name..."
+                      value={newBoardName}
+                      onChange={(e) => setNewBoardName(e.target.value)}
+                      className="flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!newBoardName.trim()}
+                      className="rounded-xl bg-brand-500 px-4 py-2 text-xs font-bold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      Create
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between mt-3">
+                    <label className="flex items-center gap-2 cursor-pointer select-none group/exempt">
                       <input
                         type="checkbox"
                         checked={newBoardIsExempt}
                         onChange={(e) => setNewBoardIsExempt(e.target.checked)}
                         className="h-4 w-4 rounded border-neutral-300 text-brand-500 focus:ring-brand-500/20"
                       />
-                      <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-300">
+                      <span className="text-xs font-bold text-neutral-400 group-hover/exempt:text-neutral-600 dark:text-neutral-500 dark:group-hover/exempt:text-neutral-300 transition-colors">
                         Exempt (Out of Office)
                       </span>
                     </label>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsAddingBoard(false)}
-                        className="rounded-lg px-3 py-1.5 text-xs font-bold text-neutral-400 hover:text-neutral-600 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-brand-600 transition-colors"
-                      >
-                        Create
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingBoard(false)}
+                      className="text-xs font-bold text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </form>
               )}
@@ -600,6 +610,7 @@ export function PairingWorkspace() {
               selectedPersonIds={selectedPersonIds}
               onPersonClick={handlePersonClick}
               isLoading={isStoreLoading}
+              isDragActive={!!activeDragItem}
             />
           </div>
         </div>
@@ -716,6 +727,15 @@ export function PairingWorkspace() {
         </div>
       )}
 
+      {isDownloading && (
+        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm [html[data-exporting='true']_&]:hidden">
+          <Loader2 className="h-10 w-10 animate-spin text-white mb-3" />
+          <span className="text-sm font-bold text-white/80 uppercase tracking-widest">
+            Generating image…
+          </span>
+        </div>
+      )}
+
       <ProductTutorial />
 
       {/* Getting Started Checklist Card (replaces auto-triggered step-by-step tutorial) */}
@@ -766,11 +786,13 @@ function DroppableUnpairedPool({
   selectedPersonIds,
   onPersonClick,
   isLoading,
+  isDragActive,
 }: {
   people: Person[];
   selectedPersonIds?: Set<string>;
   onPersonClick?: (id: string, e: React.MouseEvent) => void;
   isLoading?: boolean;
+  isDragActive?: boolean;
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: 'unpaired',
@@ -786,7 +808,9 @@ function DroppableUnpairedPool({
         ${
           isOver
             ? 'border-brand-400 border-dashed bg-brand-50 dark:border-brand-500/50 dark:bg-brand-950/20'
-            : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
+            : isDragActive
+              ? 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ring-2 ring-amber-300/40 ring-offset-1'
+              : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
         }
       `}
     >

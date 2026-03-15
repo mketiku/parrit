@@ -43,9 +43,12 @@ export function AuthScreen() {
         });
         if (error) throw error;
       }
-    } catch (err: unknown) {
+    } catch (err) {
+      console.error('Auth error:', err);
       if (err instanceof Error) {
         setErrorMSG(err.message);
+      } else if (typeof err === 'string') {
+        setErrorMSG(err);
       } else {
         setErrorMSG('An error occurred during authentication.');
       }

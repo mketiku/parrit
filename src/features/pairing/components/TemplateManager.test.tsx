@@ -12,14 +12,12 @@ vi.mock('../../../lib/supabase', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
-      order: vi
-        .fn()
-        .mockReturnValue(
-          Promise.resolve({
-            data: [{ id: 't1', name: 'My Template', boards: [] }],
-            error: null,
-          })
-        ),
+      order: vi.fn().mockReturnValue(
+        Promise.resolve({
+          data: [{ id: 't1', name: 'My Template', boards: [] }],
+          error: null,
+        })
+      ),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
     })),
@@ -55,12 +53,18 @@ describe('TemplateManager Component', () => {
     );
   });
 
-  it('calls applyTemplate when a template is clicked', async () => {
+  it('calls applyTemplate when a template is clicked and confirmed', async () => {
     render(<TemplateManager />);
     fireEvent.click(screen.getByText(/Templates/i));
 
     const templateItem = await screen.findByText('My Template');
     fireEvent.click(templateItem);
+
+    // Confirmation dialog must appear before the template is applied
+    const confirmBtn = await screen.findByRole('button', {
+      name: /Apply Template/i,
+    });
+    fireEvent.click(confirmBtn);
 
     expect(mockApplyTemplate).toHaveBeenCalledWith('t1');
   });

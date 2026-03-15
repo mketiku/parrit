@@ -13,13 +13,13 @@ import {
   Heart,
   Code2,
   Sparkles,
-  Share2,
   BookOpen,
   Timer,
   Users,
   Flame,
   Sprout,
   Kanban,
+  Coffee,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -337,9 +337,9 @@ export function PairingGuide() {
                 icon: Sparkles,
               },
               {
-                title: 'Knowledge Flight',
-                desc: 'Rotation ensures context spreads across the entire flock. No single person becomes a bottleneck for the system.',
-                icon: Share2,
+                title: 'Wrap Up Early',
+                desc: 'I recommend finishing up the "pairing portion" of your day early (e.g., 4:30pm), giving you time to catch up on other personal tasks, trainings, etc.',
+                icon: Coffee,
               },
             ].map((item, i) => (
               <div
