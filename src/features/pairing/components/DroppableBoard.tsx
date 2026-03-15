@@ -24,7 +24,6 @@ import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { useToastStore } from '../../../store/useToastStore';
 import { DraggablePerson } from './DraggablePerson';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { PairingBoard, Person } from '../types';
 
 interface DroppableBoardProps {
@@ -63,11 +62,8 @@ function DroppableBoardComponent({
   };
 
   const { removeBoard, updateBoard, pairRecency } = usePairingStore();
-  const {
-    stalePairHighlightingEnabled,
-    meetingLinkEnabled,
-    stalePairThreshold,
-  } = useWorkspacePrefsStore();
+  const { stalePairHighlightingEnabled, stalePairThreshold } =
+    useWorkspacePrefsStore();
   const { addToast } = useToastStore();
 
   const hasStalePairs = useMemo(() => {
