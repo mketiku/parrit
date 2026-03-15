@@ -55,7 +55,7 @@ export function PersonInsightsSidebar({
                 <h2 className="text-xl font-black text-neutral-900 dark:text-neutral-100">
                   {stats.name}
                 </h2>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">
                   Team Member Insights
                 </p>
               </div>
@@ -63,8 +63,9 @@ export function PersonInsightsSidebar({
             <button
               onClick={onClose}
               className="p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              aria-label="Close highlights"
             >
-              <X className="h-5 w-5 text-neutral-400" />
+              <X className="h-5 w-5 text-neutral-500" />
             </button>
           </div>
 
@@ -75,7 +76,7 @@ export function PersonInsightsSidebar({
               <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="h-4 w-4 text-brand-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                     Total Pairings
                   </span>
                 </div>
@@ -86,7 +87,7 @@ export function PersonInsightsSidebar({
               <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="h-4 w-4 text-amber-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                     Unique Partners
                   </span>
                 </div>
@@ -100,7 +101,7 @@ export function PersonInsightsSidebar({
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <Trophy className="h-4 w-4 text-amber-500" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
+                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
                   Favorite Partners
                 </h3>
               </div>
@@ -123,14 +124,14 @@ export function PersonInsightsSidebar({
                         <span className="text-xl font-black text-neutral-900 dark:text-neutral-100">
                           {info.count}
                         </span>
-                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-widest">
                           Sessions
                         </span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-neutral-400 italic">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">
                     No pairings recorded yet.
                   </p>
                 )}
@@ -141,7 +142,7 @@ export function PersonInsightsSidebar({
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <HistoryIcon className="h-4 w-4 text-brand-500" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500">
+                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
                   Pairing Timeline
                 </h3>
               </div>
@@ -153,7 +154,7 @@ export function PersonInsightsSidebar({
                       <div className="h-2 w-2 rounded-full bg-white" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1">
                         {format(new Date(item.date), 'MMM do, yyyy')}
                       </p>
                       <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
