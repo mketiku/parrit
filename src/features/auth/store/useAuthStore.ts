@@ -37,9 +37,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       const user = session?.user ?? null;
       let workspaceName = '';
-      let role = null;
-      if (user?.email) {
-        workspaceName = user.email.split('@')[0];
+      let role: string | null = null;
+
+      if (user) {
+        workspaceName =
+          user.user_metadata?.workspace_name || user.email?.split('@')[0] || '';
         role = user.app_metadata?.role || null;
       }
 
@@ -56,9 +58,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       supabase.auth.onAuthStateChange((_event, currentSession) => {
         const currentUser = currentSession?.user ?? null;
         let currentWorkspaceName = '';
-        let currentRole = null;
-        if (currentUser?.email) {
-          currentWorkspaceName = currentUser.email.split('@')[0];
+        let currentRole: string | null = null;
+
+        if (currentUser) {
+          currentWorkspaceName =
+            currentUser.user_metadata?.workspace_name ||
+            currentUser.email?.split('@')[0] ||
+            '';
           currentRole = currentUser.app_metadata?.role || null;
         }
         set({

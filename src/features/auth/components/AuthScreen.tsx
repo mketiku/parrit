@@ -29,6 +29,11 @@ export function AuthScreen() {
         const { error } = await supabase.auth.signUp({
           email: pseudoEmail,
           password,
+          options: {
+            data: {
+              workspace_name: workspaceName.trim(),
+            },
+          },
         });
         if (error) throw error;
         // Sometimes signUp requires email confirmation depending on Supabase settings
