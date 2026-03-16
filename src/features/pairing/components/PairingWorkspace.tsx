@@ -59,7 +59,6 @@ export function PairingWorkspace() {
   const isStoreLoading = usePairingStore((s) => s.isLoading);
   const isSaving = usePairingStore((s) => s.isSaving);
   const isRecommending = usePairingStore((s) => s.isRecommending);
-  const { user } = useAuthStore();
   const dashboardRef = useRef<HTMLDivElement>(null);
 
   // const [isSelectMode, setIsSelectMode] = useState(false); // Removed per user request
@@ -160,7 +159,7 @@ export function PairingWorkspace() {
     }
   }, [hasAnyGoals, hintGoalsSeen, setHintGoalsSeen]);
 
-  const username = user?.email?.split('@')[0] || 'Workspace';
+  const { workspaceName: username } = useAuthStore();
   const workspaceTitle =
     username.charAt(0).toUpperCase() + username.slice(1) + ' Workspace';
 
@@ -288,7 +287,7 @@ export function PairingWorkspace() {
       });
 
       const link = document.createElement('a');
-      const username = user?.email?.split('@')[0] || 'team';
+      const username = useAuthStore.getState().workspaceName || 'team';
       link.download = `parrit-${username}-${formatLocalDate(new Date())}.png`;
       link.href = dataUrl;
       link.click();

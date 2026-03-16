@@ -51,7 +51,7 @@ const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
   ];
 
 export function SettingsScreen() {
-  const { user } = useAuthStore();
+  const { user, workspaceName } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
   const {
     stalePairHighlightingEnabled,
@@ -90,9 +90,6 @@ export function SettingsScreen() {
   const [justCopied, setJustCopied] = useState(false);
   const [webhookError, setWebhookError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Extract the original Workspace Name from the pseudo-email
-  const workspaceName = user?.email?.split('@')[0] || 'Unknown Workspace';
 
   const handleExport = async () => {
     const json = await exportWorkspace(includeHistoryInExport);
