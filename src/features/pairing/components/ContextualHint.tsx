@@ -77,7 +77,7 @@ export function ContextualHint({
             <span
               className={`inline-block h-2 w-2 rounded-full shadow-md animate-pulse ${dotColor}`}
             />
-            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
               Tip
             </span>
           </div>
@@ -92,7 +92,7 @@ export function ContextualHint({
         <p className="mb-0.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 leading-snug">
           {title}
         </p>
-        <p className="text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+        <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
           {description}
         </p>
       </motion.div>

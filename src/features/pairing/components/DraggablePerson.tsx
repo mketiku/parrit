@@ -75,6 +75,8 @@ function DraggablePersonComponent({
         aria-label={trimmedName}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onFocus={handleMouseEnter}
+        onBlur={handleMouseLeave}
         className={`
           relative flex shrink-0 cursor-grab items-center justify-center rounded-full 
           text-xs font-bold text-white transition-all shadow-inner

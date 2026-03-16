@@ -60,7 +60,7 @@ export function GettingStartedCard({
     {
       id: 'add-goal',
       label: 'Add a goal to a board',
-      detail: 'Click the goals area on any board to add daily focus items.',
+      detail: 'Click the goals area on any board to add focus items.',
       done: hasGoalAdded,
     },
     {
@@ -101,7 +101,7 @@ export function GettingStartedCard({
               <p className="text-xs font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 leading-none">
                 Getting Started
               </p>
-              <p className="text-[10px] text-neutral-400 mt-0.5">
+              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold mt-0.5">
                 {completedCount} of {items.length} done
               </p>
             </div>
@@ -179,7 +179,7 @@ export function GettingStartedCard({
                         {item.label}
                       </p>
                       {!item.done && (
-                        <p className="text-[10px] text-neutral-400 mt-0.5 leading-relaxed">
+                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed font-medium">
                           {item.detail}
                         </p>
                       )}

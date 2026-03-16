@@ -158,10 +158,10 @@ function DroppableBoardComponent({
             ? 'border-brand-500 bg-brand-50/20 shadow-lg shadow-brand-500/10 ring-4 ring-brand-500/5'
             : isDragActive && !isDragging
               ? board.isExempt
-                ? 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/20 ring-2 ring-brand-300/40 ring-offset-1'
+                ? 'border-neutral-200 bg-neutral-100/50 dark:border-neutral-700 dark:bg-neutral-800/20 ring-2 ring-brand-300/40 ring-offset-1'
                 : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ring-2 ring-brand-300/40 ring-offset-1'
               : board.isExempt
-                ? 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/20'
+                ? 'border-neutral-200/60 bg-neutral-50 dark:border-neutral-800/60 dark:bg-neutral-900/40'
                 : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
         }
         ${isDragging ? 'cursor-grabbing opacity-80 shadow-2xl z-50' : ''}
@@ -224,7 +224,7 @@ function DroppableBoardComponent({
 
           <div className="flex flex-wrap items-center gap-2">
             {board.isExempt && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-neutral-50 text-[9px] font-medium uppercase tracking-widest text-neutral-400 border border-neutral-100 dark:bg-neutral-900/50 dark:text-neutral-600 dark:border-neutral-800">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-neutral-100 text-[9px] font-bold uppercase tracking-widest text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
                 Off-Duty
               </span>
             )}
@@ -326,7 +326,7 @@ function DroppableBoardComponent({
             className="mb-4 group/add-goal flex items-center gap-2 px-2 py-1 rounded-lg text-[11px] font-medium text-neutral-400 hover:text-brand-500 hover:bg-brand-50/50 dark:hover:bg-brand-500/10 transition-all"
           >
             <Plus className="h-3 w-3 transition-transform group-hover/add-goal:rotate-90" />
-            <span>Add daily goal...</span>
+            <span>Add board focus...</span>
           </button>
         )}
 

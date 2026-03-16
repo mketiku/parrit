@@ -24,7 +24,7 @@ export const DASHBOARD_TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     targetId: 'board-goals',
-    title: 'Daily Goals',
+    title: 'Board Focus',
     description:
       'Set focus areas for each board. Click into the goals section to add tasks or video meeting links.',
     placement: 'bottom',

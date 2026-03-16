@@ -132,9 +132,11 @@ export function TemplateManager() {
   return (
     <div className="relative">
       <button
+        id="template-manager-trigger"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Manage Templates"
         aria-expanded={isOpen}
+        aria-controls="template-manager-menu"
         aria-haspopup="true"
         className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
       >
@@ -151,7 +153,11 @@ export function TemplateManager() {
             className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 dark:border-neutral-800 dark:bg-neutral-900">
+          <div
+            id="template-manager-menu"
+            aria-labelledby="template-manager-trigger"
+            className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 dark:border-neutral-800 dark:bg-neutral-900"
+          >
             <div className="p-4">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
@@ -168,7 +174,7 @@ export function TemplateManager() {
 
               {/* Preset Templates */}
               <div className="mb-5">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   Presets
                 </p>
                 <div className="space-y-1.5">
@@ -189,7 +195,7 @@ export function TemplateManager() {
                         <p className="text-xs font-bold text-neutral-900 group-hover:text-brand-700 dark:text-neutral-100 dark:group-hover:text-brand-300">
                           {preset.name}
                         </p>
-                        <p className="text-[10px] text-neutral-500 dark:text-neutral-300">
+                        <p className="text-[10px] text-neutral-600 dark:text-neutral-400">
                           {preset.description}
                         </p>
                       </div>
@@ -220,7 +226,7 @@ export function TemplateManager() {
                     )}
                   </button>
                 </div>
-                <p className="mt-1.5 text-[10px] text-neutral-400">
+                <p className="mt-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
                   Save your current boards and goals as a template.
                 </p>
               </form>
@@ -270,7 +276,7 @@ export function TemplateManager() {
                         {template.boards.map((b, i) => (
                           <span
                             key={i}
-                            className="rounded bg-white/50 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-tighter text-neutral-500 dark:bg-neutral-800/50"
+                            className="rounded bg-white/50 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-tighter text-neutral-600 dark:text-neutral-400 dark:bg-neutral-800/50"
                           >
                             {b.name}
                           </span>
