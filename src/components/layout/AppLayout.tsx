@@ -85,7 +85,7 @@ export default function AppLayout() {
 
             {/* Nav links */}
             <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
-              <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              <p className="mb-3 px-3 text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                 Navigation
               </p>
               {navLinks.map((item) => (
@@ -214,24 +214,24 @@ export default function AppLayout() {
           <div className="flex items-center gap-6">
             <Link
               to="/about"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
             >
               About
             </Link>
             <Link
               to="/app/guide"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
             >
               Guide
             </Link>
             <a
               href="/about#contact"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
             >
               Contact
             </a>
           </div>
-          <p className="text-xs text-neutral-400 dark:text-neutral-600">
+          <p className="text-xs text-neutral-500 dark:text-neutral-500">
             &copy; {new Date().getFullYear()} Parrit.
           </p>
         </div>

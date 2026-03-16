@@ -348,7 +348,7 @@ export function LandingPage() {
               'Smart Pair Recommendations',
               'Historical Pairing Heatmaps',
               'Time-travel Snapshot Cloning',
-              'Daily Workspace Board Goals',
+              'Board Focus & Goals',
               'Meeting Link Integration',
               'Team Analytics Engine',
               'Contextual User Feature Hints',

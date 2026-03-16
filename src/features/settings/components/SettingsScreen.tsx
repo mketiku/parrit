@@ -232,7 +232,7 @@ export function SettingsScreen() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all shrink-0 lg:w-full ${
                   activeTab === tab.id
                     ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
-                    : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                    : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
                 }`}
               >
                 <tab.icon
@@ -243,7 +243,7 @@ export function SettingsScreen() {
                     {tab.label}
                   </span>
                   <span
-                    className={`hidden lg:block text-[10px] font-medium ${activeTab === tab.id ? 'text-brand-50' : 'text-neutral-500 dark:text-neutral-300'}`}
+                    className={`hidden lg:block text-[10px] font-bold ${activeTab === tab.id ? 'text-brand-50' : 'text-neutral-500 dark:text-neutral-400'}`}
                   >
                     {tab.description}
                   </span>
@@ -264,7 +264,7 @@ export function SettingsScreen() {
                 <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
                   General Appearance
                 </h2>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Global visual preferences for your workspace.
                 </p>
               </div>
@@ -304,7 +304,7 @@ export function SettingsScreen() {
                         <h3 className="text-sm font-black text-neutral-900 dark:text-neutral-100">
                           {t.name}
                         </h3>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                           {t.id === 'macaw-elite'
                             ? 'Azure & Gold'
                             : t.id === 'night-parrot'
@@ -454,7 +454,7 @@ export function SettingsScreen() {
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">
                           Public Link
                         </span>
-                        <p className="font-mono text-xs text-neutral-500 truncate">
+                        <p className="font-mono text-xs text-neutral-600 dark:text-neutral-400 truncate">
                           {window.location.origin}/view/{shareToken || user.id}
                         </p>
                       </div>
@@ -513,8 +513,8 @@ export function SettingsScreen() {
                       Chat Webhook
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      Send daily board assignments to Slack, Discord, or Teams
-                      when you click "Save Session".
+                      Send board assignments to Slack, Discord, or Teams when
+                      you click "Save Session".
                     </p>
                   </div>
                 </div>
@@ -547,7 +547,7 @@ export function SettingsScreen() {
                       {webhookError}
                     </p>
                   ) : (
-                    <p className="text-[11px] font-medium text-neutral-400">
+                    <p className="text-[11px] font-bold text-neutral-500 dark:text-neutral-400">
                       Leave blank to disable chat notifications.
                     </p>
                   )}
@@ -627,7 +627,7 @@ export function SettingsScreen() {
                         Backup
                       </h3>
                     </div>
-                    <p className="mb-6 text-xs text-neutral-500">
+                    <p className="mb-6 text-xs font-medium text-neutral-600 dark:text-neutral-400">
                       Download your workspace JSON.
                     </p>
                     <div className="space-y-4">
@@ -635,7 +635,7 @@ export function SettingsScreen() {
                         onClick={() =>
                           setIncludeHistoryInExport(!includeHistoryInExport)
                         }
-                        className="flex w-full items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:bg-neutral-950"
+                        className="flex w-full items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400 dark:bg-neutral-950"
                       >
                         <span>History</span>
                         <div
@@ -670,7 +670,7 @@ export function SettingsScreen() {
                       <h3 className="font-black text-red-600">
                         Import Workspace
                       </h3>
-                      <p className="text-xs text-red-700/60 dark:text-red-400/60 leading-relaxed max-w-sm">
+                      <p className="text-xs text-red-700 font-bold dark:text-red-400 leading-relaxed max-w-sm">
                         This will replace all current data.
                       </p>
                     </div>
@@ -750,7 +750,7 @@ function SettingToggle({
           <h3 className="font-bold text-neutral-900 dark:text-neutral-100">
             {title}
           </h3>
-          <p className="text-sm text-neutral-500 dark:text-neutral-300">
+          <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
             {description}
           </p>
         </div>

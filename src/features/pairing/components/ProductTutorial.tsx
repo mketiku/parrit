@@ -218,7 +218,7 @@ export function ProductTutorial() {
             </h3>
             <p
               id="tutorial-description"
-              className="mb-6 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300"
+              className="mb-6 text-sm leading-relaxed text-neutral-800 dark:text-neutral-300"
             >
               {currentStep.description}
             </p>
@@ -227,7 +227,7 @@ export function ProductTutorial() {
               <button
                 onClick={prevStep}
                 disabled={currentStepIndex === 0}
-                className="flex items-center gap-1 text-xs font-bold text-neutral-500 hover:text-neutral-700 disabled:opacity-0 transition-colors"
+                className="flex items-center gap-1 text-xs font-bold text-neutral-600 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 disabled:opacity-0 transition-colors"
               >
                 <ChevronLeft className="h-3 w-3" />
                 Back
@@ -245,7 +245,7 @@ export function ProductTutorial() {
                 ) : (
                   <button
                     onClick={handleFinish}
-                    className="rounded-xl bg-green-500 px-6 py-2 text-xs font-bold text-white shadow-lg shadow-green-500/20 hover:bg-green-600 active:scale-95 transition-all"
+                    className="rounded-xl bg-emerald-600 px-6 py-2 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 active:scale-95 transition-all"
                   >
                     Got it!
                   </button>
