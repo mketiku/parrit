@@ -118,7 +118,7 @@ export function PairingGuide() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-24 pb-24 selection:bg-brand-100 selection:text-brand-900">
+    <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 space-y-16 sm:space-y-24 pb-24 selection:bg-brand-100 selection:text-brand-900">
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -169,7 +169,7 @@ export function PairingGuide() {
       </section>
 
       {/* Rotation Guidelines */}
-      <section className="rounded-[3rem] border border-neutral-200 bg-neutral-50/50 p-8 sm:p-12 dark:border-neutral-800 dark:bg-neutral-900/30">
+      <section className="rounded-[2rem] sm:rounded-[3rem] border border-neutral-200 bg-neutral-50/50 p-6 sm:p-12 dark:border-neutral-800 dark:bg-neutral-900/30">
         <div className="flex flex-col md:flex-row gap-12">
           <div className="flex-1 space-y-6">
             <div className="flex items-center gap-3">
@@ -263,7 +263,7 @@ export function PairingGuide() {
         </div>
         <div className="relative group">
           <div className="absolute inset-0 bg-brand-500/20 blur-[100px] rounded-full group-hover:bg-brand-500/30 transition-colors" />
-          <div className="relative rounded-[3rem] border border-neutral-200 bg-white p-8 sm:p-12 dark:border-neutral-800 dark:bg-neutral-900 shadow-2xl">
+          <div className="relative rounded-[2rem] sm:rounded-[3rem] border border-neutral-200 bg-white p-6 sm:p-12 dark:border-neutral-800 dark:bg-neutral-900 shadow-2xl">
             <Bird className="h-16 w-16 text-brand-500 mb-8 animate-bounce-slow" />
             <h3 className="text-2xl font-black mb-6 text-neutral-900 dark:text-neutral-50 uppercase">
               Industry Best Practices
@@ -288,7 +288,7 @@ export function PairingGuide() {
       </section>
 
       {/* Leveling Up Sections */}
-      <section className="rounded-[4rem] bg-brand-500/5 border border-brand-500/20 p-12 overflow-hidden relative">
+      <section className="rounded-[2.5rem] sm:rounded-[4rem] bg-brand-500/5 border border-brand-500/20 p-6 sm:p-12 overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10">
           <Heart className="h-32 w-32 text-brand-500" />
         </div>
@@ -344,7 +344,7 @@ export function PairingGuide() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="group p-6 rounded-[2rem] bg-white border border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800 transition-all hover:-translate-y-2 hover:shadow-xl"
+                className="group p-5 sm:p-6 rounded-[2rem] bg-white border border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800 transition-all hover:-translate-y-2 hover:shadow-xl"
               >
                 <div className="h-10 w-10 rounded-xl bg-neutral-50 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 group-hover:bg-brand-500 group-hover:text-white transition-colors mb-4">
                   <item.icon className="h-5 w-5" />
@@ -391,7 +391,7 @@ export function PairingGuide() {
 
       {/* Call to Action */}
       <section>
-        <div className="rounded-[4rem] bg-neutral-900 dark:bg-brand-600 p-12 text-center text-white relative overflow-hidden shadow-2xl">
+        <div className="rounded-[2.5rem] sm:rounded-[4rem] bg-neutral-900 dark:bg-brand-600 p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500/20 to-transparent pointer-events-none" />
           <div className="relative z-10 space-y-8">
             <div className="space-y-4">

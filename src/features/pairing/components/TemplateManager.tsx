@@ -138,7 +138,7 @@ export function TemplateManager() {
         aria-expanded={isOpen}
         aria-controls="template-manager-menu"
         aria-haspopup="true"
-        className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
+        className="flex h-10 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
       >
         <Copy className="h-4 w-4 text-brand-500" />
         Templates
@@ -150,13 +150,13 @@ export function TemplateManager() {
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20"
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] sm:hidden"
             onClick={() => setIsOpen(false)}
           />
           <div
             id="template-manager-menu"
             aria-labelledby="template-manager-trigger"
-            className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 dark:border-neutral-800 dark:bg-neutral-900"
+            className="fixed inset-x-4 top-[15%] z-50 overflow-hidden rounded-[2rem] border border-neutral-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 dark:border-neutral-800 dark:bg-neutral-900 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 sm:rounded-2xl sm:zoom-in-100 sm:slide-in-from-top-2"
           >
             <div className="p-4">
               <div className="mb-4 flex items-center justify-between">
