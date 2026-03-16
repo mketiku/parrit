@@ -14,12 +14,12 @@ export function AboutScreen() {
     {
       question: 'Why was this project built?',
       answer:
-        "When the original parrit.io was taken down in 2025, it left a void for my team. I wanted to build a modern successor that felt 'alive'—using real-time sync, a good looking interface, and a modern architecture. It was built to ensure that simple rotation logic remains accessible to the community.",
+        "When the original parrit.io was taken down in 2025, it left a void for our team. We wanted to build a modern successor that felt 'alive'—using real-time sync, a good looking interface, and a modern architecture. It was built to ensure that simple rotation logic remains accessible to the community.",
     },
     {
       question: 'Do you know the old Parrit maintainer?',
       answer:
-        "No, the original project was open-source but the hosted version (parrit.io) disappeared. This is a ground-up rebuild designed to honor the original workflow while adding modern features like mobile support and audit trails. Having paired for about 2 years now, I've seen the professional benefits firsthand and believe other teams would too.",
+        "No, the original project was open-source but the hosted version (parrit.io) disappeared. This is a ground-up rebuild designed to honor the original workflow while adding modern features like mobile support and audit trails. Having paired for about 2 years now, we've seen the professional benefits firsthand and believe other teams would too.",
     },
     {
       question: 'Why does Pair Programming still matter?',
@@ -182,7 +182,7 @@ export function AboutScreen() {
               </h2>
               <p className="text-neutral-400 dark:text-brand-100 font-medium">
                 Whether you have feedback, bug reports, or just want to talk
-                shop about software, I'm always listening.
+                shop about software, we're always listening.
               </p>
             </div>
 
