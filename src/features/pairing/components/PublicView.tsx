@@ -9,7 +9,7 @@ import { Loader2, Lock, ArrowRight } from 'lucide-react';
 
 export function PublicView() {
   const { shareToken } = useParams<{ shareToken: string }>();
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, isLoading: isAuthLoading } = useAuthStore();
   const [boards, setBoards] = useState<PairingBoard[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -142,10 +142,12 @@ export function PublicView() {
       }
     }
 
-    fetchData();
-  }, [shareToken, isAdmin]);
+    if (!isAuthLoading) {
+      fetchData();
+    }
+  }, [shareToken, isAdmin, isAuthLoading]);
 
-  if (isLoading) {
+  if (isAuthLoading || isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-neutral-50 dark:bg-neutral-950">
         <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
@@ -153,7 +155,7 @@ export function PublicView() {
     );
   }
 
-  if (isPublic === false) {
+  if (isPublic === false && !isAdmin) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-neutral-50 dark:bg-neutral-950">
         <motion.div

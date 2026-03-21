@@ -23,7 +23,7 @@ export function AdminShortcutListener() {
 
       if (isAPressed && isShift && (isAlt || isCmd)) {
         if (isAdmin) {
-          navigate('/admin');
+          navigate('/app/admin');
         }
       }
     };

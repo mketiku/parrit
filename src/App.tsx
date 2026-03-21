@@ -97,7 +97,6 @@ function App() {
             <Route path="/about" element={<AboutScreen />} />
             <Route path="/guide" element={<PairingGuide />} />
             <Route path="/view/:shareToken" element={<PublicView />} />
-            <Route path="/admin" element={<AdminPortal />} />
             <Route
               path="/login"
               element={user ? <Navigate to="/app" replace /> : <AuthScreen />}
@@ -112,6 +111,7 @@ function App() {
               <Route path="/app/history" element={<HistoryScreen />} />
               <Route path="/app/guide" element={<PairingGuide />} />
               <Route path="/app/settings" element={<SettingsScreen />} />
+              <Route path="/app/admin" element={<AdminPortal />} />
             </Route>
           ) : (
             /* Redirect any /app/* requests to login when unauthenticated */

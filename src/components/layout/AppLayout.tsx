@@ -43,7 +43,7 @@ export default function AppLayout() {
     { to: '/app', label: 'Dashboard', end: true },
     { to: '/app/team', label: 'Team' },
     { to: '/app/history', label: 'History' },
-    ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
+    ...(isAdmin ? [{ to: '/app/admin', label: 'Admin' }] : []),
     { to: '/app/settings', label: 'Settings' },
   ];
 

@@ -19,6 +19,7 @@ interface WorkspaceInfo {
   created_at: string;
   last_sign_in_at: string | null;
   public_view_enabled: boolean;
+  share_token: string | null;
 }
 
 export function AdminPortal() {
@@ -54,7 +55,7 @@ export function AdminPortal() {
   }, [isAdmin, fetchWorkspaces]);
 
   const filteredWorkspaces = workspaces.filter((w) =>
-    w.email?.toLowerCase().includes(search.toLowerCase())
+    (w.email || '').toLowerCase().includes(search.toLowerCase())
   );
 
   if (!isAdmin) {
@@ -131,56 +132,66 @@ export function AdminPortal() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredWorkspaces.map((w) => {
-            const workspaceName = w.email?.split('@')[0] || 'Unknown';
-            return (
-              <div
-                key={w.id}
-                className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-brand-500/50 dark:border-neutral-800 dark:bg-neutral-900"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800">
-                    <Users className="h-5 w-5" />
-                  </div>
-                  <div className="flex gap-2 text-[10px] font-bold uppercase tracking-wider">
-                    {w.public_view_enabled ? (
-                      <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
-                        <Eye className="h-3 w-3" /> Public
-                      </span>
-                    ) : (
-                      <span className="text-neutral-400 flex items-center gap-1">
-                        <EyeOff className="h-3 w-3" /> Private
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate">
-                    {workspaceName}
-                  </h3>
-                  <p className="text-[10px] font-mono text-neutral-400 mt-1 uppercase">
-                    ID: {w.id.slice(0, 8)}...
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
-                  <a
-                    href={`/view/${w.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-xs font-bold text-neutral-600 transition-all hover:bg-brand-50 hover:text-brand-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
-                  >
-                    <div className="flex items-center gap-2">
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      Inspect Workspace
+          {filteredWorkspaces.length > 0 ? (
+            filteredWorkspaces.map((w) => {
+              const workspaceName =
+                w.email?.split('@')[0] || `Workspace ${w.id.slice(0, 5)}`;
+              return (
+                <div
+                  key={w.id}
+                  className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-brand-500/50 dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800">
+                      <Users className="h-5 w-5" />
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </a>
+                    <div className="flex gap-2 text-[10px] font-bold uppercase tracking-wider">
+                      {w.public_view_enabled ? (
+                        <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
+                          <Eye className="h-3 w-3" /> Public
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400 flex items-center gap-1">
+                          <EyeOff className="h-3 w-3" /> Private
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate">
+                      {workspaceName}
+                    </h3>
+                    <p className="text-[10px] font-mono text-neutral-400 mt-1 uppercase">
+                      ID: {w.id.slice(0, 8)}...
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
+                    <a
+                      href={`/view/${w.share_token || w.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-xs font-bold text-neutral-600 transition-all hover:bg-brand-50 hover:text-brand-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Inspect Workspace
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="col-span-full py-20 text-center rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-800">
+              <Users className="mx-auto h-10 w-10 text-neutral-300 mb-4" />
+              <p className="text-neutral-500">
+                No workspaces found matching your search.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
