@@ -23,7 +23,7 @@ export function PairingMatrixView({ matrix }: PairingMatrixViewProps) {
     <div className="overflow-x-auto pt-4">
       <table
         role="grid"
-        aria-label="Pairing frequency matrix"
+        aria-label="Pairing heatmap"
         className="w-max border-separate border-spacing-1.5 md:border-spacing-2"
       >
         <thead>

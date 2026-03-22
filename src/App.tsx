@@ -17,6 +17,7 @@ import { useThemeStore } from './store/useThemeStore';
 import { PublicView } from './features/pairing/components/PublicView';
 import { AdminPortal } from './features/admin/components/AdminPortal';
 import { AdminShortcutListener } from './features/admin/components/AdminShortcutListener';
+import { formatToday } from './features/pairing/utils/dateUtils';
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -36,13 +37,28 @@ function DashboardView() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          {displayName} Workspace
-        </h1>
-        <p className="mt-2 text-neutral-500 dark:text-neutral-300">
-          Drag and drop team members to configure today's pairing sessions.
-        </p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+              {displayName} Workspace
+            </span>
+          </div>
+          <h1 className="text-4xl font-black tracking-tight text-neutral-900 dark:text-white">
+            Pairing Dashboard
+          </h1>
+          <p className="mt-2 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            Drag and drop team members to configure today's pairing sessions.
+          </p>
+        </div>
+        <div className="text-left md:text-right">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
+            Today
+          </p>
+          <p className="text-lg font-bold text-neutral-900 dark:text-neutral-100 italic">
+            {formatToday()}
+          </p>
+        </div>
       </div>
       <div className="flex-1">
         <PairingWorkspace />

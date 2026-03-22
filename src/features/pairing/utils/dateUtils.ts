@@ -36,3 +36,10 @@ export function parseLocalDate(dateStr: string | null | undefined): Date {
 export function isSameDay(d1: Date, d2: Date): boolean {
   return isSameDayDateFns(d1, d2);
 }
+
+/**
+ * Formats today's date into a human-friendly string e.g. "Monday, January 1st"
+ */
+export function formatToday(): string {
+  return format(new Date(), 'EEEE, MMMM do');
+}

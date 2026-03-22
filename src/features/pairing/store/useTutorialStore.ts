@@ -77,7 +77,7 @@ export const HISTORY_TUTORIAL_STEPS: TutorialStep[] = [
     targetId: 'history-insights',
     title: 'Deeper Insights',
     description:
-      'Toggle the analytical view to surface the pairing matrix and team-wide stats hidden in your data.',
+      'Toggle the analytical view to surface the pairing heatmap and team-wide stats hidden in your data.',
     placement: 'left',
   },
   {
