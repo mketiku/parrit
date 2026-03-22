@@ -43,7 +43,7 @@ import { useTutorialStore } from '../store/useTutorialStore';
 import { ProductTutorial } from './ProductTutorial';
 import { GettingStartedCard } from './GettingStartedCard';
 import { ContextualHint } from './ContextualHint';
-import { formatLocalDate } from '../utils/dateUtils';
+import { formatLocalDate, formatToday } from '../utils/dateUtils';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { PairingMatrixView } from './PairingMatrixView';
 import { BarChart3 } from 'lucide-react';
@@ -395,11 +395,20 @@ export function PairingWorkspace() {
               Hidden in App: Prevents repetition with the page-level H1
             */}
             {isExporting && (
-              <div className="mb-8">
-                <h2 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
-                  {workspaceTitle}
-                </h2>
-                <div className="h-1 w-20 bg-brand-500 mt-2" />
+              <div className="mb-8 border-b-2 border-brand-500 pb-6">
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100">
+                    Pairing Dashboard
+                  </h1>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-sm font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest shrink-0">
+                      {workspaceTitle}
+                    </span>
+                    <span className="text-sm font-bold text-neutral-500 italic shrink-0">
+                      {formatToday()}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 

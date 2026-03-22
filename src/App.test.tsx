@@ -34,12 +34,25 @@ describe('App Root Component', () => {
       selector ? selector(authState) : authState
     );
 
+    // Mock time to Saturday, March 21, 2026
+    const mockDate = new Date(2026, 2, 21);
+    vi.useFakeTimers();
+    vi.setSystemTime(mockDate);
+
     render(<App />);
 
     // Header Logo should exist
     expect(screen.getByText('Parrit')).toBeInTheDocument();
 
-    // Default route placeholder text should exist (one for UI, one for export)
-    expect(screen.getAllByText('Test Workspace')[0]).toBeInTheDocument();
+    // Verify Dashboard Title (Consistency fix)
+    expect(screen.getByText('Pairing Dashboard')).toBeInTheDocument();
+
+    // Verify Workspace identity is still present
+    expect(screen.getByText('Test Workspace')).toBeInTheDocument();
+
+    // Verify the date is rendered (Saturday, March 21st)
+    expect(screen.getByText('Saturday, March 21st')).toBeInTheDocument();
+
+    vi.useRealTimers();
   });
 });
