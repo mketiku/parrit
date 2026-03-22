@@ -454,6 +454,8 @@ export function PairingWorkspace() {
                     boards.length === 0 ||
                     people.length < 2
                   }
+                  title="Recommend Pairs based on history and availability"
+                  aria-label="Recommend Pairs"
                   className="flex items-center justify-center gap-2 h-10 rounded-xl bg-white px-4 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
                 >
                   {isRecommending ? (
@@ -468,6 +470,8 @@ export function PairingWorkspace() {
                   id="save-session-btn"
                   onClick={saveSession}
                   disabled={isSaving}
+                  title="Save Pairing Session to history"
+                  aria-label="Save Session"
                   className="flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 disabled:scale-100 transition-all disabled:opacity-50"
                 >
                   {isSaving ? (

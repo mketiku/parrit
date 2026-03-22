@@ -8,12 +8,11 @@ import {
   Wifi,
   MousePointerClick,
   Share2,
-  History,
-  Users,
   Sparkles,
   CheckCircle2,
 } from 'lucide-react';
 import { useAuthStore } from '../../auth/store/useAuthStore';
+import { LiveDemoShowcase } from './LiveDemoShowcase';
 
 const features = [
   {
@@ -161,128 +160,7 @@ export function LandingPage() {
           transition={{ delay: 0.3, duration: 0.8, ease: 'circOut' }}
           className="mx-auto max-w-5xl px-4 sm:px-6 pb-12"
         >
-          <div className="relative rounded-[2.5rem] border border-neutral-200 bg-white/50 p-2 shadow-2xl shadow-black/10 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/50 overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-
-            {/* Fake browser chrome */}
-            <div className="flex items-center gap-2 border-b border-neutral-200/50 dark:border-neutral-800/50 px-6 py-4">
-              <div className="flex gap-1.5">
-                <div className="h-3 w-3 rounded-full bg-red-400/50" />
-                <div className="h-3 w-3 rounded-full bg-amber-400/50" />
-                <div className="h-3 w-3 rounded-full bg-green-400/50" />
-              </div>
-              <div className="ml-4 flex-1 max-w-md rounded-xl bg-neutral-100 dark:bg-neutral-800 px-4 py-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-400 tracking-tight">
-                parrit.org/app
-              </div>
-            </div>
-            {/* Fake pairing workspace UI */}
-            {/* Fake pairing workspace UI */}
-            <div className="p-4 sm:p-8 flex flex-col xl:flex-row gap-8">
-              {/* Boards Region */}
-              <div className="flex-1 order-last xl:order-first">
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="font-black tracking-tight text-neutral-900 dark:text-neutral-100">
-                    Pairing Boards
-                  </p>
-                  <div className="flex gap-2">
-                    <div className="hidden sm:flex items-center gap-2 rounded-xl bg-white/50 border border-neutral-200 px-3 py-1.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800/50 dark:border-neutral-700">
-                      <Sparkles className="h-3 w-3 text-amber-500" />
-                      Recommend
-                    </div>
-                    <div className="flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg shadow-brand-500/20">
-                      <History className="h-3 w-3" />
-                      Save Session
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {[
-                    'Toco Toucan 🦤',
-                    'Canada Goose 🪿',
-                    'Bald Eagle 🦅',
-                    'Great Horned Owl 🦉',
-                  ].map((name, i) => {
-                    const peopleInBoard = [
-                      ['Blu', 'Jewel'],
-                      ['Roberto', 'Edo', 'Mimi'],
-                      ['Nico', 'Pedro'],
-                      ['Linda', 'Tulio'],
-                    ][i];
-
-                    return (
-                      <div
-                        key={i}
-                        className="group flex flex-col rounded-[2.5rem] border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900/40 shadow-sm transition-all hover:shadow-xl hover:shadow-black/5"
-                      >
-                        {/* Mock Board Header */}
-                        <div className="flex items-center gap-2 mb-4">
-                          <LayoutDashboard className="h-4 w-4 text-brand-500" />
-                          <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
-                            {name}
-                          </h3>
-                        </div>
-
-                        {/* Draggable Zone Mockup */}
-                        <div className="flex flex-1 flex-wrap gap-2 rounded-2xl bg-neutral-50 p-3 dark:bg-neutral-950/50 border-2 border-transparent min-h-[50px]">
-                          {peopleInBoard.map((p, j) => (
-                            <div
-                              key={j}
-                              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-inner ring-1 ring-black/5 dark:ring-white/10"
-                              style={{
-                                backgroundColor: [
-                                  '#6366f1',
-                                  '#f59e0b',
-                                  '#10b981',
-                                  '#ec4899',
-                                ][(i * 2 + j) % 4],
-                              }}
-                            >
-                              {p.substring(0, 1).toUpperCase()}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Mock Goals footer */}
-                        <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800/50 space-y-2">
-                          <div className="h-1.5 w-2/3 rounded-full bg-neutral-100 dark:bg-neutral-800/50" />
-                          <div className="h-1.5 w-1/2 rounded-full bg-neutral-200/50 dark:bg-neutral-800/20" />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Unpaired Pool Mockup */}
-              <div className="xl:w-64 shrink-0 flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900/40 order-first xl:order-last">
-                <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-neutral-400" />
-                    <h3 className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
-                      Available Pool
-                    </h3>
-                  </div>
-                  <span className="h-5 w-5 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 dark:bg-neutral-800">
-                    2
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {['Zazu', 'Iago'].map((p, i) => (
-                    <div
-                      key={p}
-                      className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-inner ring-1 ring-black/5 dark:ring-white/10"
-                      style={{
-                        backgroundColor: i === 0 ? '#10b981' : '#f59e0b',
-                      }}
-                    >
-                      {p.substring(0, 1)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <LiveDemoShowcase />
         </motion.div>
       </section>
 
@@ -347,6 +225,7 @@ export function LandingPage() {
               'Smart Pair Recommendations',
               'Historical Pairing Heatmaps',
               'Time-travel Snapshot Cloning',
+              'Private by Design Architecture',
               'Board Focus & Goals',
               'Meeting Link Integration',
               'Team Analytics Engine',
