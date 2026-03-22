@@ -115,6 +115,7 @@ export default function AppLayout() {
                   signOut();
                 }}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-all hover:bg-red-100 active:scale-95 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
+                title="Sign Out Mobile"
               >
                 <LogOut className="h-4 w-4" />
                 Sign Out
