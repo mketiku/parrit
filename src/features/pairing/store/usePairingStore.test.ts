@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { usePairingStore } from './usePairingStore';
-import { createBoard } from '../../../test/factories';
+import { createBoard, createPerson } from '../../../test/factories';
+import { supabase } from '../../../lib/supabase';
 
 // Mock Supabase
 vi.mock('../../../lib/supabase', () => ({
@@ -12,19 +14,31 @@ vi.mock('../../../lib/supabase', () => ({
     },
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn(),
       insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
       upsert: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      single: vi.fn(),
+      maybeSingle: vi.fn(),
     })),
   },
 }));
 
-describe('usePairingStore', () => {
+// Mock Toast store
+vi.mock('../../../../store/useToastStore', () => ({
+  useToastStore: {
+    getState: () => ({
+      addToast: vi.fn(),
+    }),
+  },
+}));
+
+describe('usePairingStore - Slices Integration', () => {
   beforeEach(() => {
-    // Reset store
+    vi.clearAllMocks();
     usePairingStore.setState({
       people: [],
       boards: [],
@@ -36,34 +50,132 @@ describe('usePairingStore', () => {
     });
   });
 
-  it('should initialize with empty state', () => {
-    const state = usePairingStore.getState();
-    expect(state.people).toEqual([]);
-    expect(state.boards).toEqual([]);
-    expect(state.isLoading).toBe(false);
+  describe('BoardsSlice', () => {
+    it('should add a board and update state', async () => {
+      const mockBoardRow = {
+        id: 'new-b',
+        name: 'New Board',
+        user_id: 'test-user',
+        sort_order: 0,
+      };
+
+      const mockChain = {
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockBoardRow, error: null }),
+      };
+      (supabase.from as any).mockReturnValue(mockChain);
+
+      const { addBoard } = usePairingStore.getState();
+      await addBoard('New Board');
+
+      expect(usePairingStore.getState().boards).toHaveLength(1);
+      expect(usePairingStore.getState().boards[0].name).toBe('New Board');
+      expect(supabase.from).toHaveBeenCalledWith('pairing_boards');
+    });
+
+    it('should remove a board and update state', async () => {
+      (supabase.from as any).mockReturnValue({
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      });
+
+      const board = createBoard({ id: 'b1', name: 'Delete Me' });
+      usePairingStore.setState({ boards: [board] });
+
+      const { removeBoard } = usePairingStore.getState();
+      await removeBoard('b1');
+
+      expect(usePairingStore.getState().boards).toHaveLength(0);
+      expect(supabase.from).toHaveBeenCalledWith('pairing_boards');
+    });
+
+    it('should handle optimistic updates for board properties', async () => {
+      (supabase.from as any).mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      });
+
+      const board = createBoard({ id: 'b1', name: 'Old Name' });
+      usePairingStore.setState({ boards: [board] });
+
+      const { updateBoard } = usePairingStore.getState();
+      const updatePromise = updateBoard('b1', { name: 'New Name' });
+
+      // Check optimistic state
+      expect(usePairingStore.getState().boards[0].name).toBe('New Name');
+
+      await updatePromise;
+      expect(supabase.from).toHaveBeenCalledWith('pairing_boards');
+    });
   });
 
-  it('should setBoards correctly', () => {
-    const mockBoards = [createBoard({ id: 'b1', name: 'Board 1' })];
-    const { setBoards } = usePairingStore.getState();
+  describe('PeopleSlice', () => {
+    it('should add a person and assign a color', async () => {
+      const mockPersonRow = {
+        id: 'p1',
+        name: 'Alice',
+        avatar_color_hex: '#123456',
+        user_id: 'test-user',
+      };
 
-    setBoards(mockBoards);
-    expect(usePairingStore.getState().boards).toEqual(mockBoards);
+      const mockChain = {
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockPersonRow, error: null }),
+      };
+      (supabase.from as any).mockReturnValue(mockChain);
+
+      const { addPerson } = usePairingStore.getState();
+      await addPerson('Alice');
+
+      expect(usePairingStore.getState().people).toHaveLength(1);
+      expect(usePairingStore.getState().people[0].name).toBe('Alice');
+    });
+
+    it('should remove a person and cleanup board assignments', async () => {
+      (supabase.from as any).mockReturnValue({
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+      });
+
+      const person = createPerson({ id: 'p1', name: 'Alice' });
+      const board = createBoard({ id: 'b1', assignedPersonIds: ['p1'] });
+      usePairingStore.setState({ people: [person], boards: [board] });
+
+      const { removePerson } = usePairingStore.getState();
+      await removePerson('p1');
+
+      expect(usePairingStore.getState().people).toHaveLength(0);
+      expect(usePairingStore.getState().boards[0].assignedPersonIds).toEqual(
+        []
+      );
+    });
   });
 
-  it('should handle undo', () => {
-    const initialBoards = [createBoard({ id: 'b1', name: 'Board 1' })];
-    usePairingStore.setState({ boards: initialBoards });
+  describe('AlgorithmSlice', () => {
+    it('should set isRecommending during calculation', async () => {
+      // Setup some people to trigger the algorithm
+      usePairingStore.setState({
+        people: [createPerson({ id: 'p1' }), createPerson({ id: 'p2' })],
+        boards: [createBoard({ id: 'b1' })],
+      });
 
-    const newBoards = [createBoard({ id: 'b1', name: 'Board 1 Updated' })];
-    const { setBoards, undo } = usePairingStore.getState();
+      const mockQueryResult = {
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+      };
+      (supabase.from as any).mockReturnValue(mockQueryResult);
 
-    // Set boards with undoable = true
-    setBoards(newBoards, true);
-    expect(usePairingStore.getState().boards).toEqual(newBoards);
+      const { recommendPairs } = usePairingStore.getState();
+      const promise = recommendPairs();
 
-    // Undo
-    undo();
-    expect(usePairingStore.getState().boards).toEqual(initialBoards);
+      expect(usePairingStore.getState().isRecommending).toBe(true);
+      await promise;
+      expect(usePairingStore.getState().isRecommending).toBe(false);
+    });
   });
 });

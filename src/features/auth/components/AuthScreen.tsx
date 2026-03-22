@@ -36,7 +36,6 @@ export function AuthScreen() {
           },
         });
         if (error) throw error;
-        // Sometimes signUp requires email confirmation depending on Supabase settings
         alert(
           'Workspace successfully created! You are securely authenticated.'
         );
@@ -48,15 +47,14 @@ export function AuthScreen() {
         });
         if (error) throw error;
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Auth error:', err);
-      if (err instanceof Error) {
-        setErrorMSG(err.message);
-      } else if (typeof err === 'string') {
-        setErrorMSG(err);
-      } else {
-        setErrorMSG('An error occurred during authentication.');
-      }
+      const message =
+        (err as { message?: string })?.message ||
+        (typeof err === 'string'
+          ? err
+          : 'An error occurred during authentication.');
+      setErrorMSG(message);
     } finally {
       setIsLoading(false);
     }

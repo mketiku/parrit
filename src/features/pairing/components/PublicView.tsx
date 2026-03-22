@@ -149,7 +149,10 @@ export function PublicView() {
 
   if (isAuthLoading || isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+      <div
+        role="status"
+        className="flex h-screen w-full items-center justify-center bg-neutral-50 dark:bg-neutral-950"
+      >
         <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
       </div>
     );
