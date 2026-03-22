@@ -18,7 +18,8 @@ const mockWorkspaces = [
     created_at: '2024-01-01T00:00:00Z',
     last_sign_in_at: null,
     public_view_enabled: false,
-    share_token: 'tok-1',
+    member_count: 3,
+    board_count: 2,
   },
 ];
 
@@ -30,6 +31,7 @@ const mockFeedback = [
     type: 'bug',
     message: 'The save button does not work.',
     page: '/app',
+    is_read: false,
   },
   {
     id: 'fb-2',
@@ -38,6 +40,7 @@ const mockFeedback = [
     type: 'idea',
     message: 'Add keyboard shortcuts.',
     page: '/app/team',
+    is_read: false,
   },
 ];
 
@@ -63,13 +66,13 @@ describe('AdminPortal', () => {
   it('shows the workspaces tab by default', async () => {
     render(<AdminPortal />);
     await waitFor(() => {
-      expect(screen.getByText('team-a')).toBeInTheDocument();
+      expect(screen.getByText('t***@parrit.com')).toBeInTheDocument();
     });
   });
 
   it('switches to the feedback tab and loads submissions', async () => {
     render(<AdminPortal />);
-    await waitFor(() => screen.getByText('team-a'));
+    await waitFor(() => screen.getByText('t***@parrit.com'));
 
     fireEvent.click(screen.getByRole('button', { name: /feedback/i }));
 
@@ -83,7 +86,7 @@ describe('AdminPortal', () => {
 
   it('shows the correct type badge for each feedback item', async () => {
     render(<AdminPortal />);
-    await waitFor(() => screen.getByText('team-a'));
+    await waitFor(() => screen.getByText('t***@parrit.com'));
     fireEvent.click(screen.getByRole('button', { name: /feedback/i }));
 
     await waitFor(() => {
@@ -102,7 +105,7 @@ describe('AdminPortal', () => {
     });
 
     render(<AdminPortal />);
-    await waitFor(() => screen.getByText('team-a'));
+    await waitFor(() => screen.getByText('t***@parrit.com'));
     fireEvent.click(screen.getByRole('button', { name: /feedback/i }));
 
     await waitFor(() => {

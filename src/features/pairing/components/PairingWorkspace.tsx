@@ -635,7 +635,7 @@ export function PairingWorkspace() {
         </DragOverlay>
       </DndContext>
 
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40 [html[data-exporting='true']_&]:hidden">
+      <div className="fixed bottom-20 right-6 flex flex-col gap-3 z-40 [html[data-exporting='true']_&]:hidden">
         <button
           id="download-btn"
           onClick={handleDownloadScreenshot}

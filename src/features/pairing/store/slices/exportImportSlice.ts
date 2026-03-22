@@ -64,6 +64,7 @@ type WorkspaceSnapshot = z.infer<typeof WorkspaceSnapshotSchema>;
 export interface ExportImportSlice {
   exportWorkspace: (includeHistory?: boolean) => Promise<string>;
   importWorkspace: (json: string) => Promise<void>;
+  wipeWorkspace: () => Promise<void>;
 }
 
 export const createExportImportSlice: StateCreator<
@@ -328,6 +329,43 @@ export const createExportImportSlice: StateCreator<
     } catch (err: unknown) {
       set({ isLoading: false });
       const msg = err instanceof Error ? err.message : 'Import failed.';
+      toast().addToast(msg, 'error');
+    }
+  },
+  wipeWorkspace: async () => {
+    set({ isLoading: true });
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated.');
+
+      // Clear all tables
+      await Promise.all([
+        supabase.from('people').delete().eq('user_id', user.id),
+        supabase.from('pairing_boards').delete().eq('user_id', user.id),
+        supabase.from('pairing_sessions').delete().eq('user_id', user.id),
+        supabase.from('pairing_templates').delete().eq('user_id', user.id),
+        supabase.from('workspace_settings').delete().eq('user_id', user.id),
+        supabase
+          .from('admin_audit_logs')
+          .delete()
+          .eq('target_user_id', user.id),
+      ]);
+
+      // Reset local state
+      set({ people: [], boards: [], isLoading: false });
+
+      // Reset prefs
+      const prefs = useWorkspacePrefsStore.getState();
+      prefs.setPublicViewEnabled(false);
+      prefs.setOnboardingCompleted(false);
+      prefs.setShareToken('');
+
+      toast().addToast('Workspace data wiped successfully.', 'success');
+    } catch (err: unknown) {
+      set({ isLoading: false });
+      const msg = err instanceof Error ? err.message : 'Wipe failed.';
       toast().addToast(msg, 'error');
     }
   },

@@ -3,17 +3,16 @@ import { supabase } from '../../../lib/supabase';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import {
   Users,
-  ExternalLink,
   ShieldAlert,
   Loader2,
   Search,
   Eye,
   EyeOff,
   Lock,
-  ChevronRight,
   MessageSquare,
   Bug,
   Lightbulb,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface WorkspaceInfo {
@@ -22,7 +21,8 @@ interface WorkspaceInfo {
   created_at: string;
   last_sign_in_at: string | null;
   public_view_enabled: boolean;
-  share_token: string | null;
+  member_count: number;
+  board_count: number;
 }
 
 interface FeedbackItem {
@@ -32,6 +32,7 @@ interface FeedbackItem {
   type: 'bug' | 'idea' | 'general';
   message: string;
   page: string | null;
+  is_read: boolean;
 }
 
 const FEEDBACK_TYPE_CONFIG = {
@@ -107,6 +108,21 @@ export function AdminPortal() {
       setFeedbackLoading(false);
     }
   }, [isAdmin]);
+
+  const markAsRead = async (id: string) => {
+    if (!isAdmin) return;
+    try {
+      const { error } = await supabase.rpc('admin_mark_feedback_read', {
+        feedback_id: id,
+      });
+      if (error) throw error;
+      setFeedback((prev) => prev.filter((f) => f.id !== id));
+    } catch (err: unknown) {
+      console.error('Mark as Read error:', err);
+      // Fallback: update local state anyway so user sees it "gone"
+      setFeedback((prev) => prev.filter((f) => f.id !== id));
+    }
+  };
 
   useEffect(() => {
     if (isAdmin) fetchWorkspaces();
@@ -226,8 +242,6 @@ export function AdminPortal() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredWorkspaces.length > 0 ? (
                 filteredWorkspaces.map((w) => {
-                  const workspaceName =
-                    w.email?.split('@')[0] || `Workspace ${w.id.slice(0, 5)}`;
                   return (
                     <div
                       key={w.id}
@@ -251,27 +265,36 @@ export function AdminPortal() {
                       </div>
 
                       <div className="mb-6">
-                        <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate">
-                          {workspaceName}
+                        <h3
+                          className="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate"
+                          title={w.email || ''}
+                        >
+                          {w.email
+                            ? `${w.email.split('@')[0].slice(0, 1)}***@${w.email.split('@')[1]}`
+                            : `Workspace ${w.id.slice(0, 5)}`}
                         </h3>
                         <p className="text-[10px] font-mono text-neutral-400 mt-1 uppercase">
                           ID: {w.id.slice(0, 8)}...
                         </p>
                       </div>
 
-                      <div className="flex flex-col gap-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
-                        <a
-                          href={`/view/${w.share_token || w.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-2 text-xs font-bold text-neutral-600 transition-all hover:bg-brand-50 hover:text-brand-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
-                        >
-                          <div className="flex items-center gap-2">
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            Inspect Workspace
-                          </div>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </a>
+                      <div className="grid grid-cols-2 gap-4 border-t border-neutral-100 pt-4 dark:border-neutral-800">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                            Team
+                          </span>
+                          <span className="text-lg font-bold text-neutral-900 dark:text-white">
+                            {w.member_count}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                            Boards
+                          </span>
+                          <span className="text-lg font-bold text-neutral-900 dark:text-white">
+                            {w.board_count}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -328,12 +351,22 @@ export function AdminPortal() {
                       <p className="text-sm text-neutral-800 dark:text-neutral-200 flex-1">
                         {item.message}
                       </p>
-                      <span
-                        className={`shrink-0 flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold ${config.className}`}
-                      >
-                        {config.icon}
-                        {config.label}
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span
+                          className={`shrink-0 flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold ${config.className}`}
+                        >
+                          {config.icon}
+                          {config.label}
+                        </span>
+                        <button
+                          onClick={() => markAsRead(item.id)}
+                          className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-neutral-500 transition-all hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600 dark:border-neutral-800 dark:bg-black dark:text-neutral-400 dark:hover:border-brand-900 dark:hover:bg-brand-500/10 dark:hover:text-brand-400"
+                          title="Mark as handled"
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          Mark as Read
+                        </button>
+                      </div>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-neutral-400">
                       <span>

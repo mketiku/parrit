@@ -16,6 +16,9 @@ import { usePairingStore } from './features/pairing/store/usePairingStore';
 import { useThemeStore } from './store/useThemeStore';
 import { PublicView } from './features/pairing/components/PublicView';
 import { AdminPortal } from './features/admin/components/AdminPortal';
+import { PrivacyScreen } from './features/static/components/PrivacyScreen';
+import { TermsScreen } from './features/static/components/TermsScreen';
+import { NotFoundScreen } from './features/static/components/ErrorScreens';
 import { AdminShortcutListener } from './features/admin/components/AdminShortcutListener';
 import { formatToday } from './features/pairing/utils/dateUtils';
 
@@ -112,6 +115,8 @@ function App() {
             />
             <Route path="/about" element={<AboutScreen />} />
             <Route path="/guide" element={<PairingGuide />} />
+            <Route path="/privacy" element={<PrivacyScreen />} />
+            <Route path="/terms" element={<TermsScreen />} />
             <Route path="/view/:shareToken" element={<PublicView />} />
 
             <Route
@@ -136,7 +141,7 @@ function App() {
           )}
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundScreen />} />
         </Routes>
       </BrowserRouter>
     </>

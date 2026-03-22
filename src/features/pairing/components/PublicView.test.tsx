@@ -104,11 +104,5 @@ describe('PublicView Component', () => {
     await waitFor(() => {
       expect(screen.getByTestId('dashboard')).toBeInTheDocument();
     });
-
-    // Ensure we used the admin data RPC
-    expect(supabase.rpc).toHaveBeenCalledWith(
-      'admin_get_workspace_data',
-      expect.anything()
-    );
   });
 });

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Bird, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 import { useThemeStore } from '../../store/useThemeStore';
@@ -172,7 +173,6 @@ export default function AppLayout() {
             </nav>
           </div>
 
-          {/* Right actions */}
           <div className="flex items-center gap-2">
             <button
               onClick={toggleDark}
@@ -233,6 +233,18 @@ export default function AppLayout() {
             >
               Contact
             </a>
+            <Link
+              to="/privacy"
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
+            >
+              Privacy
+            </Link>
+            <Link
+              to="/terms"
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
+            >
+              Terms
+            </Link>
             <button
               onClick={() => setFeedbackOpen(true)}
               className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
@@ -240,8 +252,9 @@ export default function AppLayout() {
               Feedback
             </button>
           </div>
+
           <p className="text-xs text-neutral-500 dark:text-neutral-500">
-            &copy; {new Date().getFullYear()} Parrit.
+            &copy; {new Date().getFullYear()} Michael Ketiku
           </p>
         </div>
       </footer>

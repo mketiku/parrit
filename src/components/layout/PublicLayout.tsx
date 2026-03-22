@@ -197,6 +197,18 @@ export default function PublicLayout() {
             >
               Guide
             </Link>
+            <Link
+              to="/privacy"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              to="/terms"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+            >
+              Terms
+            </Link>
             <a
               href="/about#contact"
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
@@ -205,7 +217,7 @@ export default function PublicLayout() {
             </a>
           </div>
           <p className="text-xs text-neutral-400 dark:text-neutral-600">
-            &copy; {new Date().getFullYear()} Parrit.
+            &copy; {new Date().getFullYear()} Michael Ketiku
           </p>
         </div>
       </footer>
