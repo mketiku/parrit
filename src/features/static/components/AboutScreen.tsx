@@ -31,6 +31,11 @@ export function AboutScreen() {
       answer:
         "Don't force it 100% of the time. Start with 'Pairing Thursdays' or use it for complex, high-risk tickets. Once the team feels the benefit of not 'winging it' alone, the culture usually shifts organically. Use the Parrit board during Standups to visualize the day's pecking order.",
     },
+    {
+      question: 'Can I self-host Parrit?',
+      answer:
+        'Absolutely. Parrit is open-source (MIT licensed) and designed to be simple to run. You can clone the repository and use the Supabase CLI to spin up a local instance in minutes. Check out our README on GitHub for the full step-by-step guide.',
+    },
   ];
 
   return (

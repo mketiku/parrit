@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Bird, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 import { useThemeStore } from '../../store/useThemeStore';
+import { FeedbackModal } from '../../features/feedback/components/FeedbackModal';
 
 export default function AppLayout() {
   const { signOut, isAdmin } = useAuthStore();
   const { isDark, toggleDark } = useThemeStore();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -43,7 +46,7 @@ export default function AppLayout() {
     { to: '/app', label: 'Dashboard', end: true },
     { to: '/app/team', label: 'Team' },
     { to: '/app/history', label: 'History' },
-    ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
+    ...(isAdmin ? [{ to: '/app/admin', label: 'Admin' }] : []),
     { to: '/app/settings', label: 'Settings' },
   ];
 
@@ -115,6 +118,7 @@ export default function AppLayout() {
                   signOut();
                 }}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-all hover:bg-red-100 active:scale-95 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
+                title="Sign Out Mobile"
               >
                 <LogOut className="h-4 w-4" />
                 Sign Out
@@ -169,7 +173,6 @@ export default function AppLayout() {
             </nav>
           </div>
 
-          {/* Right actions */}
           <div className="flex items-center gap-2">
             <button
               onClick={toggleDark}
@@ -219,7 +222,7 @@ export default function AppLayout() {
               About
             </Link>
             <Link
-              to="/app/guide"
+              to="/guide"
               className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
             >
               Guide
@@ -230,13 +233,36 @@ export default function AppLayout() {
             >
               Contact
             </a>
+            <Link
+              to="/privacy"
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
+            >
+              Privacy
+            </Link>
+            <Link
+              to="/terms"
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
+            >
+              Terms
+            </Link>
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
+            >
+              Feedback
+            </button>
           </div>
+
           <p className="text-xs text-neutral-500 dark:text-neutral-500">
-            &copy; {new Date().getFullYear()} Parrit.
+            &copy; {new Date().getFullYear()} Michael Ketiku
           </p>
         </div>
       </footer>
       <Toaster />
+      <FeedbackModal
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+      />
     </div>
   );
 }

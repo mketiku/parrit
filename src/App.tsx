@@ -16,7 +16,11 @@ import { usePairingStore } from './features/pairing/store/usePairingStore';
 import { useThemeStore } from './store/useThemeStore';
 import { PublicView } from './features/pairing/components/PublicView';
 import { AdminPortal } from './features/admin/components/AdminPortal';
+import { PrivacyScreen } from './features/static/components/PrivacyScreen';
+import { TermsScreen } from './features/static/components/TermsScreen';
+import { NotFoundScreen } from './features/static/components/ErrorScreens';
 import { AdminShortcutListener } from './features/admin/components/AdminShortcutListener';
+import { formatToday } from './features/pairing/utils/dateUtils';
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -36,13 +40,28 @@ function DashboardView() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          {displayName} Workspace
-        </h1>
-        <p className="mt-2 text-neutral-500 dark:text-neutral-300">
-          Drag and drop team members to configure today's pairing sessions.
-        </p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+              {displayName} Workspace
+            </span>
+          </div>
+          <h1 className="text-4xl font-black tracking-tight text-neutral-900 dark:text-white">
+            Pairing Dashboard
+          </h1>
+          <p className="mt-2 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            Drag and drop team members to configure today's pairing sessions.
+          </p>
+        </div>
+        <div className="text-left md:text-right">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
+            Today
+          </p>
+          <p className="text-lg font-bold text-neutral-900 dark:text-neutral-100 italic">
+            {formatToday()}
+          </p>
+        </div>
       </div>
       <div className="flex-1">
         <PairingWorkspace />
@@ -96,8 +115,10 @@ function App() {
             />
             <Route path="/about" element={<AboutScreen />} />
             <Route path="/guide" element={<PairingGuide />} />
+            <Route path="/privacy" element={<PrivacyScreen />} />
+            <Route path="/terms" element={<TermsScreen />} />
             <Route path="/view/:shareToken" element={<PublicView />} />
-            <Route path="/admin" element={<AdminPortal />} />
+
             <Route
               path="/login"
               element={user ? <Navigate to="/app" replace /> : <AuthScreen />}
@@ -112,6 +133,7 @@ function App() {
               <Route path="/app/history" element={<HistoryScreen />} />
               <Route path="/app/guide" element={<PairingGuide />} />
               <Route path="/app/settings" element={<SettingsScreen />} />
+              <Route path="/app/admin" element={<AdminPortal />} />
             </Route>
           ) : (
             /* Redirect any /app/* requests to login when unauthenticated */
@@ -119,7 +141,7 @@ function App() {
           )}
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundScreen />} />
         </Routes>
       </BrowserRouter>
     </>

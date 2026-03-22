@@ -9,12 +9,12 @@ import { Loader2, Lock, ArrowRight } from 'lucide-react';
 
 export function PublicView() {
   const { shareToken } = useParams<{ shareToken: string }>();
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, isLoading: isAuthLoading } = useAuthStore();
+
   const [boards, setBoards] = useState<PairingBoard[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPublic, setIsPublic] = useState<boolean | null>(null);
-  const [isAdminView, setIsAdminView] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -47,93 +47,49 @@ export function PublicView() {
         const actualUserId = settings.user_id;
         const isPublicEnabled = settings?.public_view_enabled ?? false;
 
-        // RBAC Check: Allow access if public or if current user is an admin
-        if (!isPublicEnabled && !isAdmin) {
+        // Privacy Check: Block access if public view is disabled
+        if (!isPublicEnabled) {
           setIsPublic(false);
           setIsLoading(false);
           return;
         }
 
         setIsPublic(true);
-        setIsAdminView(isAdmin && !isPublicEnabled);
+        const [peopleRes, boardsRes] = await Promise.all([
+          supabase.from('people').select('*').eq('user_id', actualUserId),
+          supabase
+            .from('pairing_boards')
+            .select('*')
+            .eq('user_id', actualUserId)
+            .order('sort_order'),
+        ]);
 
-        // 2. Fetch Data (Admin utilizes the secure logged RPC)
-        if (isAdmin && !isPublicEnabled) {
-          const { data, error } = await supabase.rpc(
-            'admin_get_workspace_data',
-            {
-              target_user_id: actualUserId,
-            }
+        if (peopleRes.data) {
+          setPeople(
+            (peopleRes.data as unknown as PersonRecord[]).map((p) => ({
+              id: p.id,
+              name: p.name,
+              avatarColorHex: p.avatar_color_hex,
+              userId: p.user_id,
+              createdAt: p.created_at,
+            }))
           );
-
-          if (error) throw error;
-
-          if (data) {
-            const adminData = data as unknown as {
-              people: PersonRecord[];
-              boards: BoardRecord[];
-            };
-            setPeople(
-              (adminData.people || []).map((p) => ({
-                id: p.id,
-                name: p.name,
-                avatarColorHex: p.avatar_color_hex,
-                userId: p.user_id,
-                createdAt: p.created_at,
-              }))
-            );
-            setBoards(
-              (adminData.boards || []).map((b) => ({
-                id: b.id,
-                userId: b.user_id,
-                name: b.name,
-                isExempt: b.is_exempt,
-                isLocked: b.is_locked || false,
-                goals: b.goals,
-                meetingLink: b.meeting_link || undefined,
-                sortOrder: b.sort_order,
-                assignedPersonIds: b.assigned_person_ids,
-                createdAt: b.created_at,
-              }))
-            );
-          }
-        } else {
-          const [peopleRes, boardsRes] = await Promise.all([
-            supabase.from('people').select('*').eq('user_id', actualUserId),
-            supabase
-              .from('pairing_boards')
-              .select('*')
-              .eq('user_id', actualUserId)
-              .order('sort_order'),
-          ]);
-
-          if (peopleRes.data) {
-            setPeople(
-              (peopleRes.data as unknown as PersonRecord[]).map((p) => ({
-                id: p.id,
-                name: p.name,
-                avatarColorHex: p.avatar_color_hex,
-                userId: p.user_id,
-                createdAt: p.created_at,
-              }))
-            );
-          }
-          if (boardsRes.data) {
-            setBoards(
-              (boardsRes.data as unknown as BoardRecord[]).map((b) => ({
-                id: b.id,
-                userId: b.user_id,
-                name: b.name,
-                isExempt: b.is_exempt,
-                isLocked: b.is_locked || false,
-                goals: b.goals,
-                meetingLink: b.meeting_link || undefined,
-                sortOrder: b.sort_order,
-                assignedPersonIds: b.assigned_person_ids,
-                createdAt: b.created_at,
-              }))
-            );
-          }
+        }
+        if (boardsRes.data) {
+          setBoards(
+            (boardsRes.data as unknown as BoardRecord[]).map((b) => ({
+              id: b.id,
+              userId: b.user_id,
+              name: b.name,
+              isExempt: b.is_exempt,
+              isLocked: b.is_locked || false,
+              goals: b.goals,
+              meetingLink: b.meeting_link || undefined,
+              sortOrder: b.sort_order,
+              assignedPersonIds: b.assigned_person_ids,
+              createdAt: b.created_at,
+            }))
+          );
         }
       } catch (err) {
         console.error('Fetch error:', err);
@@ -142,18 +98,23 @@ export function PublicView() {
       }
     }
 
-    fetchData();
-  }, [shareToken, isAdmin]);
+    if (!isAuthLoading) {
+      fetchData();
+    }
+  }, [shareToken, isAdmin, isAuthLoading]);
 
-  if (isLoading) {
+  if (isAuthLoading || isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+      <div
+        role="status"
+        className="flex h-screen w-full items-center justify-center bg-neutral-50 dark:bg-neutral-950"
+      >
         <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
       </div>
     );
   }
 
-  if (isPublic === false) {
+  if (isPublic === false && !isAdmin) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-neutral-50 dark:bg-neutral-950">
         <motion.div
@@ -189,7 +150,7 @@ export function PublicView() {
       <WorkspaceDashboardDisplay
         boards={boards}
         people={people}
-        isAdminView={isAdminView}
+        isAdminView={false}
       />
 
       <footer className="mt-24 border-t border-neutral-200/50 pt-16 dark:border-neutral-800/50 px-4 text-center">

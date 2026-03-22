@@ -205,12 +205,14 @@ export function TeamScreen() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={commitEdit}
+                          aria-label="Save changes"
                           className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white transition-all hover:bg-brand-500"
                         >
                           <Check className="h-4 w-4" />
                         </button>
                         <button
                           onClick={cancelEdit}
+                          aria-label="Cancel editing"
                           className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 text-neutral-500 transition-all hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
                         >
                           <X className="h-4 w-4" />

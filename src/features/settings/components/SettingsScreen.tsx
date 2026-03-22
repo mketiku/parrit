@@ -20,6 +20,9 @@ import {
   Copy,
   ExternalLink,
   MessageSquare,
+  RefreshCw,
+  Shield,
+  Trash2,
 } from 'lucide-react';
 
 const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
@@ -170,7 +173,7 @@ export function SettingsScreen() {
   };
 
   const [activeTab, setActiveTab] = useState<
-    'general' | 'pairing' | 'sharing' | 'integrations' | 'security'
+    'general' | 'pairing' | 'privacy' | 'integrations' | 'security'
   >('general');
 
   const TABS = [
@@ -187,10 +190,10 @@ export function SettingsScreen() {
       description: 'Logic & History',
     },
     {
-      id: 'sharing',
-      label: 'Sharing',
-      icon: Share2,
-      description: 'Public Access',
+      id: 'privacy',
+      label: 'Privacy',
+      icon: Shield,
+      description: 'Data & Sharing',
     },
     {
       id: 'integrations',
@@ -201,8 +204,8 @@ export function SettingsScreen() {
     {
       id: 'security',
       label: 'Security',
-      icon: ShieldCheck,
-      description: 'Data & Access',
+      icon: KeyRound,
+      description: 'Access & Backups',
     },
   ] as const;
 
@@ -415,22 +418,58 @@ export function SettingsScreen() {
             </section>
           )}
 
-          {activeTab === 'sharing' && (
-            <section className="space-y-8">
+          {activeTab === 'privacy' && (
+            <section className="space-y-10">
               <div className="space-y-1">
                 <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tight">
-                  Sharing
+                  Privacy & Sharing
                 </h2>
                 <p className="text-sm text-neutral-500">
-                  Manage public access and live collaboration.
+                  Control who can see your workspace and manage your data
+                  footprint.
                 </p>
+              </div>
+
+              {/* Privacy Reassurance Shield - High Contrast Glassmorphism */}
+              <div className="relative overflow-hidden rounded-3xl border border-brand-500/20 bg-neutral-900 p-8 text-white shadow-2xl dark:border-brand-500/30 dark:bg-brand-500/5">
+                {/* Subtle Background Glow */}
+                <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-brand-500/10 blur-[100px]" />
+                <div className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-brand-500/10 blur-[100px]" />
+
+                <div className="relative flex items-start gap-6">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-lg shadow-brand-500/30">
+                    <Shield className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-black tracking-tight text-white">
+                      Parrit Privacy Shield
+                    </h3>
+                    <p className="max-w-xl text-sm font-medium leading-relaxed text-neutral-400">
+                      Your dashboards are your own. We use{' '}
+                      <span className="font-bold italic text-brand-400">
+                        Admin Zero-Access
+                      </span>{' '}
+                      architecture. System administrators can only see
+                      high-level statistics; they cannot inspect your team
+                      members, goals, or pairing history.
+                    </p>
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-neutral-700 bg-neutral-800 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                        <Check className="h-2.5 w-2.5" /> No Peeking
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-neutral-700 bg-neutral-800 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                        <Check className="h-2.5 w-2.5" /> Logged Audits
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="rounded-3xl border border-neutral-200 bg-white p-2 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <SettingToggle
-                  icon={<ExternalLink className="h-5 w-5 text-neutral-400" />}
-                  title="Share Live Dashboard"
-                  description="Public read-only link for stakeholders."
+                  icon={<Share2 className="h-5 w-5 text-neutral-400" />}
+                  title="Enable Collaboration Link"
+                  description="Allow read-only access to anyone with your secure link."
                   checked={publicViewEnabled}
                   onChange={async (val) => {
                     setPublicViewEnabled(val);
@@ -445,42 +484,74 @@ export function SettingsScreen() {
                 />
 
                 {publicViewEnabled && user && (
-                  <div className="m-4 mt-0 overflow-hidden rounded-2xl bg-neutral-50 p-6 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800">
-                    <div className="flex flex-col sm:flex-row items-center gap-6">
-                      <div className="flex-1 space-y-1 text-center sm:text-left min-w-0">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">
-                          Public Link
-                        </span>
-                        <p className="font-mono text-xs text-neutral-600 dark:text-neutral-400 truncate">
-                          {window.location.origin}/view/{shareToken || user.id}
-                        </p>
+                  <div className="m-4 mt-0 overflow-hidden rounded-2xl bg-neutral-50 p-6 dark:bg-neutral-950/50 border border-neutral-100 dark:border-neutral-800 animate-in slide-in-from-top-4 duration-300">
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row items-center gap-6">
+                        <div className="flex-1 space-y-1 text-center sm:text-left min-w-0">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">
+                            Secure Public URL
+                          </span>
+                          <p className="font-mono text-xs text-neutral-600 dark:text-neutral-400 truncate">
+                            {window.location.origin}/view/
+                            {shareToken || user.id}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 gap-2">
+                          <button
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(
+                                `${window.location.origin}/view/${shareToken || user.id}`
+                              );
+                              setJustCopied(true);
+                              setTimeout(() => setJustCopied(false), 2000);
+                            }}
+                            className="flex h-10 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-xs font-bold text-neutral-600 transition-all hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-800"
+                          >
+                            {justCopied ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Copy className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                            )}
+                            {justCopied ? 'Copied' : 'Copy'}
+                          </button>
+                          <a
+                            href={`/view/${shareToken || user.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex h-10 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-xs font-bold text-white transition-all hover:bg-neutral-800 dark:bg-brand-500 dark:hover:bg-brand-600"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 text-neutral-400 group-hover:text-white" />
+                            Visit
+                          </a>
+                        </div>
                       </div>
-                      <div className="flex shrink-0 gap-2">
+
+                      <div className="border-t border-neutral-200/50 pt-4 dark:border-neutral-800">
                         <button
                           onClick={async () => {
-                            await navigator.clipboard.writeText(
-                              `${window.location.origin}/view/${shareToken || user.id}`
-                            );
-                            setJustCopied(true);
-                            setTimeout(() => setJustCopied(false), 2000);
+                            if (
+                              !confirm(
+                                'This will invalidate your current sharing link. Continue?'
+                              )
+                            )
+                              return;
+                            const newToken = crypto.randomUUID();
+                            const { error } = await supabase
+                              .from('workspace_settings')
+                              .update({ share_token: newToken })
+                              .eq('user_id', user.id);
+                            if (!error) {
+                              useWorkspacePrefsStore
+                                .getState()
+                                .setShareToken(newToken);
+                              alert('Link rotated successfully!');
+                            }
                           }}
-                          className="flex h-10 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-xs font-bold text-neutral-600 transition-all hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-800"
+                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-brand-600 transition-all dark:text-neutral-400 dark:hover:text-brand-400"
                         >
-                          {justCopied ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Copy className="h-4 w-4 text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white" />
-                          )}
-                          {justCopied ? 'Copied' : 'Copy'}
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          Regenerate Link / Revoke Keys
                         </button>
-                        <a
-                          href={`/view/${shareToken || user.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex h-10 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-xs font-bold text-white transition-all hover:bg-neutral-800 dark:bg-brand-500 dark:hover:bg-brand-600"
-                        >
-                          Visit
-                        </a>
                       </div>
                     </div>
                   </div>
@@ -662,22 +733,56 @@ export function SettingsScreen() {
                   </h2>
                 </div>
                 <div className="rounded-3xl border-2 border-dashed border-red-200 bg-red-50/20 p-8 dark:border-red-900/10">
-                  <div className="flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
-                    <div className="flex-1 space-y-2">
-                      <h3 className="font-black text-red-600">
-                        Import Workspace
-                      </h3>
-                      <p className="text-xs text-red-700 font-bold dark:text-red-400 leading-relaxed max-w-sm">
-                        This will replace all current data.
-                      </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="flex flex-col gap-4 text-left">
+                      <div className="space-y-1">
+                        <h3 className="font-black text-red-600">
+                          Import Workspace
+                        </h3>
+                        <p className="text-xs text-red-700 font-bold dark:text-red-400 leading-relaxed max-w-sm">
+                          Replace all current dashboard data with a JSON file.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-fit rounded-2xl bg-white border border-red-200 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-red-600 shadow-sm hover:bg-red-50 transition-all"
+                      >
+                        Select JSON
+                      </button>
                     </div>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="rounded-2xl bg-red-600 px-6 py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all"
-                    >
-                      Import JSON
-                    </button>
+
+                    <div className="flex flex-col gap-4 text-left">
+                      <div className="space-y-1">
+                        <h3 className="font-black text-red-600">
+                          Pure Destructive Wipe
+                        </h3>
+                        <p className="text-xs text-red-700 font-bold dark:text-red-400 leading-relaxed max-w-sm">
+                          Delete everything. Boards, history, and members.
+                        </p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const confirm1 = confirm(
+                            'PERMANENT DELETION: Are you sure you want to wipe all workspace data? This cannot be undone.'
+                          );
+                          if (!confirm1) return;
+                          const confirm2 = confirm(
+                            'LAST WARNING: This will permanently delete your pairing history and team setup. Continue?'
+                          );
+                          if (!confirm2) return;
+
+                          setIsLoading(true);
+                          await usePairingStore.getState().wipeWorkspace();
+                          setIsLoading(false);
+                        }}
+                        className="w-fit rounded-2xl bg-red-600 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all flex items-center gap-2"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Wipe Everything
+                      </button>
+                    </div>
                   </div>
+
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -685,6 +790,7 @@ export function SettingsScreen() {
                     onChange={handleFileChange}
                     className="hidden"
                   />
+
                   {importConfirm && (
                     <div className="mt-8 rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-950 animate-in zoom-in-95">
                       <h4 className="flex items-center gap-2 font-black text-neutral-900 dark:text-white">
@@ -692,7 +798,7 @@ export function SettingsScreen() {
                         Destructive Action
                       </h4>
                       <p className="mt-2 text-sm text-neutral-500">
-                        Are you sure? This cannot be undone.
+                        Are you sure? This will replace your entire workspace.
                       </p>
                       <div className="mt-6 flex gap-3">
                         <button

@@ -107,8 +107,8 @@ function DraggablePersonComponent({
         </span>
       </button>
 
-      {/* Hover Tooltip */}
-      {showTooltip && !isDragging && (
+      {/* Hover Tooltip - only show if name is not already visible inside the pill */}
+      {showTooltip && !isDragging && !showFullName && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}

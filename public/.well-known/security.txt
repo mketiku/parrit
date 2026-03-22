@@ -1,0 +1,5 @@
+Contact: https://github.com/mketiku/parrit/security/advisories/new
+Expires: 2027-03-22T03:57:30Z
+Preferred-Languages: en
+Canonical: https://parrit.org/.well-known/security.txt
+Policy: https://github.com/mketiku/parrit/security/policy
