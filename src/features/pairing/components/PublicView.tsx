@@ -10,6 +10,7 @@ import { Loader2, Lock, ArrowRight } from 'lucide-react';
 export function PublicView() {
   const { shareToken } = useParams<{ shareToken: string }>();
   const { isAdmin, isLoading: isAuthLoading } = useAuthStore();
+
   const [boards, setBoards] = useState<PairingBoard[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [isLoading, setIsLoading] = useState(true);

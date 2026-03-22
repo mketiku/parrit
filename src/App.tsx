@@ -113,6 +113,7 @@ function App() {
             <Route path="/about" element={<AboutScreen />} />
             <Route path="/guide" element={<PairingGuide />} />
             <Route path="/view/:shareToken" element={<PublicView />} />
+
             <Route
               path="/login"
               element={user ? <Navigate to="/app" replace /> : <AuthScreen />}

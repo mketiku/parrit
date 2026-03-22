@@ -44,6 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           user.user_metadata?.workspace_name ||
           user.email?.split('@')[0] ||
           `Workspace ${user.id.slice(0, 5)}`;
+
         role = user.app_metadata?.role || null;
       }
 
@@ -67,6 +68,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             currentUser.user_metadata?.workspace_name ||
             currentUser.email?.split('@')[0] ||
             `Workspace ${currentUser.id.slice(0, 5)}`;
+
           currentRole = currentUser.app_metadata?.role || null;
         }
         set({
