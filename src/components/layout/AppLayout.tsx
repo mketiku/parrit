@@ -4,12 +4,14 @@ import { Bird, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 import { useThemeStore } from '../../store/useThemeStore';
+import { FeedbackModal } from '../../features/feedback/components/FeedbackModal';
 
 export default function AppLayout() {
   const { signOut, isAdmin } = useAuthStore();
   const { isDark, toggleDark } = useThemeStore();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -231,6 +233,12 @@ export default function AppLayout() {
             >
               Contact
             </a>
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
+            >
+              Feedback
+            </button>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-500">
             &copy; {new Date().getFullYear()} Parrit.
@@ -238,6 +246,10 @@ export default function AppLayout() {
         </div>
       </footer>
       <Toaster />
+      <FeedbackModal
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+      />
     </div>
   );
 }

@@ -13,6 +13,10 @@ vi.mock('../../store/useThemeStore');
 vi.mock('../ui/Toaster', () => ({
   Toaster: () => <div data-testid="toaster" />,
 }));
+vi.mock('../../features/feedback/components/FeedbackModal', () => ({
+  FeedbackModal: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="feedback-modal" /> : null,
+}));
 
 describe('AppLayout Component', () => {
   const mockSignOut = vi.fn();
@@ -136,6 +140,18 @@ describe('AppLayout Component', () => {
       value: originalOnLine,
       configurable: true,
     });
+  });
+
+  it('opens the feedback modal when Feedback is clicked', () => {
+    render(
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByTestId('feedback-modal')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Feedback/i }));
+    expect(screen.getByTestId('feedback-modal')).toBeInTheDocument();
   });
 
   it('closes mobile menu on escape key', () => {
