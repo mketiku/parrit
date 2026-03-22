@@ -78,7 +78,6 @@ export const createSessionSlice: StateCreator<
 
     // 2. Perform Atomic Save via RPC
     const { error: saveErr } = await supabase.rpc('save_pairing_session', {
-      p_user_id: user.id,
       p_session_date: session_date,
       p_snapshot_data: snapshot_data,
       p_history_rows: historyRows,
@@ -126,6 +125,23 @@ export const createSessionSlice: StateCreator<
 
       // Support Slack (use 'text'), Discord (use 'content'), and Teams (use 'text')
       try {
+        const url = new URL(slackWebhookUrl);
+        const allowedDomains = [
+          'hooks.slack.com',
+          'discord.com',
+          'outlook.office.com',
+          'webhook.office.com',
+        ];
+
+        if (
+          !allowedDomains.some(
+            (domain) =>
+              url.hostname === domain || url.hostname.endsWith('.' + domain)
+          )
+        ) {
+          throw new Error('Disallowed webhook domain');
+        }
+
         // Use 'no-cors' mode and 'text/plain' to bypass browser preflight CORS checks.
         // This is a "fire and forget" request since we don't care about the response.
         await fetch(slackWebhookUrl, {
@@ -134,7 +150,8 @@ export const createSessionSlice: StateCreator<
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({ text, content: text }),
         });
-      } catch {
+      } catch (err: unknown) {
+        console.error('Webhook error:', err);
         useToastStore
           .getState()
           .addToast('Webhook notification failed to send.', 'info');

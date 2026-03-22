@@ -232,16 +232,6 @@ export function LiveDemoShowcase() {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Demo Badge */}
-      <div className="absolute top-4 right-8 z-50 pointer-events-none">
-        <div className="flex items-center gap-2 rounded-full bg-neutral-900/10 dark:bg-white/10 px-3 py-1 backdrop-blur-md border border-white/20">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
-          <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-widest">
-            Demo Preview
-          </span>
-        </div>
-      </div>
-
       <AnimatePresence>
         {showSaveToast && (
           <motion.div
@@ -285,20 +275,29 @@ export function LiveDemoShowcase() {
           </AnimatePresence>
         </motion.div>
 
-        <div className="flex items-center gap-2 border-b border-neutral-200/50 dark:border-neutral-800/50 px-6 py-4">
-          <div className="flex gap-1.5">
-            <div className="h-3 w-3 rounded-full bg-red-400/50" />
-            <div className="h-3 w-3 rounded-full bg-amber-400/50" />
-            <div className="h-3 w-3 rounded-full bg-green-400/50" />
-          </div>
-          <div className="ml-4 flex-1 max-w-md rounded-xl bg-neutral-100 dark:bg-neutral-800 px-4 py-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-400 tracking-tight flex items-center justify-between">
-            <span>parrit.org/app</span>
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[8px] uppercase tracking-widest opacity-50">
-                Live
-              </span>
+        <div className="flex items-center justify-between border-b border-neutral-200/50 dark:border-neutral-800/50 px-6 py-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex gap-1.5 shrink-0">
+              <div className="h-3 w-3 rounded-full bg-red-400/50" />
+              <div className="h-3 w-3 rounded-full bg-amber-400/50" />
+              <div className="h-3 w-3 rounded-full bg-green-400/50" />
             </div>
+            <div className="ml-4 flex-1 max-w-md rounded-xl bg-neutral-100 dark:bg-neutral-800 px-4 py-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-400 tracking-tight flex items-center justify-between gap-4">
+              <span className="truncate">parrit.org/app</span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[8px] uppercase tracking-widest opacity-50">
+                  Live
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 rounded-full bg-neutral-900/5 dark:bg-white/10 px-2 py-0.5 backdrop-blur-md border border-black/5 dark:border-white/10 shrink-0 ml-2">
+            <span className="h-1 w-1 rounded-full bg-brand-500 animate-pulse" />
+            <span className="text-[9px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-[0.15em]">
+              Demo
+            </span>
           </div>
         </div>
 
