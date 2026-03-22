@@ -79,6 +79,13 @@ export default defineConfig({
         'playwright.config.ts',
         'postcss.config.js',
         'tailwind.config.js',
+        'eslint.config.js',
+        // Static/content-only files — no logic to test
+        'src/App.tsx',
+        'src/features/pairing/types.ts',
+        'src/features/static/components/AboutScreen.tsx',
+        'src/features/static/components/PairingGuide.tsx',
+        'src/components/layout/PublicLayout.tsx',
       ],
     },
   },
