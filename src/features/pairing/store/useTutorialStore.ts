@@ -40,7 +40,7 @@ export const DASHBOARD_TUTORIAL_STEPS: TutorialStep[] = [
     targetId: 'recommend-btn',
     title: 'Get Recommendations',
     description:
-      'Let Parrit suggest pairs based on historical data. Very handy for rotating teams efficiently.',
+      'Let Parrit suggest pairs based on historical data and availability. Very handy for rotating teams efficiently while keeping one person with the knowledge of the board where possible.',
     placement: 'bottom',
   },
   {

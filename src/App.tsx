@@ -1,26 +1,81 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import PublicLayout from './components/layout/PublicLayout';
-import { AuthScreen } from './features/auth/components/AuthScreen';
 import { useAuthStore } from './features/auth/store/useAuthStore';
 import { Loader2 } from 'lucide-react';
-import { SettingsScreen } from './features/settings/components/SettingsScreen';
-import { TeamScreen } from './features/team/components/TeamScreen';
-import { AboutScreen } from './features/static/components/AboutScreen';
-import { PairingGuide } from './features/static/components/PairingGuide';
-import { LandingPage } from './features/static/components/LandingPage';
-import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
-import { HistoryScreen } from './features/pairing/components/HistoryScreen';
 import { usePairingStore } from './features/pairing/store/usePairingStore';
 import { useThemeStore } from './store/useThemeStore';
-import { PublicView } from './features/pairing/components/PublicView';
-import { AdminPortal } from './features/admin/components/AdminPortal';
-import { PrivacyScreen } from './features/static/components/PrivacyScreen';
-import { TermsScreen } from './features/static/components/TermsScreen';
-import { NotFoundScreen } from './features/static/components/ErrorScreens';
 import { AdminShortcutListener } from './features/admin/components/AdminShortcutListener';
 import { formatToday } from './features/pairing/utils/dateUtils';
+import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
+
+const AuthScreen = lazy(() =>
+  import('./features/auth/components/AuthScreen').then((m) => ({
+    default: m.AuthScreen,
+  }))
+);
+const SettingsScreen = lazy(() =>
+  import('./features/settings/components/SettingsScreen').then((m) => ({
+    default: m.SettingsScreen,
+  }))
+);
+const TeamScreen = lazy(() =>
+  import('./features/team/components/TeamScreen').then((m) => ({
+    default: m.TeamScreen,
+  }))
+);
+const AboutScreen = lazy(() =>
+  import('./features/static/components/AboutScreen').then((m) => ({
+    default: m.AboutScreen,
+  }))
+);
+const PairingGuide = lazy(() =>
+  import('./features/static/components/PairingGuide').then((m) => ({
+    default: m.PairingGuide,
+  }))
+);
+const LandingPage = lazy(() =>
+  import('./features/static/components/LandingPage').then((m) => ({
+    default: m.LandingPage,
+  }))
+);
+const HistoryScreen = lazy(() =>
+  import('./features/pairing/components/HistoryScreen').then((m) => ({
+    default: m.HistoryScreen,
+  }))
+);
+const PublicView = lazy(() =>
+  import('./features/pairing/components/PublicView').then((m) => ({
+    default: m.PublicView,
+  }))
+);
+const AdminPortal = lazy(() =>
+  import('./features/admin/components/AdminPortal').then((m) => ({
+    default: m.AdminPortal,
+  }))
+);
+const PrivacyScreen = lazy(() =>
+  import('./features/static/components/PrivacyScreen').then((m) => ({
+    default: m.PrivacyScreen,
+  }))
+);
+const TermsScreen = lazy(() =>
+  import('./features/static/components/TermsScreen').then((m) => ({
+    default: m.TermsScreen,
+  }))
+);
+const NotFoundScreen = lazy(() =>
+  import('./features/static/components/ErrorScreens').then((m) => ({
+    default: m.NotFoundScreen,
+  }))
+);
+
+const PageLoader = () => (
+  <div className="flex min-h-[50vh] items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+  </div>
+);
 
 // Authenticated dashboard wrapper
 function DashboardView() {
@@ -106,43 +161,47 @@ function App() {
     <>
       <BrowserRouter>
         <AdminShortcutListener />
-        <Routes>
-          {/* ── Public routes (no login required) ── */}
-          <Route element={<PublicLayout />}>
-            <Route
-              path="/"
-              element={user ? <Navigate to="/app" replace /> : <LandingPage />}
-            />
-            <Route path="/about" element={<AboutScreen />} />
-            <Route path="/guide" element={<PairingGuide />} />
-            <Route path="/privacy" element={<PrivacyScreen />} />
-            <Route path="/terms" element={<TermsScreen />} />
-            <Route path="/view/:shareToken" element={<PublicView />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* ── Public routes (no login required) ── */}
+            <Route element={<PublicLayout />}>
+              <Route
+                path="/"
+                element={
+                  user ? <Navigate to="/app" replace /> : <LandingPage />
+                }
+              />
+              <Route path="/about" element={<AboutScreen />} />
+              <Route path="/guide" element={<PairingGuide />} />
+              <Route path="/privacy" element={<PrivacyScreen />} />
+              <Route path="/terms" element={<TermsScreen />} />
+              <Route path="/view/:shareToken" element={<PublicView />} />
 
-            <Route
-              path="/login"
-              element={user ? <Navigate to="/app" replace /> : <AuthScreen />}
-            />
-          </Route>
-
-          {/* ── Authenticated app routes ── */}
-          {user ? (
-            <Route element={<AppLayout />}>
-              <Route path="/app" element={<DashboardView />} />
-              <Route path="/app/team" element={<TeamScreen />} />
-              <Route path="/app/history" element={<HistoryScreen />} />
-              <Route path="/app/guide" element={<PairingGuide />} />
-              <Route path="/app/settings" element={<SettingsScreen />} />
-              <Route path="/app/admin" element={<AdminPortal />} />
+              <Route
+                path="/login"
+                element={user ? <Navigate to="/app" replace /> : <AuthScreen />}
+              />
             </Route>
-          ) : (
-            /* Redirect any /app/* requests to login when unauthenticated */
-            <Route path="/app/*" element={<Navigate to="/login" replace />} />
-          )}
 
-          {/* Fallback */}
-          <Route path="*" element={<NotFoundScreen />} />
-        </Routes>
+            {/* ── Authenticated app routes ── */}
+            {user ? (
+              <Route element={<AppLayout />}>
+                <Route path="/app" element={<DashboardView />} />
+                <Route path="/app/team" element={<TeamScreen />} />
+                <Route path="/app/history" element={<HistoryScreen />} />
+                <Route path="/app/guide" element={<PairingGuide />} />
+                <Route path="/app/settings" element={<SettingsScreen />} />
+                <Route path="/app/admin" element={<AdminPortal />} />
+              </Route>
+            ) : (
+              /* Redirect any /app/* requests to login when unauthenticated */
+              <Route path="/app/*" element={<Navigate to="/login" replace />} />
+            )}
+
+            {/* Fallback */}
+            <Route path="*" element={<NotFoundScreen />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </>
   );
