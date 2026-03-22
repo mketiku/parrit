@@ -66,7 +66,7 @@ function DraggablePersonComponent({
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.8, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      className="relative flex items-center justify-center"
+      className="relative flex items-center justify-start"
     >
       <button
         ref={setNodeRef}
