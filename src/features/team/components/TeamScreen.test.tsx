@@ -116,7 +116,10 @@ describe('TeamScreen Component', () => {
 
   it('renders limit banner when at MAX_PEOPLE', () => {
     (usePairingStore as any).mockReturnValue({
-      people: Array(16).fill({ id: 'x', name: 'User' }),
+      people: Array.from({ length: 16 }, (_, i) => ({
+        id: `u${i}`,
+        name: 'User',
+      })),
       addPerson: mockAddPerson,
       updatePerson: mockUpdatePerson,
       removePerson: mockRemovePerson,

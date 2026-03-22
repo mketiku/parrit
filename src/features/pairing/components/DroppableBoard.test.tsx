@@ -107,4 +107,44 @@ describe('DroppableBoard Component', () => {
       name: 'New Name',
     });
   });
+
+  it('calls updateBoard when toggling lock status', () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1', isLocked: false });
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={[]} />
+      </DndContext>
+    );
+
+    const lockButton = screen.getByTitle(/Lock board assignments/i);
+    fireEvent.click(lockButton);
+
+    expect(defaultStoreValues.updateBoard).toHaveBeenCalledWith('board-1', {
+      isLocked: true,
+    });
+  });
+
+  it('calls updateBoard when toggling exempt status', () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1', isExempt: false });
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={[]} />
+      </DndContext>
+    );
+
+    const exemptButton = screen.getByTitle(/Mark as Out of Office \/ Exempt/i);
+    fireEvent.click(exemptButton);
+
+    expect(defaultStoreValues.updateBoard).toHaveBeenCalledWith('board-1', {
+      isExempt: true,
+    });
+  });
 });

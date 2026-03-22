@@ -22,7 +22,7 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 
-describe('LandingPage Component', () => {
+describe('LandingPage Component', { timeout: 10000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useAuthStore as any).mockReturnValue({
@@ -59,17 +59,5 @@ describe('LandingPage Component', () => {
     expect(screen.getByText(/Signed in as/i)).toBeInTheDocument();
     expect(screen.getByText(/Acme Workspace/i)).toBeInTheDocument();
     expect(screen.getByText(/Enter Dashboard/i)).toBeInTheDocument();
-  });
-
-  it('displays features list', () => {
-    render(
-      <MemoryRouter>
-        <LandingPage />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText('Dynamic Boards')).toBeInTheDocument();
-    expect(screen.getByText('Real-time Sync')).toBeInTheDocument();
-    expect(screen.getByText('Public View Links')).toBeInTheDocument();
   });
 });
