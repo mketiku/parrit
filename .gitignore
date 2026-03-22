@@ -39,3 +39,6 @@ playwright/.cache/
 supabase/.temp/
 supabase/seed.sql
 supabase/.branches/
+
+# Launch Materials
+.launch/

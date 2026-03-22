@@ -31,7 +31,6 @@ const WorkspaceSnapshotSchema = z.object({
       onboardingCompleted: z.boolean(),
       stalePairThreshold: z.number(),
       meetingLinkEnabled: z.boolean(),
-      slackWebhookUrl: z.string(),
       theme: z.string().optional(),
     })
     .optional(),
@@ -93,7 +92,6 @@ export const createExportImportSlice: StateCreator<
         onboardingCompleted: prefs.onboardingCompleted,
         stalePairThreshold: prefs.stalePairThreshold,
         meetingLinkEnabled: prefs.meetingLinkEnabled,
-        slackWebhookUrl: prefs.slackWebhookUrl,
       },
       people: people.map((p) => ({
         name: p.name,
@@ -216,7 +214,6 @@ export const createExportImportSlice: StateCreator<
         prefs.setOnboardingCompleted(s.onboardingCompleted);
         prefs.setStalePairThreshold(s.stalePairThreshold);
         prefs.setMeetingLinkEnabled(s.meetingLinkEnabled);
-        prefs.setSlackWebhookUrl(s.slackWebhookUrl);
 
         // Update DB workspace_settings
         await supabase.from('workspace_settings').upsert({

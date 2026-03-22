@@ -126,7 +126,7 @@ function DashboardView() {
 }
 
 function App() {
-  const { user, isLoading, initialize } = useAuthStore();
+  const { user, isAdmin, isLoading, initialize } = useAuthStore();
   const { loadWorkspaceData, subscribeToRealtime } = usePairingStore();
   const { theme, setTheme, isDark, applyDark } = useThemeStore();
 
@@ -191,7 +191,12 @@ function App() {
                 <Route path="/app/history" element={<HistoryScreen />} />
                 <Route path="/app/guide" element={<PairingGuide />} />
                 <Route path="/app/settings" element={<SettingsScreen />} />
-                <Route path="/app/admin" element={<AdminPortal />} />
+                <Route
+                  path="/app/admin"
+                  element={
+                    isAdmin ? <AdminPortal /> : <Navigate to="/app" replace />
+                  }
+                />
               </Route>
             ) : (
               /* Redirect any /app/* requests to login when unauthenticated */

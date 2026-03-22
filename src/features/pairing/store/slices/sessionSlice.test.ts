@@ -139,7 +139,6 @@ describe('sessionSlice - saveSession', () => {
 
     expect(supabase.rpc).toHaveBeenCalledOnce();
     expect(supabase.rpc).toHaveBeenCalledWith('save_pairing_session', {
-      p_user_id: 'user-123',
       p_session_date: '2026-03-21',
       p_snapshot_data: {
         boards: [
@@ -264,6 +263,25 @@ describe('sessionSlice - saveSession', () => {
     });
     await store.getState().saveSession();
 
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'Webhook notification failed to send.',
+      'info'
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('shows error toast when a disallowed domain is used for webhook', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({});
+    vi.stubGlobal('fetch', mockFetch);
+    mockSlackWebhookUrl = 'https://malicious-site.com/webhook';
+
+    const store = makeStore({
+      boards: [defaultBoard],
+      people: [defaultPerson],
+    });
+    await store.getState().saveSession();
+
+    expect(mockFetch).not.toHaveBeenCalled();
     expect(mockAddToast).toHaveBeenCalledWith(
       'Webhook notification failed to send.',
       'info'
