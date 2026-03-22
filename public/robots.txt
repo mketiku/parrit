@@ -5,6 +5,7 @@
 User-agent: *
 Allow: /
 Allow: /about
+Allow: /guide
 Allow: /view/
 Disallow: /admin
 Disallow: /app/
@@ -20,6 +21,7 @@ User-agent: DuckDuckBot
 User-agent: Slurp
 Allow: /
 Allow: /about
+Allow: /guide
 Allow: /view/
 Disallow: /admin
 Disallow: /app/
@@ -43,4 +45,4 @@ Disallow: /
 # -------------------------------------------------------
 # Sitemap — update domain if needed
 # -------------------------------------------------------
-Sitemap: https://parrit.app/sitemap.xml
+Sitemap: https://parrit.org/sitemap.xml

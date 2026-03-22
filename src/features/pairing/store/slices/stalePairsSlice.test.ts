@@ -30,7 +30,7 @@ function setupSupabaseMock(result: { data: any; error: any }) {
 
 function makeStore() {
   return create<StalePairsSlice>()((...a) =>
-    createStalePairsSlice(...(a as any))
+    createStalePairsSlice(...(a as [any, any, any]))
   );
 }
 

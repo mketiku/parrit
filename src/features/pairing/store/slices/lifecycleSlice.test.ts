@@ -55,8 +55,8 @@ type TestStore = BaseSlice &
 
 function makeStore() {
   return create<TestStore>()((...a) => ({
-    ...createBaseSlice(...(a as any)),
-    ...createLifecycleSlice(...(a as any)),
+    ...createBaseSlice(...(a as [any, any, any])),
+    ...createLifecycleSlice(...(a as [any, any, any])),
     people: [],
     boards: [],
     loadStalePairs: vi.fn(),

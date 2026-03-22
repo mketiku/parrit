@@ -222,7 +222,7 @@ export default function AppLayout() {
               About
             </Link>
             <Link
-              to="/app/guide"
+              to="/guide"
               className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
             >
               Guide

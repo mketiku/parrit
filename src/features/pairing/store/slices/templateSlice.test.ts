@@ -63,22 +63,6 @@ const boardB: PairingBoard = {
   assignedPersonIds: [],
 };
 
-// Helper to build a chainable supabase query mock
-function makeChain(result: object) {
-  const chain: any = {};
-  ['select', 'eq', 'single', 'insert', 'delete'].forEach((method) => {
-    chain[method] = vi.fn(() => chain);
-  });
-  // The terminal call returns the result as a resolved promise
-  // We override the last method in each chain to resolve with the result.
-  // Since the source calls .single() or .select() last, we make those return the result.
-  chain.single = vi.fn(() => Promise.resolve(result));
-  chain.select = vi.fn(() => Promise.resolve(result));
-  // For delete chains, .eq() is terminal
-  chain.eq = vi.fn(() => Promise.resolve(result));
-  return chain;
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
   (supabase.auth.getUser as any).mockResolvedValue({
@@ -406,14 +390,19 @@ describe('templateSlice - applyBuiltinTemplate', () => {
 
     // Should have inserted new boards (no template fetch)
     expect(insertMock).toHaveBeenCalledOnce();
-    const insertedRows = insertMock.mock.calls[0][0];
+    const insertedRows = (
+      insertMock.mock.calls as unknown as [unknown[]][]
+    )[0]![0];
     expect(insertedRows).toHaveLength(3);
-    expect(insertedRows[0]).toMatchObject({
+    expect((insertedRows as any[])[0]).toMatchObject({
       name: 'Alpha',
       is_exempt: false,
       goals: [],
     });
-    expect(insertedRows[2]).toMatchObject({ name: 'Lobby', is_exempt: true });
+    expect((insertedRows as any[])[2]).toMatchObject({
+      name: 'Lobby',
+      is_exempt: true,
+    });
 
     // State should be updated with mapped boards
     const state = store.getState();
