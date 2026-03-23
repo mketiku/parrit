@@ -42,3 +42,14 @@ supabase/.branches/
 
 # Launch Materials
 .launch/
+ 
+# Claude & AI Agents (Un-ignore shared instructions, ignore local state)
+.claude/*
+!.claude/CLAUDE.md
+!.claude/.gitignore
+.gemini/*
+!.gemini/GEMINI.md
+.antigravity/*
+!.antigravity/ANTIGRAVITY.md
+.anthropic/
+.cursor/
