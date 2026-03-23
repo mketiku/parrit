@@ -8,12 +8,19 @@
 
 ## 🚀 Next Up: Keyboard Shortcuts & Webhooks (Medium)
 
+- **Integrations & Ecosystem**: Push daily pairing snapshots to Slack, Discord, or MS Teams using webhooks.
+- **Observability & Analytics**:
+  - **Team Health Heatmaps**: Visualizations identifying "islands of knowledge".
+  - **Rotation Velocity**: Metrics on pair rotation frequency and session lifespan.
 - Implement global keyboard shortcuts for efficient navigation.
-- Add webhook support for external tool integration.
 - Enhance pair rotation logic with configurable constraints.
 
 ## 🌟 Future Vision: Multi-team Workspaces & Real-time Collaboration (Advanced)
 
+- **AI & Intelligent Pairing**: Auto-Orchestration Engine to suggest "best" pairs based on historical data and expertise.
+- **Infrastructure & Accessibility**:
+  - **Full WCAG 2.1 AA Compliance**: Keyboard-accessible drag-and-drop.
+  - **Dockerized Self-Hosting**: Official `docker-compose` support for on-premise deployment.
 - Enable multi-team workspaces with separate boards.
 - Implement real-time collaboration using WebSockets.
 - Develop an extensible plugin system.
