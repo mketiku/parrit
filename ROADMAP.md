@@ -17,7 +17,8 @@
 
 ## 🌟 Future Vision: Multi-team Workspaces & Real-time Collaboration (Advanced)
 
-- **AI & Intelligent Pairing**: Auto-Orchestration Engine to suggest "best" pairs based on historical data and expertise.
+- Enable multi-team workspaces with separate boards.
+- Implement real-time collaboration using WebSockets.
 - **Extensible Plugin System**:
   - **Custom Contextual HUDs**: Plugins to inject real-time metadata (Jira tickets, PR status, skills) onto person cards.
   - **Custom Rotation Rules**: Logic-as-code plugins to define complex team-specific rotation constraints.
@@ -25,5 +26,5 @@
 - **Infrastructure & Accessibility**:
   - **Full WCAG 2.1 AA Compliance**: Keyboard-accessible drag-and-drop.
   - **Dockerized Self-Hosting**: Official `docker-compose` support for on-premise deployment.
-- Enable multi-team workspaces with separate boards.
-- Implement real-time collaboration using WebSockets.
+- **AI-Enhanced Orchestration**: Evolution from our current "Least-Recent" heuristic to a context-aware engine.
+  - **Why AI?**: Current logic only considers pairing history. The AI engine will integrate with GitHub/Jira to suggest pairs based on **technical expertise**, **active PRs**, and **onboarding needs**.
