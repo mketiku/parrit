@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 let supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -21,10 +21,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Guard: only instantiate the real client when valid credentials exist.
-// In test environments without env vars, a null client is exported instead.
-// This prevents `supabaseUrl is required` from crashing test suites at import time.
-export const supabase: SupabaseClient | null =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
