@@ -18,10 +18,8 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toPng } from 'html-to-image';
 import { DroppableBoard } from './DroppableBoard';
 import { DraggablePerson } from './DraggablePerson';
-import { TemplateManager } from './TemplateManager';
 import type { Person, DragItem, PairingBoard } from '../types';
 import { usePairingStore } from '../store/usePairingStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
@@ -38,15 +36,24 @@ import {
   ChevronDown,
   ArrowRight,
   Download,
+  BarChart3,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
-import { ProductTutorial } from './ProductTutorial';
 import { GettingStartedCard } from './GettingStartedCard';
 import { ContextualHint } from './ContextualHint';
 import { formatLocalDate, formatToday } from '../utils/dateUtils';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
-import { PairingMatrixView } from './PairingMatrixView';
-import { BarChart3 } from 'lucide-react';
+
+// Lazy load heavy components
+const TemplateManager = React.lazy(() =>
+  import('./TemplateManager').then((m) => ({ default: m.TemplateManager }))
+);
+const ProductTutorial = React.lazy(() =>
+  import('./ProductTutorial').then((m) => ({ default: m.ProductTutorial }))
+);
+const PairingMatrixView = React.lazy(() =>
+  import('./PairingMatrixView').then((m) => ({ default: m.PairingMatrixView }))
+);
 
 export function PairingWorkspace() {
   const people = usePairingStore((s) => s.people);
@@ -270,6 +277,9 @@ export function PairingWorkspace() {
     setIsExporting(true);
 
     try {
+      // Lazy load html-to-image only when needed
+      const { toPng } = await import('html-to-image');
+
       // Let the overlay render before starting heavy DOM work
       await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -443,7 +453,13 @@ export function PairingWorkspace() {
                   {showHeatmap ? 'Hide Heatmap' : 'Heatmap'}
                 </button>
 
-                <TemplateManager />
+                <React.Suspense
+                  fallback={
+                    <div className="h-10 w-24 bg-neutral-100 rounded-xl animate-pulse" />
+                  }
+                >
+                  <TemplateManager />
+                </React.Suspense>
 
                 <button
                   id="recommend-btn"
@@ -504,7 +520,15 @@ export function PairingWorkspace() {
                         <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
                       </div>
                     ) : (
-                      <PairingMatrixView matrix={matrix} />
+                      <React.Suspense
+                        fallback={
+                          <div className="h-48 flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+                          </div>
+                        }
+                      >
+                        <PairingMatrixView matrix={matrix} />
+                      </React.Suspense>
                     )}
                   </div>
                 </motion.div>
@@ -750,7 +774,9 @@ export function PairingWorkspace() {
         </div>
       )}
 
-      <ProductTutorial />
+      <React.Suspense fallback={null}>
+        <ProductTutorial />
+      </React.Suspense>
 
       {/* Getting Started Checklist Card (replaces auto-triggered step-by-step tutorial) */}
       <GettingStartedCard
