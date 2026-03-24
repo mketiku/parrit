@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { RefreshCcw, X, Info } from 'lucide-react';
+import { RefreshCcw, X } from 'lucide-react';
 import { useToastStore } from '../../store/useToastStore';
 
 export function ReloadPrompt() {

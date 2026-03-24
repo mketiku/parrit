@@ -66,3 +66,14 @@ This guide defines the architectural and code quality standards for the **Parrit
 - **Workspace UI**: Keep the Pairing Workspace unified. All active and exempt boards reside in the main grid for visibility.
 - **Drag and Drop**: Dnd-kit is used for dragging people across boards. Always ensure `DndContext` and `DragOverlay` are correctly structured, and verify state modifications (e.g. `handleBulkMove`) apply immediately.
 - **Multi-select**: Utilize `Cmd/Ctrl` modifiers for multiple selections. Ensure batch actions (like "Move to Board") are fully tested with E2E tests.
+
+## 8. Git Branching Strategy
+
+Maintain a clean and traceable history by following this branching convention:
+
+- **Feature Branches**: `feature/[issue-number]-[brief-description]` (e.g., `feature/12-add-social-login`)
+- **Bugfix Branches**: `bugfix/[issue-number]-[brief-description]` (e.g., `bugfix/38-fix-pwa-drift`)
+- **Release Branches**: `release/[version]` (e.g., `release/1.2.0`)
+- **Hotfix Branches**: `hotfix/[issue-number]-[brief-description]`
+- Always create a new branch from `main` (or the latest stable internal branch) before starting work.
+- Merge back into `main` via a Pull Request once CI checks pass and reviews are complete.
