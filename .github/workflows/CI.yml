@@ -1,0 +1,165 @@
+# ================================================================
+#  CI Pipeline — Quality Gate for Pull Requests
+#  Stack: Vite + React + TypeScript + Vitest + ESLint + Supabase
+#
+#  Job graph:
+#    lint ──┐
+#           ├──► build  (needs all 3)
+#    type ──┤
+#           │
+#    test ──┘
+#
+#  lint, typecheck, test run in PARALLEL — no install gateway.
+#  build runs only when all three pass.
+# ================================================================
+
+name: CI – Quality Gate
+
+# ── Triggers ──────────────────────────────────────────────────
+on:
+  pull_request:
+    branches: [main, develop]
+    # opened, synchronize, reopened are already the defaults.
+    # Only add types: if you need to filter (e.g. exclude drafts).
+  push:
+    branches: [main, develop]
+
+# ── Least-privilege permissions ───────────────────────────────
+permissions:
+  contents: read
+  checks: write          # allows jobs to post status checks on PRs
+  pull-requests: write   # required if you add PR comment annotations later
+
+# ── Concurrency ───────────────────────────────────────────────
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# ── Global env ────────────────────────────────────────────────
+env:
+  NODE_VERSION: "20"
+
+jobs:
+
+  # ── Job 1: Lint ─────────────────────────────────────────────
+  lint:
+    name:  Lint & Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"    # auto-caches based on package-lock.json hash
+
+      - name: Install dependencies
+        env:
+          HUSKY: "0"      # prevents `husky install` from running in CI
+        run: npm ci       # no --ignore-scripts: keeps all postinstall hooks
+
+      - name: Run ESLint
+        run: npm run lint
+
+  # ── Job 2: Type Check ───────────────────────────────────────
+  typecheck:
+    name:  TypeScript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        env:
+          HUSKY: "0"
+        run: npm ci
+
+      - name: Run TypeScript compiler
+        # --noEmit: validates types without writing output files
+        run: npx tsc --noEmit
+
+  # ── Job 3: Unit Tests + Coverage ────────────────────────────
+  test:
+    name:  Tests + Coverage
+    runs-on: ubuntu-latest
+
+    env:
+      # Injected from GitHub → Settings → Secrets → Actions.
+      # Vite bakes VITE_* vars into the bundle at build time.
+      # Missing values = broken build or silent undefined errors.
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        env:
+          HUSKY: "0"
+        run: npm ci
+
+      - name: Run Vitest with coverage
+        # @vitest/coverage-v8 is already in devDeps — activating it is free
+        run: npm run test -- --coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()    # upload even on test failure — useful for debugging
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ── Job 4: Production Build ──────────────────────────────────
+  build:
+    name:  Production Build
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test]   # hard gate: all 3 must pass first
+
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        env:
+          HUSKY: "0"
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        # `if: success()` is redundant — success() is the implicit default.
+        # Only use `if:` when you need non-default behavior (always, failure).
+        with:
+          name: dist
+          path: dist/
+          retention-days: 3

@@ -1,59 +1,80 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Parrit (parrit.org): The open-source, high-performance pair programming board for teams. A modern successor to parrit.io for orchestrating and tracking pairing rotations."
+    />
+    <meta
+      name="keywords"
+      content="parrit, parrit.io, parrit.org, pair programming tool, team rotation board, agile pairing tool, open source pairing"
+    />
+    <link rel="canonical" href="https://parrit.org" />
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description"
-    content="Parrit (parrit.org): The open-source, high-performance pair programming board for teams. A modern successor to parrit.io for orchestrating and tracking pairing rotations." />
-  <meta name="keywords" content="parrit, parrit.io, parrit.org, pair programming tool, team rotation board, agile pairing tool, open source pairing" />
-  <link rel="canonical" href="https://parrit.org" />
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://parrit.org/" />
+    <meta
+      property="og:title"
+      content="Parrit.org - Open Source Pair Programming Board"
+    />
+    <meta
+      property="og:description"
+      content="The modern, open-source rebuild of parrit.io. Visual drag-and-drop boards for engineering pair rotations."
+    />
+    <meta
+      property="og:image"
+      content="https://parrit.org/api/og?workspace=Parrit"
+    />
 
-  <!-- Open Graph / Social -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://parrit.org/" />
-  <meta property="og:title" content="Parrit.org - Open Source Pair Programming Board" />
-  <meta property="og:description"
-    content="The modern, open-source rebuild of parrit.io. Visual drag-and-drop boards for engineering pair rotations." />
-  <meta property="og:image" content="https://parrit.org/api/og?workspace=Parrit" />
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://parrit.org/" />
+    <meta
+      property="twitter:title"
+      content="Parrit.org - Pair Programming Reimagined"
+    />
+    <meta
+      property="twitter:description"
+      content="Ditch the spreadsheets. Manage your team's pairing rotations visually with Parrit.org."
+    />
+    <meta
+      property="twitter:image"
+      content="https://parrit.org/api/og?workspace=Parrit"
+    />
 
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="https://parrit.org/" />
-  <meta property="twitter:title" content="Parrit.org - Pair Programming Reimagined" />
-  <meta property="twitter:description"
-    content="Ditch the spreadsheets. Manage your team's pairing rotations visually with Parrit.org." />
-  <meta property="twitter:image" content="https://parrit.org/api/og?workspace=Parrit" />
+    <!-- Structured Data for Google (Software Application) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Parrit",
+        "operatingSystem": "Web",
+        "applicationCategory": "ProductivityApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "An open-source, visual pair programming board and rotation orchestrator for engineering teams.",
+        "url": "https://parrit.org"
+      }
+    </script>
 
-  <!-- Structured Data for Google (Software Application) -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Parrit",
-      "operatingSystem": "Web",
-      "applicationCategory": "ProductivityApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "An open-source, visual pair programming board and rotation orchestrator for engineering teams.",
-      "url": "https://parrit.org"
-    }
-  </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+      rel="stylesheet"
+    />
+    <title>Parrit.org - The Open Source Pair Programming Board</title>
+  </head>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
-    rel="stylesheet" />
-  <title>Parrit.org - The Open Source Pair Programming Board</title>
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

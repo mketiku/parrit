@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest run",
@@ -13,7 +14,7 @@
     "prepare": "husky install",
     "release:patch": "npm version patch -m \"v%s: [Patch] Automated version bump\"",
     "release:minor": "npm version minor -m \"v%s: [Minor] Automated version bump\"",
-    "preversion": "npm run lint && npm run test",
+    "preversion": "npm run lint && npm run test && npm run typecheck",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
