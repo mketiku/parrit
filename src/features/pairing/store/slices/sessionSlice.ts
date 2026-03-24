@@ -85,7 +85,11 @@ export const createSessionSlice: StateCreator<
 
     if (saveErr) {
       set({ isSaving: false });
-      toast().addToast(`Failed to save session: ${saveErr.message}`, 'error');
+      console.error('Session save RPC error:', saveErr);
+      toast().addToast(
+        `Failed to save session: ${saveErr.message || 'Unknown database error'}`,
+        'error'
+      );
       return;
     }
 
