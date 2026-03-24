@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from 'react';
+import { ReloadPrompt } from './components/pwa/ReloadPrompt';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import PublicLayout from './components/layout/PublicLayout';
@@ -159,6 +160,7 @@ function App() {
 
   return (
     <>
+      <ReloadPrompt />
       <BrowserRouter>
         <AdminShortcutListener />
         <Suspense fallback={<PageLoader />}>
