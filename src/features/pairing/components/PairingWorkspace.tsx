@@ -550,14 +550,6 @@ export function PairingWorkspace() {
               )}
 
               {!isStoreLoading && (
-                <GettingStartedCard
-                  people={people}
-                  boards={boards}
-                  hasSessionSaved={!!hasSessionSaved}
-                />
-              )}
-
-              {!isStoreLoading && (
                 <SortableContext
                   items={boards.map((b) => b.id)}
                   strategy={rectSortingStrategy}
@@ -644,6 +636,14 @@ export function PairingWorkspace() {
                   </div>
                 </form>
               )}
+
+              <div className="mt-16 pt-12 border-t border-neutral-100 dark:border-neutral-800 [html[data-exporting='true']_&]:hidden">
+                <GettingStartedCard
+                  people={people}
+                  boards={boards}
+                  hasSessionSaved={!!hasSessionSaved}
+                />
+              </div>
             </div>
           </div>
 

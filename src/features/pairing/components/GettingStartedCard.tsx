@@ -85,12 +85,11 @@ export function GettingStartedCard({
   return (
     <AnimatePresence>
       <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-        className="flex h-full min-h-[160px] flex-col rounded-[2.5rem] border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900/40 [html[data-exporting='true']_&]:hidden"
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.3 }}
+        className="w-full sm:w-80 flex flex-col rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900/50 [html[data-exporting='true']_&]:hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-neutral-100 dark:border-neutral-800">
