@@ -184,7 +184,7 @@ export default function PublicLayout() {
       {/* Footer */}
       <footer className="shrink-0 border-t border-neutral-200 bg-white/50 py-6 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/50">
         <div className="mx-auto flex flex-col md:flex-row w-full max-w-[2200px] items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12 gap-4">
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:justify-start">
             <Link
               to="/about"
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
@@ -197,6 +197,14 @@ export default function PublicLayout() {
             >
               Guide
             </Link>
+            <a
+              href="https://github.com/mketiku/parrit"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
+            >
+              GitHub
+            </a>
             <Link
               to="/privacy"
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
@@ -216,9 +224,14 @@ export default function PublicLayout() {
               Contact
             </a>
           </div>
-          <p className="text-xs text-neutral-400 dark:text-neutral-600">
-            &copy; {new Date().getFullYear()} Michael Ketiku
-          </p>
+          <div className="flex items-center gap-3">
+            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+              v{__APP_VERSION__}
+            </span>
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">
+              &copy; {new Date().getFullYear()} Michael Ketiku
+            </p>
+          </div>
         </div>
       </footer>
       <Toaster />

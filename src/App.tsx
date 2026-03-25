@@ -10,6 +10,7 @@ import { useThemeStore } from './store/useThemeStore';
 import { AdminShortcutListener } from './features/admin/components/AdminShortcutListener';
 import { formatToday } from './features/pairing/utils/dateUtils';
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
+import { useVersionGuard } from './hooks/useVersionGuard';
 
 const AuthScreen = lazy(() =>
   import('./features/auth/components/AuthScreen').then((m) => ({
@@ -127,6 +128,7 @@ function DashboardView() {
 }
 
 function App() {
+  useVersionGuard();
   const { user, isAdmin, isLoading, initialize } = useAuthStore();
   const { loadWorkspaceData, subscribeToRealtime } = usePairingStore();
   const { theme, setTheme, isDark, applyDark } = useThemeStore();
