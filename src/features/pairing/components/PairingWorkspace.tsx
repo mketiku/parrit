@@ -550,6 +550,14 @@ export function PairingWorkspace() {
               )}
 
               {!isStoreLoading && (
+                <GettingStartedCard
+                  people={people}
+                  boards={boards}
+                  hasSessionSaved={!!hasSessionSaved}
+                />
+              )}
+
+              {!isStoreLoading && (
                 <SortableContext
                   items={boards.map((b) => b.id)}
                   strategy={rectSortingStrategy}
@@ -777,13 +785,6 @@ export function PairingWorkspace() {
       <React.Suspense fallback={null}>
         <ProductTutorial />
       </React.Suspense>
-
-      {/* Getting Started Checklist Card (replaces auto-triggered step-by-step tutorial) */}
-      <GettingStartedCard
-        people={people}
-        boards={boards}
-        hasSessionSaved={!!hasSessionSaved}
-      />
 
       {/* Contextual hint: Goals — appears on a board that has people but no goals yet */}
       {showGoalsHint && (
