@@ -31,7 +31,10 @@ export function ReloadPrompt() {
 
   useEffect(() => {
     if (offlineReady) {
-      addToast('App ready to work offline! ⚡️', 'success');
+      // Only show the offline toast if we're not on the landing page
+      if (window.location.pathname !== '/') {
+        addToast('App ready to work offline! ⚡️', 'success');
+      }
       setOfflineReady(false);
     }
   }, [offlineReady, addToast, setOfflineReady]);

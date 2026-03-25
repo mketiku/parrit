@@ -45,13 +45,14 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'animation-vendor': ['framer-motion'],
+          'animation-vendor': ['framer-motion', '@floating-ui/react-dom'],
           'dnd-vendor': [
             '@dnd-kit/core',
             '@dnd-kit/sortable',
             '@dnd-kit/utilities',
           ],
-          'supabase-vendor': ['@supabase/supabase-js'],
+          'db-vendor': ['@supabase/supabase-js'],
+          'data-vendor': ['@tanstack/react-query', 'zod', 'zustand'],
           'ui-vendor': ['lucide-react', 'date-fns'],
         },
       },
