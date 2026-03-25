@@ -85,8 +85,10 @@ export function LiveDemoShowcase() {
       });
 
     const runSequence = async () => {
+      // Early wait (shorter) to let the page settle
+      await wait(800);
+
       while (mounted) {
-        await wait(2500);
         if (!mounted) break;
         if (isHoveredRef.current) {
           await wait(1000);

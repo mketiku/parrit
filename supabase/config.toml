@@ -108,6 +108,7 @@ port = 64324
 
 [storage]
 enabled = true
+image = "supabase/storage-api:v1.43.3"
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
@@ -149,6 +150,7 @@ max_indexes = 5
 
 [auth]
 enabled = true
+image = "supabase/gotrue:v2.188.1"
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
 site_url = "http://127.0.0.1:3000"
