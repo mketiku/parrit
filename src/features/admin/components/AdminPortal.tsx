@@ -13,6 +13,10 @@ import {
   Bug,
   Lightbulb,
   CheckCircle2,
+  TrendingUp,
+  GitCommitHorizontal,
+  UserRound,
+  CalendarDays,
 } from 'lucide-react';
 
 interface WorkspaceInfo {
@@ -56,7 +60,14 @@ const FEEDBACK_TYPE_CONFIG = {
   },
 } as const;
 
-type Tab = 'workspaces' | 'feedback';
+interface AdminStats {
+  total_sessions: number;
+  sessions_this_month: number;
+  sessions_this_week: number;
+  total_people: number;
+}
+
+type Tab = 'workspaces' | 'feedback' | 'stats';
 
 export function AdminPortal() {
   const { isAdmin } = useAuthStore();
@@ -72,6 +83,11 @@ export function AdminPortal() {
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  // Stats state
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
   const fetchWorkspaces = useCallback(async () => {
     if (!isAdmin) return;
@@ -89,6 +105,22 @@ export function AdminPortal() {
       );
     } finally {
       setWorkspacesLoading(false);
+    }
+  }, [isAdmin]);
+
+  const fetchStats = useCallback(async () => {
+    if (!isAdmin) return;
+    setStatsLoading(true);
+    setStatsError(null);
+    try {
+      const { data, error } = await supabase.rpc('admin_get_stats');
+      if (error) throw error;
+      if (data) setStats(data as AdminStats);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setStatsError(message || 'Failed to fetch stats.');
+    } finally {
+      setStatsLoading(false);
     }
   }, [isAdmin]);
 
@@ -138,6 +170,12 @@ export function AdminPortal() {
       fetchFeedback();
     }
   }, [isAdmin, activeTab, feedback.length, feedbackError, fetchFeedback]);
+
+  useEffect(() => {
+    if (isAdmin && activeTab === 'stats' && !stats && !statsError) {
+      fetchStats();
+    }
+  }, [isAdmin, activeTab, stats, statsError, fetchStats]);
 
   const filteredWorkspaces = workspaces.filter((w) =>
     (w.email || '').toLowerCase().includes(search.toLowerCase())
@@ -191,7 +229,7 @@ export function AdminPortal() {
 
       {/* Tabs */}
       <div className="mb-6 flex gap-1 rounded-xl bg-neutral-100 p-1 w-fit dark:bg-neutral-800">
-        {(['workspaces', 'feedback'] as Tab[]).map((tab) => (
+        {(['workspaces', 'feedback', 'stats'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -311,6 +349,173 @@ export function AdminPortal() {
           )}
         </>
       )}
+
+      {/* Stats Tab */}
+      {activeTab === 'stats' &&
+        (() => {
+          const now = new Date();
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const thirtyDaysAgo = new Date(
+            now.getTime() - 30 * 24 * 60 * 60 * 1000
+          );
+          const sevenDaysAgo = new Date(
+            now.getTime() - 7 * 24 * 60 * 60 * 1000
+          );
+
+          const totalWorkspaces = workspaces.length;
+          const newThisMonth = workspaces.filter(
+            (w) => new Date(w.created_at) >= startOfMonth
+          ).length;
+          const activeThirtyDays = workspaces.filter(
+            (w) =>
+              w.last_sign_in_at && new Date(w.last_sign_in_at) >= thirtyDaysAgo
+          ).length;
+          const newThisWeek = workspaces.filter(
+            (w) => new Date(w.created_at) >= sevenDaysAgo
+          ).length;
+          const publicViewCount = workspaces.filter(
+            (w) => w.public_view_enabled
+          ).length;
+          const avgTeamSize =
+            totalWorkspaces > 0
+              ? (
+                  workspaces.reduce((sum, w) => sum + w.member_count, 0) /
+                  totalWorkspaces
+                ).toFixed(1)
+              : '—';
+
+          const workspaceStatCards = [
+            {
+              label: 'Total Workspaces',
+              value: totalWorkspaces,
+              icon: <Users className="h-5 w-5" />,
+            },
+            {
+              label: 'Active (30d)',
+              value: activeThirtyDays,
+              icon: <TrendingUp className="h-5 w-5" />,
+            },
+            {
+              label: 'New This Month',
+              value: newThisMonth,
+              icon: <CalendarDays className="h-5 w-5" />,
+            },
+            {
+              label: 'New This Week',
+              value: newThisWeek,
+              icon: <CalendarDays className="h-5 w-5" />,
+            },
+            {
+              label: 'Public View On',
+              value: publicViewCount,
+              icon: <Eye className="h-5 w-5" />,
+            },
+            {
+              label: 'Avg Team Size',
+              value: avgTeamSize,
+              icon: <UserRound className="h-5 w-5" />,
+            },
+          ];
+
+          return (
+            <div className="space-y-8">
+              {/* Workspace stats - computed from existing data */}
+              <div>
+                <h2 className="text-xs font-black uppercase tracking-widest text-neutral-400 mb-4">
+                  Workspaces
+                </h2>
+                {workspacesLoading ? (
+                  <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {workspaceStatCards.map((card) => (
+                      <div
+                        key={card.label}
+                        className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                      >
+                        <div className="mb-3 text-neutral-400">{card.icon}</div>
+                        <div className="text-2xl font-black text-neutral-900 dark:text-white">
+                          {card.value}
+                        </div>
+                        <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                          {card.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Session stats - from admin_get_stats RPC */}
+              <div>
+                <h2 className="text-xs font-black uppercase tracking-widest text-neutral-400 mb-4">
+                  Pairing Activity
+                </h2>
+                {statsLoading ? (
+                  <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+                  </div>
+                ) : statsError ? (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900/30 dark:bg-amber-950/20">
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-3">
+                      {statsError}
+                    </p>
+                    <p className="text-xs text-amber-600/70 dark:text-amber-500/70 font-mono">
+                      Run the <code>admin_get_stats</code> SQL function to
+                      enable this section.
+                    </p>
+                    <button
+                      onClick={fetchStats}
+                      className="mt-4 rounded-xl bg-neutral-900 px-4 py-2 text-xs font-bold text-white hover:bg-neutral-800"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : stats ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {[
+                      {
+                        label: 'Total Sessions',
+                        value: stats.total_sessions,
+                        icon: <GitCommitHorizontal className="h-5 w-5" />,
+                      },
+                      {
+                        label: 'Sessions This Month',
+                        value: stats.sessions_this_month,
+                        icon: <CalendarDays className="h-5 w-5" />,
+                      },
+                      {
+                        label: 'Sessions This Week',
+                        value: stats.sessions_this_week,
+                        icon: <TrendingUp className="h-5 w-5" />,
+                      },
+                      {
+                        label: 'Total People',
+                        value: stats.total_people,
+                        icon: <UserRound className="h-5 w-5" />,
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.label}
+                        className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                      >
+                        <div className="mb-3 text-brand-500">{card.icon}</div>
+                        <div className="text-2xl font-black text-neutral-900 dark:text-white">
+                          {card.value}
+                        </div>
+                        <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                          {card.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          );
+        })()}
 
       {/* Feedback Tab */}
       {activeTab === 'feedback' && (

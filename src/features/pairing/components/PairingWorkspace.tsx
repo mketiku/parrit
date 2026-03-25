@@ -549,14 +549,7 @@ export function PairingWorkspace() {
                 </>
               )}
 
-              {!isStoreLoading && (
-                <GettingStartedCard
-                  people={people}
-                  boards={boards}
-                  hasSessionSaved={!!hasSessionSaved}
-                />
-              )}
-
+              {/* Boards List */}
               {!isStoreLoading && (
                 <SortableContext
                   items={boards.map((b) => b.id)}
@@ -645,6 +638,17 @@ export function PairingWorkspace() {
                 </form>
               )}
             </div>
+
+            {/* Getting Started Guide - Relocated to the bottom of the main column */}
+            {!isStoreLoading && (
+              <div className="mt-12 w-full max-w-sm pb-8 [html[data-exporting='true']_&]:hidden">
+                <GettingStartedCard
+                  people={people}
+                  boards={boards}
+                  hasSessionSaved={!!hasSessionSaved}
+                />
+              </div>
+            )}
           </div>
 
           {/* Unpaired Sidebar */}
@@ -659,7 +663,6 @@ export function PairingWorkspace() {
           </div>
         </main>
 
-        {/* Global Drag Overlay */}
         <DragOverlay dropAnimation={null}>
           {activeDragItem ? (
             <DraggablePerson

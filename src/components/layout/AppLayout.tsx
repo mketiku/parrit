@@ -253,9 +253,14 @@ export default function AppLayout() {
             </button>
           </div>
 
-          <p className="text-xs text-neutral-500 dark:text-neutral-500">
-            &copy; {new Date().getFullYear()} Michael Ketiku
-          </p>
+          <div className="flex items-center gap-3">
+            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+              v{__APP_VERSION__}
+            </span>
+            <p className="text-xs text-neutral-500 dark:text-neutral-500">
+              &copy; {new Date().getFullYear()} Michael Ketiku
+            </p>
+          </div>
         </div>
       </footer>
       <Toaster />
