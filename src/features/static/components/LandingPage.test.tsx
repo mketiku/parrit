@@ -9,19 +9,6 @@ import React from 'react';
 // Mock the auth store
 vi.mock('../../auth/store/useAuthStore');
 
-// Mock framer-motion to avoid animation issues in tests
-vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
-    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
-    section: ({ children, ...props }: any) => (
-      <section {...props}>{children}</section>
-    ),
-  },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
-
 describe('LandingPage Component', { timeout: 10000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();

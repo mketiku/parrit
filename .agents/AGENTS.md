@@ -30,6 +30,12 @@ This guide defines the architectural and code quality standards for the **Parrit
 - **Real-time Sync**: Use Supabase Realtime for collaborative features (e.g., live pairing board updates). Handle race conditions gracefully using optimistic UI patterns.
 - **PostgreSQL Logic**: Business rules that impact data integrity should be enforced at the database level via constraints, triggers, or RPC functions.
 
+### Migration Workflow
+
+1. **Always write a migration file** — never execute raw SQL directly (no Supabase SQL editor, no `supabase db execute`). Every schema change must live in `supabase/migrations/<timestamp>_<description>.sql`.
+2. **Apply locally first** — run `npm run db:reset` to verify the migration applies cleanly against the local database before touching production.
+3. **Get user approval before pushing to prod** — present the migration file and confirm the user is ready before running `supabase db push`. Never push to production autonomously.
+
 ## 4. Premium UI/UX (Tailwind CSS v4)
 
 - **Aesthetics**: Follow the "Glassmorphism" design system—use subtle blurs, borders, and high-quality shadows. Avoid generic colors; use the project's curated HSL palette.

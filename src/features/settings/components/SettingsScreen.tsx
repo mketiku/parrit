@@ -67,6 +67,8 @@ export function SettingsScreen() {
     setOnboardingCompleted,
     stalePairThreshold,
     setStalePairThreshold,
+    gettingStartedDismissed,
+    setGettingStartedDismissed,
     meetingLinkEnabled,
     setMeetingLinkEnabled,
     slackWebhookUrl,
@@ -403,6 +405,15 @@ export function SettingsScreen() {
                         });
                       }
                     }}
+                  />
+                </div>
+                <div className="border-t border-neutral-100 dark:border-neutral-800">
+                  <SettingToggle
+                    icon={<HelpCircle className="h-5 w-5 text-neutral-400" />}
+                    title="Show Getting Started Guide"
+                    description="Show the checklist guide on the dashboard to help new users."
+                    checked={!gettingStartedDismissed}
+                    onChange={(val) => setGettingStartedDismissed(!val)}
                   />
                 </div>
                 <div className="border-t border-neutral-100 dark:border-neutral-800">

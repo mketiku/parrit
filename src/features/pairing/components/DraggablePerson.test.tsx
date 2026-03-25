@@ -19,29 +19,6 @@ vi.mock('../../../store/useWorkspacePrefsStore', () => ({
   useWorkspacePrefsStore: () => ({ showFullName: false }),
 }));
 
-// Mock framer-motion
-vi.mock('framer-motion', () => {
-  const ActualFramer = vi.importActual('framer-motion');
-  return {
-    ...ActualFramer,
-    motion: {
-      div: ({
-        children,
-        className,
-        ...rest
-      }: {
-        children: React.ReactNode;
-        className?: string;
-        [key: string]: unknown;
-      }) => (
-        <div className={className} {...rest}>
-          {children}
-        </div>
-      ),
-    },
-  };
-});
-
 describe('DraggablePerson Component', () => {
   const mockPerson: Person = {
     id: 'p1',

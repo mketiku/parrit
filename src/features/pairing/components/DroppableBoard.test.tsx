@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DndContext } from '@dnd-kit/core';
 import { DroppableBoard } from './DroppableBoard';
@@ -84,7 +84,7 @@ describe('DroppableBoard Component', () => {
     expect(screen.getByText('CD')).toBeInTheDocument();
   });
 
-  it('calls updateBoard when editing name', () => {
+  it('calls updateBoard when editing name', async () => {
     mockUsePairingStore.mockReturnValue(defaultStoreValues);
     mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
 
@@ -103,8 +103,10 @@ describe('DroppableBoard Component', () => {
     fireEvent.change(input, { target: { value: 'New Name' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    expect(defaultStoreValues.updateBoard).toHaveBeenCalledWith('board-1', {
-      name: 'New Name',
+    await waitFor(() => {
+      expect(defaultStoreValues.updateBoard).toHaveBeenCalledWith('board-1', {
+        name: 'New Name',
+      });
     });
   });
 

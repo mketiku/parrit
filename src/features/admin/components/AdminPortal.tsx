@@ -229,7 +229,7 @@ export function AdminPortal() {
 
       {/* Tabs */}
       <div className="mb-6 flex gap-1 rounded-xl bg-neutral-100 p-1 w-fit dark:bg-neutral-800">
-        {(['workspaces', 'feedback', 'stats'] as Tab[]).map((tab) => (
+        {(['workspaces', 'stats', 'feedback'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -417,18 +417,46 @@ export function AdminPortal() {
             },
           ];
 
+          const sessionCards = stats
+            ? [
+                {
+                  label: 'Total Sessions',
+                  value: stats.total_sessions,
+                  icon: <GitCommitHorizontal className="h-5 w-5" />,
+                  accent: true,
+                },
+                {
+                  label: 'Sessions This Month',
+                  value: stats.sessions_this_month,
+                  icon: <CalendarDays className="h-5 w-5" />,
+                  accent: true,
+                },
+                {
+                  label: 'Sessions This Week',
+                  value: stats.sessions_this_week,
+                  icon: <TrendingUp className="h-5 w-5" />,
+                  accent: true,
+                },
+                {
+                  label: 'Total People',
+                  value: stats.total_people,
+                  icon: <UserRound className="h-5 w-5" />,
+                  accent: true,
+                },
+              ]
+            : [];
+
+          const allCards = [...workspaceStatCards, ...sessionCards];
+          const isLoading = workspacesLoading || statsLoading;
+
           return (
-            <div className="space-y-8">
-              {/* Workspace stats - computed from existing data */}
-              <div>
-                <h2 className="text-xs font-black uppercase tracking-widest text-neutral-400 mb-4">
-                  Workspaces
-                </h2>
-                {workspacesLoading ? (
-                  <div className="flex items-center gap-2 text-neutral-400 text-sm">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Loading...
-                  </div>
-                ) : (
+            <div>
+              {isLoading ? (
+                <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+                </div>
+              ) : statsError ? (
+                <div className="space-y-6">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                     {workspaceStatCards.map((card) => (
                       <div
@@ -445,26 +473,12 @@ export function AdminPortal() {
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-
-              {/* Session stats - from admin_get_stats RPC */}
-              <div>
-                <h2 className="text-xs font-black uppercase tracking-widest text-neutral-400 mb-4">
-                  Pairing Activity
-                </h2>
-                {statsLoading ? (
-                  <div className="flex items-center gap-2 text-neutral-400 text-sm">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Loading...
-                  </div>
-                ) : statsError ? (
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900/30 dark:bg-amber-950/20">
-                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-3">
-                      {statsError}
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-1">
+                      Pairing activity unavailable
                     </p>
-                    <p className="text-xs text-amber-600/70 dark:text-amber-500/70 font-mono">
-                      Run the <code>admin_get_stats</code> SQL function to
-                      enable this section.
+                    <p className="text-xs text-amber-600/70 dark:text-amber-500/70">
+                      {statsError}
                     </p>
                     <button
                       onClick={fetchStats}
@@ -473,46 +487,29 @@ export function AdminPortal() {
                       Retry
                     </button>
                   </div>
-                ) : stats ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                      {
-                        label: 'Total Sessions',
-                        value: stats.total_sessions,
-                        icon: <GitCommitHorizontal className="h-5 w-5" />,
-                      },
-                      {
-                        label: 'Sessions This Month',
-                        value: stats.sessions_this_month,
-                        icon: <CalendarDays className="h-5 w-5" />,
-                      },
-                      {
-                        label: 'Sessions This Week',
-                        value: stats.sessions_this_week,
-                        icon: <TrendingUp className="h-5 w-5" />,
-                      },
-                      {
-                        label: 'Total People',
-                        value: stats.total_people,
-                        icon: <UserRound className="h-5 w-5" />,
-                      },
-                    ].map((card) => (
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {allCards.map((card) => (
+                    <div
+                      key={card.label}
+                      className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                    >
                       <div
-                        key={card.label}
-                        className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                        className={`mb-3 ${'accent' in card && card.accent ? 'text-brand-500' : 'text-neutral-400'}`}
                       >
-                        <div className="mb-3 text-brand-500">{card.icon}</div>
-                        <div className="text-2xl font-black text-neutral-900 dark:text-white">
-                          {card.value}
-                        </div>
-                        <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                          {card.label}
-                        </div>
+                        {card.icon}
                       </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+                      <div className="text-2xl font-black text-neutral-900 dark:text-white">
+                        {card.value}
+                      </div>
+                      <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                        {card.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })()}

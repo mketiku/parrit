@@ -18,12 +18,6 @@ vi.mock('../hooks/useHistoryAnalytics');
 vi.mock('html-to-image', () => ({
   toPng: vi.fn().mockResolvedValue('data:image/png;base64,...'),
 }));
-vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
 vi.mock('@floating-ui/react-dom', () => ({
   useFloating: () => ({
     x: 0,
