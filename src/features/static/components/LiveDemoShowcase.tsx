@@ -107,7 +107,7 @@ export function LiveDemoShowcase() {
         }
 
         // TRIGGER RECOMMEND + SAVE SEQUENCE every 20 seconds
-        if (now - lastRecommendTime > 20000) {
+        if (now - lastRecommendTime > 30000) {
           // 1. RECOMMEND: Move to Recommend Button
           setCursorPos({ x: '52%', y: '23%' });
           await wait(1200);
@@ -131,7 +131,7 @@ export function LiveDemoShowcase() {
             } as PairingState;
           });
 
-          await wait(1500);
+          await wait(3500);
           if (!mounted) break;
 
           // 2. SAVE: Move to Save Session Button
