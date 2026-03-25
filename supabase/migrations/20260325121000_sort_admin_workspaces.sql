@@ -42,3 +42,5 @@ BEGIN
   ORDER BY u.created_at DESC, u.email ASC;
 END;
 $$;
+
+GRANT EXECUTE ON FUNCTION public.admin_get_workspaces() TO authenticated;
