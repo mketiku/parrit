@@ -1,7 +1,7 @@
 {
   "name": "pairing",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "db": "supabase start -x studio,mailpit,logflare,vector,imgproxy",
