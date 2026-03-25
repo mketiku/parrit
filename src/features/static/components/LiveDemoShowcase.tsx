@@ -86,7 +86,7 @@ export function LiveDemoShowcase() {
 
     const runSequence = async () => {
       // Early wait (shorter) to let the page settle
-      await wait(800);
+      await wait(1200);
 
       while (mounted) {
         if (!mounted) break;
