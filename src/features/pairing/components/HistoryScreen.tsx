@@ -448,7 +448,7 @@ export function HistoryScreen() {
 
   useEffect(() => {
     if (!user) return;
-    loadSessions(displayLimit);
+    loadSessions();
   }, [user, loadSessions]);
 
   // Keyboard Navigation
