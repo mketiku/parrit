@@ -14,9 +14,7 @@ vi.mock('@vercel/og', () => ({
 
 describe('OG Image Handler', () => {
   it('generates an OG image with a workspace name', async () => {
-    const request = new Request(
-      'https://example.com/api/og?workspace=TestTeam'
-    );
+    const request = new Request('https://parrit.org/api/og?workspace=TestTeam');
     const response = await handler(request);
 
     expect(ImageResponse).toHaveBeenCalled();
@@ -31,7 +29,7 @@ describe('OG Image Handler', () => {
   });
 
   it('generates a default OG image when no workspace is provided', async () => {
-    const request = new Request('https://example.com/api/og');
+    const request = new Request('https://parrit.org/api/og');
     const response = await handler(request);
 
     expect(ImageResponse).toHaveBeenCalled();
@@ -41,7 +39,7 @@ describe('OG Image Handler', () => {
 
   it('includes pairs count in the image when provided', async () => {
     const request = new Request(
-      'https://example.com/api/og?workspace=Acme&pairs=4'
+      'https://parrit.org/api/og?workspace=Acme&pairs=4'
     );
     const response = await handler(request);
 
@@ -55,7 +53,7 @@ describe('OG Image Handler', () => {
       throw new Error('OG Generation Failed');
     });
 
-    const request = new Request('https://example.com/api/og');
+    const request = new Request('https://parrit.org/api/og');
     const response = await handler(request);
 
     expect(response.status).toBe(500);

@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.2.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "db": "supabase start -x studio,mailpit,logflare,vector,imgproxy",
     "db:admin": "supabase start",
