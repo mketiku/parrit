@@ -94,7 +94,7 @@ export const createSessionSlice: StateCreator<
     }
 
     // Only apply artificial delay in local dev where network is instantaneous
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && !import.meta.env.VITEST) {
       await get()._delay(500);
     }
 

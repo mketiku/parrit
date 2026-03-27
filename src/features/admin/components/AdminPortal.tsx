@@ -18,16 +18,14 @@ import {
   UserRound,
   CalendarDays,
 } from 'lucide-react';
-
-interface WorkspaceInfo {
-  id: string;
-  email: string | null;
-  created_at: string;
-  last_sign_in_at: string | null;
-  public_view_enabled: boolean;
-  member_count: number;
-  board_count: number;
-}
+import {
+  buildSessionStatCards,
+  buildWorkspaceStatCards,
+  filterWorkspaces,
+  maskWorkspaceLabel,
+  type AdminStats,
+  type WorkspaceInfo,
+} from './adminPortal.helpers';
 
 interface FeedbackItem {
   id: string;
@@ -59,13 +57,6 @@ const FEEDBACK_TYPE_CONFIG = {
       'bg-neutral-50 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700',
   },
 } as const;
-
-interface AdminStats {
-  total_sessions: number;
-  sessions_this_month: number;
-  sessions_this_week: number;
-  total_people: number;
-}
 
 type Tab = 'workspaces' | 'feedback' | 'stats';
 
@@ -177,9 +168,7 @@ export function AdminPortal() {
     }
   }, [isAdmin, activeTab, stats, statsError, fetchStats]);
 
-  const filteredWorkspaces = workspaces.filter((w) =>
-    (w.email || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredWorkspaces = filterWorkspaces(workspaces, search);
 
   if (!isAdmin) {
     return (
@@ -307,9 +296,7 @@ export function AdminPortal() {
                           className="text-lg font-bold text-neutral-900 dark:text-neutral-100 truncate"
                           title={w.email || ''}
                         >
-                          {w.email
-                            ? `${w.email.split('@')[0].slice(0, 1)}***@${w.email.split('@')[1]}`
-                            : `Workspace ${w.id.slice(0, 5)}`}
+                          {maskWorkspaceLabel(w)}
                         </h3>
                         <p className="text-[10px] font-mono text-neutral-400 mt-1 uppercase">
                           ID: {w.id.slice(0, 8)}...
@@ -353,98 +340,8 @@ export function AdminPortal() {
       {/* Stats Tab */}
       {activeTab === 'stats' &&
         (() => {
-          const now = new Date();
-          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-          const thirtyDaysAgo = new Date(
-            now.getTime() - 30 * 24 * 60 * 60 * 1000
-          );
-          const sevenDaysAgo = new Date(
-            now.getTime() - 7 * 24 * 60 * 60 * 1000
-          );
-
-          const totalWorkspaces = workspaces.length;
-          const newThisMonth = workspaces.filter(
-            (w) => new Date(w.created_at) >= startOfMonth
-          ).length;
-          const activeThirtyDays = workspaces.filter(
-            (w) =>
-              w.last_sign_in_at && new Date(w.last_sign_in_at) >= thirtyDaysAgo
-          ).length;
-          const newThisWeek = workspaces.filter(
-            (w) => new Date(w.created_at) >= sevenDaysAgo
-          ).length;
-          const publicViewCount = workspaces.filter(
-            (w) => w.public_view_enabled
-          ).length;
-          const avgTeamSize =
-            totalWorkspaces > 0
-              ? (
-                  workspaces.reduce((sum, w) => sum + w.member_count, 0) /
-                  totalWorkspaces
-                ).toFixed(1)
-              : '—';
-
-          const workspaceStatCards = [
-            {
-              label: 'Total Workspaces',
-              value: totalWorkspaces,
-              icon: <Users className="h-5 w-5" />,
-            },
-            {
-              label: 'Active (30d)',
-              value: activeThirtyDays,
-              icon: <TrendingUp className="h-5 w-5" />,
-            },
-            {
-              label: 'New This Month',
-              value: newThisMonth,
-              icon: <CalendarDays className="h-5 w-5" />,
-            },
-            {
-              label: 'New This Week',
-              value: newThisWeek,
-              icon: <CalendarDays className="h-5 w-5" />,
-            },
-            {
-              label: 'Public View On',
-              value: publicViewCount,
-              icon: <Eye className="h-5 w-5" />,
-            },
-            {
-              label: 'Avg Team Size',
-              value: avgTeamSize,
-              icon: <UserRound className="h-5 w-5" />,
-            },
-          ];
-
-          const sessionCards = stats
-            ? [
-                {
-                  label: 'Total Sessions',
-                  value: stats.total_sessions,
-                  icon: <GitCommitHorizontal className="h-5 w-5" />,
-                  accent: true,
-                },
-                {
-                  label: 'Sessions This Month',
-                  value: stats.sessions_this_month,
-                  icon: <CalendarDays className="h-5 w-5" />,
-                  accent: true,
-                },
-                {
-                  label: 'Sessions This Week',
-                  value: stats.sessions_this_week,
-                  icon: <TrendingUp className="h-5 w-5" />,
-                  accent: true,
-                },
-                {
-                  label: 'Total People',
-                  value: stats.total_people,
-                  icon: <UserRound className="h-5 w-5" />,
-                  accent: true,
-                },
-              ]
-            : [];
+          const workspaceStatCards = buildWorkspaceStatCards(workspaces);
+          const sessionCards = buildSessionStatCards(stats);
 
           const allCards = [...workspaceStatCards, ...sessionCards];
           const isLoading = workspacesLoading || statsLoading;
