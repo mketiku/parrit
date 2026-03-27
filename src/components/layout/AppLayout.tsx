@@ -227,14 +227,7 @@ export default function AppLayout() {
             >
               Guide
             </Link>
-            <a
-              href="https://github.com/mketiku/parrit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
-            >
-              GitHub
-            </a>
+
             <Link
               to="/privacy"
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
@@ -255,16 +248,21 @@ export default function AppLayout() {
             </a>
             <button
               onClick={() => setFeedbackOpen(true)}
-              className="text-xs font-medium text-neutral-600 hover:text-brand-600 transition-colors dark:text-neutral-400 dark:hover:text-brand-400"
+              className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               Feedback
             </button>
           </div>
 
           <div className="flex justify-center">
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+            <a
+              href="https://github.com/mketiku/parrit"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 hover:text-brand-600 dark:bg-neutral-800 dark:text-neutral-400 transition-colors"
+            >
               v{__APP_VERSION__}
-            </span>
+            </a>
           </div>
 
           <div className="flex justify-end">

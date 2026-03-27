@@ -448,8 +448,8 @@ export function HistoryScreen() {
 
   useEffect(() => {
     if (!user) return;
-    loadSessions(displayLimit);
-  }, [user, loadSessions, displayLimit]);
+    loadSessions();
+  }, [user, loadSessions]);
 
   // Keyboard Navigation
   useEffect(() => {
@@ -835,6 +835,7 @@ export function HistoryScreen() {
                   {hasMore && (
                     <div className="pt-4 px-2">
                       <button
+                        type="button"
                         onClick={handleLoadMore}
                         disabled={isHistoryLoadingMore}
                         className="w-full py-4 rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-800 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400 hover:text-brand-500 hover:border-brand-500/20 hover:bg-brand-50/50 dark:hover:bg-brand-950/10 transition-all disabled:opacity-50"
