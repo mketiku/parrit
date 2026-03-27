@@ -13,10 +13,6 @@ import {
   Bug,
   Lightbulb,
   CheckCircle2,
-  TrendingUp,
-  GitCommitHorizontal,
-  UserRound,
-  CalendarDays,
 } from 'lucide-react';
 import {
   buildSessionStatCards,

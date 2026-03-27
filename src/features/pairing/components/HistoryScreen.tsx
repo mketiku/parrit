@@ -21,13 +21,6 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useToastStore } from '../../../store/useToastStore';
 import { usePairingStore } from '../store/usePairingStore';
-import type {
-  PairingBoard,
-  Person,
-  SnapshotData,
-  SnapshotBoard,
-  SnapshotPerson,
-} from '../types';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { PairingMatrixView } from './PairingMatrixView';
 import { PersonInsightsSidebar } from './PersonInsightsSidebar';
