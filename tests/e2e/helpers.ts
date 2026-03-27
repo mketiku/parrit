@@ -6,7 +6,7 @@ import { Page } from '@playwright/test';
 export async function login(
   page: Page,
   workspaceName: string = 'test-team',
-  password: string = 'Password123!'
+  password: string = 'password'
 ) {
   await page.goto('/login');
 

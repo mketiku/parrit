@@ -49,11 +49,33 @@ export function AuthScreen() {
       }
     } catch (err: unknown) {
       console.error('Auth error:', err);
-      const message =
-        (err as { message?: string })?.message ||
-        (typeof err === 'string'
-          ? err
-          : 'An error occurred during authentication.');
+
+      let message = 'An error occurred during authentication.';
+
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        // Handle Supabase/fetch errors that might stringify to "{}"
+        const errObj = err as {
+          message?: string;
+          error_description?: string;
+          error?: string;
+        };
+        message =
+          errObj.message ||
+          errObj.error_description ||
+          errObj.error ||
+          JSON.stringify(err);
+      } else if (typeof err === 'string') {
+        message = err;
+      }
+
+      // Final fallback for empty objects or common unhelpful strings
+      if (message === '{}' || message === '[object Object]') {
+        message =
+          'The server timed out or returned an invalid response. Please try again.';
+      }
+
       setErrorMSG(message);
     } finally {
       setIsLoading(false);

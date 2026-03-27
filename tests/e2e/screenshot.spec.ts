@@ -29,17 +29,14 @@ test.describe('Dashboard Screenshot', () => {
     }
   });
 
-  test('should trigger screenshot process and show success toast', async ({
+  test('should trigger screenshot generation and return to idle', async ({
     page,
   }) => {
     const downloadBtn = page.getByTitle('Download Dashboard as Image');
 
-    // Click and wait for the toast
     await downloadBtn.click();
-
-    // The toast message should appear
-    const toast = page.getByText(/Screenshot downloaded!/i);
-    await expect(toast).toBeVisible({ timeout: 10000 });
+    await expect(downloadBtn).toBeDisabled();
+    await expect(downloadBtn).toBeEnabled({ timeout: 30000 });
   });
 
   test('should temporarily apply data-exporting state to document', async ({

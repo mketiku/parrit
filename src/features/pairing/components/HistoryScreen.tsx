@@ -21,13 +21,6 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useToastStore } from '../../../store/useToastStore';
 import { usePairingStore } from '../store/usePairingStore';
-import type {
-  PairingBoard,
-  Person,
-  SnapshotData,
-  SnapshotBoard,
-  SnapshotPerson,
-} from '../types';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { PairingMatrixView } from './PairingMatrixView';
 import { PersonInsightsSidebar } from './PersonInsightsSidebar';
@@ -36,30 +29,17 @@ import {
   useTutorialStore,
   HISTORY_TUTORIAL_STEPS,
 } from '../store/useTutorialStore';
-
+import {
+  buildUpdatedTimestamp,
+  groupDetailsByBoard,
+  groupSessionsByMonth,
+  mapLegacyHistoryRows,
+  mapSnapshotDetails,
+  type DbHistoryRow,
+  type HistoryDetail,
+  type HistorySession,
+} from './historyScreen.helpers';
 import { parseLocalDate } from '../utils/dateUtils';
-
-interface HistorySession {
-  id: string;
-  session_date: string;
-  created_at: string;
-  snapshot_data?: SnapshotData;
-}
-
-interface HistoryDetail {
-  person_name: string;
-  board_name: string;
-  avatar_color: string;
-}
-
-interface DbHistoryRow {
-  person_id: string;
-  board_id: string;
-  person_name?: string | null;
-  board_name?: string | null;
-  people: { name: string; avatar_color_hex: string } | null;
-  pairing_boards: { name: string } | null;
-}
 
 interface HistoryRowData {
   person_id: string;
@@ -116,9 +96,7 @@ export function HistoryScreen() {
     if (!selectedSessionId || !editDateValue || !editTimeValue) return;
 
     // Combine date and time and convert to ISO string for precise DB storage
-    const newTimestamp = new Date(
-      `${editDateValue}T${editTimeValue}:00`
-    ).toISOString();
+    const newTimestamp = buildUpdatedTimestamp(editDateValue, editTimeValue);
 
     const { data, error } = await supabase
       .from('pairing_sessions')
@@ -247,17 +225,7 @@ export function HistoryScreen() {
         // 1. Check if we already have the snapshot in the local session list
         const session = sessions.find((s) => s.id === sessionId);
         if (session?.snapshot_data && session.snapshot_data.boards) {
-          const formatted: HistoryDetail[] = [];
-          session.snapshot_data.boards.forEach((b: SnapshotBoard) => {
-            b.people.forEach((p: SnapshotPerson) => {
-              formatted.push({
-                board_name: b.name || 'Unknown Board',
-                person_name: p.name || 'Unknown Person',
-                avatar_color: p.avatar_color || '#94a3b8',
-              });
-            });
-          });
-          setDetails(formatted);
+          setDetails(mapSnapshotDetails(session.snapshot_data.boards));
           setIsLoadingDetails(false);
           return;
         }
@@ -281,38 +249,7 @@ export function HistoryScreen() {
 
         if (data) {
           const rows = data as unknown as DbHistoryRow[];
-          const formatted = rows
-            .filter(
-              (row) =>
-                (row.board_id || row.board_name) &&
-                (row.person_id || row.person_name)
-            )
-            .map((row) => {
-              const storeBoard = storeBoards.find(
-                (b: PairingBoard) => b.id === row.board_id
-              );
-              const storePerson = storePeople.find(
-                (p: Person) => p.id === row.person_id
-              );
-
-              const board_name =
-                row.board_name ||
-                row.pairing_boards?.name ||
-                storeBoard?.name ||
-                'Unknown Board';
-              const person_name =
-                row.person_name ||
-                row.people?.name ||
-                storePerson?.name ||
-                'Unknown Person';
-              const avatar_color =
-                row.people?.avatar_color_hex ||
-                storePerson?.avatarColorHex ||
-                '#94a3b8';
-
-              return { person_name, board_name, avatar_color };
-            });
-          setDetails(formatted);
+          setDetails(mapLegacyHistoryRows(rows, storeBoards, storePeople));
         }
       } catch (err: unknown) {
         console.error('Error loading session details:', err);
@@ -494,24 +431,8 @@ export function HistoryScreen() {
     );
   }
 
-  const detailsByBoard = details.reduce(
-    (acc, curr) => {
-      if (!acc[curr.board_name]) acc[curr.board_name] = [];
-      acc[curr.board_name].push(curr);
-      return acc;
-    },
-    {} as Record<string, HistoryDetail[]>
-  );
-
-  const groupedSessions = sessions.reduce(
-    (acc, s) => {
-      const month = format(parseLocalDate(s.session_date), 'MMMM yyyy');
-      if (!acc[month]) acc[month] = [];
-      acc[month].push(s);
-      return acc;
-    },
-    {} as Record<string, HistorySession[]>
-  );
+  const detailsByBoard = groupDetailsByBoard(details);
+  const groupedSessions = groupSessionsByMonth(sessions);
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8 selection:bg-brand-100 selection:text-brand-900">

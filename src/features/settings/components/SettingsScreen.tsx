@@ -24,6 +24,11 @@ import {
   Shield,
   Trash2,
 } from 'lucide-react';
+import {
+  buildWorkspaceExportFilename,
+  getWebhookError,
+  validatePasswordUpdate,
+} from './settingsScreen.helpers';
 
 const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
   [
@@ -102,7 +107,7 @@ export function SettingsScreen() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `parrit-workspace-${workspaceName}-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = buildWorkspaceExportFilename(workspaceName);
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -132,16 +137,9 @@ export function SettingsScreen() {
     e.preventDefault();
     setMessage(null);
 
-    if (newPassword !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match.' });
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setMessage({
-        type: 'error',
-        text: 'Password must be at least 6 characters long.',
-      });
+    const validation = validatePasswordUpdate(newPassword, confirmPassword);
+    if (validation) {
+      setMessage(validation);
       return;
     }
 
@@ -609,11 +607,7 @@ export function SettingsScreen() {
                     onChange={(e) => {
                       const val = e.target.value;
                       setSlackWebhookUrl(val);
-                      if (val && !val.startsWith('https://')) {
-                        setWebhookError('Webhook URL must start with https://');
-                      } else {
-                        setWebhookError('');
-                      }
+                      setWebhookError(getWebhookError(val));
                     }}
                     className={`w-full rounded-2xl border-2 bg-neutral-100 px-4 py-3 text-sm font-medium text-neutral-900 transition-all hover:bg-neutral-200 focus:bg-white focus:outline-none dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-800 focus:dark:bg-neutral-900 ${
                       webhookError

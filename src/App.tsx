@@ -11,6 +11,7 @@ import { AdminShortcutListener } from './features/admin/components/AdminShortcut
 import { formatToday } from './features/pairing/utils/dateUtils';
 import { PairingWorkspace } from './features/pairing/components/PairingWorkspace';
 import { useVersionGuard } from './hooks/useVersionGuard';
+import { ForcedUpdateOverlay } from './components/pwa/ForcedUpdateOverlay';
 
 const AuthScreen = lazy(() =>
   import('./features/auth/components/AuthScreen').then((m) => ({
@@ -128,7 +129,7 @@ function DashboardView() {
 }
 
 function App() {
-  useVersionGuard();
+  const { isOutdated, triggerHardUpdate } = useVersionGuard();
   const { user, isAdmin, isLoading, initialize } = useAuthStore();
   const { loadWorkspaceData, subscribeToRealtime } = usePairingStore();
   const { theme, setTheme, isDark, applyDark } = useThemeStore();
@@ -163,6 +164,7 @@ function App() {
   return (
     <>
       <ReloadPrompt />
+      {isOutdated && <ForcedUpdateOverlay onUpdate={triggerHardUpdate} />}
       <BrowserRouter>
         <AdminShortcutListener />
         <Suspense fallback={<PageLoader />}>

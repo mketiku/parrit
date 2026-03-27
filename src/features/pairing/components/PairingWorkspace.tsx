@@ -43,6 +43,7 @@ import { GettingStartedCard } from './GettingStartedCard';
 import { ContextualHint } from './ContextualHint';
 import { formatLocalDate, formatToday } from '../utils/dateUtils';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
+import { applyBulkMove, getHintVisibility } from './pairingWorkspace.helpers';
 
 // Lazy load heavy components
 const TemplateManager = React.lazy(() =>
@@ -108,33 +109,19 @@ export function PairingWorkspace() {
   // Derive contextual hint visibility
   // Only one hint shows at a time, in priority order: goals → history → heatmap
   const hasSessionSaved = matrix && Object.keys(matrix).length > 0;
-  const boardsWithNoGoals = boards.filter(
-    (b) =>
-      !b.isExempt &&
-      (b.goals || []).length === 0 &&
-      (b.assignedPersonIds || []).length > 0
-  );
-
   const hasAnyGoals = boards.some((b) => (b.goals || []).length > 0);
-
-  const goalsHintEligible =
-    !hintGoalsSeen &&
-    gettingStartedDismissed &&
-    boardsWithNoGoals.length > 0 &&
-    !hasAnyGoals;
-  const historyHintEligible =
-    !hintHistorySeen &&
-    gettingStartedDismissed &&
-    !!hasSessionSaved &&
-    hasJustSaved;
-  const heatmapHintEligible =
-    !hintHeatmapSeen && gettingStartedDismissed && sessionCount >= 3;
-
-  // Show only the highest-priority eligible hint
-  const showGoalsHint = goalsHintEligible;
-  const showHistoryHint = !goalsHintEligible && historyHintEligible;
-  const showHeatmapHint =
-    !goalsHintEligible && !historyHintEligible && heatmapHintEligible;
+  const { showGoalsHint, showHistoryHint, showHeatmapHint } = getHintVisibility(
+    {
+      hintGoalsSeen,
+      hintHistorySeen,
+      hintHeatmapSeen,
+      gettingStartedDismissed,
+      hasSessionSaved,
+      hasJustSaved,
+      sessionCount,
+      boards,
+    }
+  );
 
   // Keyboard support for clearing selection
   useEffect(() => {
@@ -241,28 +228,7 @@ export function PairingWorkspace() {
     if (selectedPersonIds.size === 0) return;
 
     setBoards((prevBoards: PairingBoard[]) => {
-      return prevBoards.map((board) => {
-        // Remove selected people from their current boards
-        const newAssigned = (board.assignedPersonIds || []).filter(
-          (id) => !selectedPersonIds.has(id)
-        );
-
-        // Add them to the new board
-        if (board.id === targetBoardId && targetBoardId !== 'unpaired') {
-          return {
-            ...board,
-            assignedPersonIds: [
-              ...newAssigned,
-              ...Array.from(selectedPersonIds),
-            ],
-          };
-        }
-
-        return {
-          ...board,
-          assignedPersonIds: newAssigned,
-        } as PairingBoard;
-      });
+      return applyBulkMove(prevBoards, selectedPersonIds, targetBoardId);
     }, true);
 
     // Clear selection after moving

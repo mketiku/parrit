@@ -49,7 +49,7 @@ test.describe.skip('Happy Path: Core Pairing Workflow', () => {
     await page.getByRole('link', { name: 'Dashboard' }).click();
     await page.waitForURL('**/app');
 
-    await page.getByRole('button', { name: /Add Board/i }).click();
+    await page.getByRole('button', { name: /Add new pairing board/i }).click();
     await page.getByPlaceholder('Board name...').fill('Rocket Project');
     await page.getByRole('button', { name: 'Create', exact: true }).click();
     await expect(page.getByText('Rocket Project')).toBeVisible();
