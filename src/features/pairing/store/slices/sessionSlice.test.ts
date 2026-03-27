@@ -255,6 +255,7 @@ describe('sessionSlice - saveSession', () => {
   it('shows "Webhook notification failed to send." info toast when fetch throws', async () => {
     const mockFetch = vi.fn().mockRejectedValue(new Error('network failure'));
     vi.stubGlobal('fetch', mockFetch);
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockSlackWebhookUrl = 'https://hooks.slack.com/test-webhook';
 
     const store = makeStore({
@@ -267,12 +268,18 @@ describe('sessionSlice - saveSession', () => {
       'Webhook notification failed to send.',
       'info'
     );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Webhook error:',
+      expect.any(Error)
+    );
     vi.unstubAllGlobals();
+    consoleSpy.mockRestore();
   });
 
   it('shows error toast when a disallowed domain is used for webhook', async () => {
     const mockFetch = vi.fn().mockResolvedValue({});
     vi.stubGlobal('fetch', mockFetch);
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockSlackWebhookUrl = 'https://malicious-site.com/webhook';
 
     const store = makeStore({
@@ -286,6 +293,11 @@ describe('sessionSlice - saveSession', () => {
       'Webhook notification failed to send.',
       'info'
     );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Webhook error:',
+      expect.any(Error)
+    );
     vi.unstubAllGlobals();
+    consoleSpy.mockRestore();
   });
 });

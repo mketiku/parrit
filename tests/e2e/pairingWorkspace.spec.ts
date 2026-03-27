@@ -1,9 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { login } from './helpers';
 
 test.describe('Pairing Workspace', () => {
   test.beforeEach(async ({ page }) => {
+    // Login first
+    await login(page);
     // Go to the main app page
-    await page.goto('/');
+    await page.goto('/app');
   });
 
   test('should load the active pairing boards section', async ({ page }) => {
@@ -13,18 +16,19 @@ test.describe('Pairing Workspace', () => {
     await expect(heading).toBeVisible();
   });
 
-  test('should allow creating a new board', async ({ page }) => {
-    const addBoardButton = page.getByRole('button', { name: /Add Board/i });
+  test('should allow creating a new board', async ({ page }, testInfo) => {
+    const boardName = `Rocket Ship Project ${testInfo.project.name}-${testInfo.workerIndex}-${Date.now()}`;
+    const addBoardButton = page.getByRole('button', {
+      name: /Add new pairing board/i,
+    });
 
-    // If the workspace is empty, it might auto-start a tutorial or it might not.
-    // Assuming we can see the 'Add Board' button.
     await expect(addBoardButton).toBeVisible();
 
     await addBoardButton.click();
 
     const input = page.getByPlaceholder('Board name...');
     await expect(input).toBeVisible();
-    await input.fill('Rocket Ship Project');
+    await input.fill(boardName);
 
     const createButton = page.getByRole('button', {
       name: 'Create',
@@ -32,7 +36,7 @@ test.describe('Pairing Workspace', () => {
     });
     await createButton.click();
 
-    // Expect to see the new board in the document
-    await expect(page.getByText('Rocket Ship Project')).toBeVisible();
+    // Expect the new board card heading to be present
+    await expect(page.getByRole('heading', { name: boardName })).toBeVisible();
   });
 });
