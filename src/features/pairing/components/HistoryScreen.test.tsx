@@ -34,8 +34,34 @@ describe('HistoryScreen Component', () => {
       session_date: '2024-03-01',
       created_at: '2024-03-01T10:00:00Z',
     },
+    {
+      id: 's2',
+      session_date: '2024-02-28',
+      created_at: '2024-02-28T09:30:00Z',
+    },
   ];
   const mockAddToast = vi.fn();
+
+  const createMockChain = (data: unknown = []) => {
+    const queryData = Array.isArray(data) ? data : [data];
+    const chain: Record<string, unknown> = {
+      select: vi.fn(() => chain),
+      order: vi.fn(() => chain),
+      limit: vi.fn((count?: number) =>
+        Promise.resolve({
+          data:
+            typeof count === 'number' ? queryData.slice(0, count) : queryData,
+          error: null,
+        })
+      ),
+      in: vi.fn(() => Promise.resolve({ data: queryData, error: null })),
+      eq: vi.fn(() => Promise.resolve({ data: queryData, error: null })),
+      then: vi.fn((onFulfilled: (val: unknown) => unknown) =>
+        Promise.resolve({ data: queryData, error: null }).then(onFulfilled)
+      ),
+    };
+    return chain;
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -49,6 +75,7 @@ describe('HistoryScreen Component', () => {
     // Mock Pairing Store
     vi.mocked(usePairingStore).mockReturnValue({
       people: [],
+      boards: [],
       isLoading: false,
     } as unknown as ReturnType<typeof usePairingStore>);
 
@@ -63,21 +90,6 @@ describe('HistoryScreen Component', () => {
     vi.mocked(useToastStore).mockReturnValue({
       addToast: mockAddToast,
     } as unknown as ReturnType<typeof useToastStore>);
-
-    // Helper to create a mock chain
-    const createMockChain = (data: unknown = []) => {
-      const chain: Record<string, unknown> = {
-        select: vi.fn(() => chain),
-        order: vi.fn(() => chain),
-        limit: vi.fn(() => Promise.resolve({ data, error: null })),
-        in: vi.fn(() => chain),
-        eq: vi.fn(() => chain),
-        then: vi.fn((onFulfilled: (val: unknown) => unknown) =>
-          Promise.resolve({ data, error: null }).then(onFulfilled)
-        ),
-      };
-      return chain;
-    };
 
     (supabase.from as ReturnType<typeof vi.fn>).mockImplementation(
       (table: string) => {
@@ -164,6 +176,84 @@ describe('HistoryScreen Component', () => {
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringMatching(/Failed to update session/i),
         'error'
+      );
+    });
+  });
+
+  it('toggles history insights visibility', async () => {
+    render(<HistoryScreen />);
+
+    const insightsToggle = await screen.findByRole('button', {
+      name: /show insights/i,
+    });
+    fireEvent.click(insightsToggle);
+
+    expect(
+      screen.getByRole('button', { name: /hide insights/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/pairing heatmap/i)).toBeInTheDocument();
+  });
+
+  it('loads older snapshots when requested', async () => {
+    const manySessions = Array.from({ length: 8 }, (_, idx) => ({
+      id: `s${idx + 1}`,
+      session_date: `2024-03-${String(20 - idx).padStart(2, '0')}`,
+      created_at: `2024-03-${String(20 - idx).padStart(2, '0')}T10:00:00Z`,
+    }));
+
+    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation(
+      (table: string) => {
+        if (table === 'pairing_sessions') return createMockChain(manySessions);
+        return createMockChain([]);
+      }
+    );
+
+    render(<HistoryScreen />);
+
+    const loadMoreButton = await screen.findByRole('button', {
+      name: /\+ load older snapshots/i,
+    });
+    fireEvent.click(loadMoreButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/mar 13th, 2024/i)).toBeInTheDocument();
+    });
+  });
+
+  it('bulk deletes selected sessions and shows success toast', async () => {
+    const deleteIn = vi.fn(() => Promise.resolve({ error: null }));
+    const deleteEq = vi.fn(() => Promise.resolve({ error: null }));
+
+    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation(
+      (table: string) => {
+        if (table === 'pairing_sessions') {
+          const query = createMockChain(mockSessions);
+          return {
+            ...query,
+            delete: vi.fn(() => ({
+              in: deleteIn,
+              eq: deleteEq,
+            })),
+          } as unknown as ReturnType<typeof supabase.from>;
+        }
+        return createMockChain([]);
+      }
+    );
+
+    render(<HistoryScreen />);
+
+    const selectAllButton = await screen.findByRole('button', {
+      name: /select all sessions/i,
+    });
+    fireEvent.click(selectAllButton);
+    fireEvent.click(screen.getByRole('button', { name: /delete \(2\)/i }));
+    fireEvent.click(screen.getByRole('button', { name: /delete forever/i }));
+
+    await waitFor(() => {
+      expect(deleteIn).toHaveBeenCalledWith('id', ['s1', 's2']);
+      expect(mockAddToast).toHaveBeenCalledWith(
+        '2 sessions deleted',
+        'success'
       );
     });
   });

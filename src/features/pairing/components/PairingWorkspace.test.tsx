@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PairingWorkspace } from './PairingWorkspace';
 import { usePairingStore } from '../store/usePairingStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
@@ -8,6 +14,7 @@ import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { useToastStore } from '../../../store/useToastStore';
+import { toPng } from 'html-to-image';
 import React from 'react';
 
 // Mocks
@@ -38,15 +45,18 @@ describe('PairingWorkspace Component', () => {
   const mockSaveSession = vi.fn();
   const mockRecommendPairs = vi.fn();
   const mockStartTutorial = vi.fn();
+  const mockAddToast = vi.fn();
+  const mockRefreshHistory = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockAddBoard.mockResolvedValue(undefined);
+    vi.useRealTimers();
 
     const mockState = {
       people: [
-        { id: 'p1', name: 'Alice', boardId: null },
-        { id: 'p2', name: 'Bob', boardId: 'b1' },
+        { id: 'p1', name: 'Alice', avatarColorHex: '#ff0000', boardId: null },
+        { id: 'p2', name: 'Bob', avatarColorHex: '#00ff00', boardId: 'b1' },
       ],
       boards: [
         {
@@ -94,11 +104,21 @@ describe('PairingWorkspace Component', () => {
       matrix: { personIds: [], personNames: {}, counts: {} },
       sessionCount: 0,
       isLoading: false,
-      refreshHistory: vi.fn(),
+      refreshHistory: mockRefreshHistory,
     });
     (useToastStore as any).mockReturnValue({
-      addToast: vi.fn(),
+      addToast: mockAddToast,
     });
+    (useToastStore as any).getState = vi.fn(() => ({
+      addToast: mockAddToast,
+    }));
+    (useAuthStore as any).getState = vi.fn(() => ({
+      workspaceName: 'Test',
+    }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('renders the workspace with boards and available pool', () => {
@@ -147,5 +167,65 @@ describe('PairingWorkspace Component', () => {
     fireEvent.click(screen.getByRole('button', { name: /help & tutorial/i }));
 
     expect(mockStartTutorial).toHaveBeenCalled();
+  });
+
+  it('toggles the pairing heatmap panel', () => {
+    render(<PairingWorkspace />);
+
+    fireEvent.click(screen.getByRole('button', { name: /^heatmap$/i }));
+
+    expect(
+      screen.getByRole('button', { name: /hide heatmap/i })
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/pairing heatmap/i)[0]).toBeInTheDocument();
+  });
+
+  it('downloads a screenshot successfully', async () => {
+    render(<PairingWorkspace />);
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: /download dashboard as image/i })
+      );
+    });
+
+    await waitFor(() => {
+      expect(toPng).toHaveBeenCalled();
+      expect(mockAddToast).toHaveBeenCalledWith(
+        'Screenshot downloaded!',
+        'success'
+      );
+    });
+  });
+
+  it('shows an error toast when screenshot generation fails', async () => {
+    vi.mocked(toPng).mockRejectedValueOnce(new Error('Image failure'));
+
+    render(<PairingWorkspace />);
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: /download dashboard as image/i })
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockAddToast).toHaveBeenCalledWith(
+        'Failed to generate image.',
+        'error'
+      );
+    });
+  });
+
+  it('clears a multi-selection when escape is pressed', () => {
+    render(<PairingWorkspace />);
+
+    fireEvent.click(screen.getByText('Alice'), { ctrlKey: true });
+
+    expect(screen.getByText(/1 teammate selected/i)).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(screen.queryByText(/1 teammate selected/i)).not.toBeInTheDocument();
   });
 });

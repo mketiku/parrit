@@ -1,5 +1,7 @@
 # Parrit 🦜
 
+![Coverage](docs/badges/coverage.svg)
+
 Professional-grade pairing for modern teams. A ground-up rebuild of the collaborative pairing board workflow.
 
 Created and maintained by **Michael Ketiku**.
@@ -145,7 +147,9 @@ See `docs/adr/` for documented decisions:
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get involved.
+Contributions are welcome, but the project is opinionated about product quality, architecture. Read [AGENTS.md](AGENTS.md) and the documentation in `docs/` before making large changes.
+
+Please also see [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and repository guidelines.
 
 ## Acknowledgements
 

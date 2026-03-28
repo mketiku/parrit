@@ -77,7 +77,7 @@ export default defineConfig(({ mode }) => {
       exclude: ['node_modules', 'tests/e2e/**'],
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'json', 'html'],
+        reporter: ['text', 'json', 'json-summary', 'html'],
         thresholds: {
           lines: 70,
           statements: 70,
@@ -99,6 +99,8 @@ export default defineConfig(({ mode }) => {
           'postcss.config.js',
           'tailwind.config.js',
           'eslint.config.js',
+          'scripts/generate-coverage-badge.mjs',
+          'scripts/update-version.js',
           // Static/content-only/Boilerplate — no unique logic to test
           'src/App.tsx',
           'src/main.tsx',

@@ -114,4 +114,105 @@ describe('AdminPortal', () => {
       ).toBeInTheDocument();
     });
   });
+
+  it('filters workspaces and shows the empty search state', async () => {
+    render(<AdminPortal />);
+
+    await waitFor(() => screen.getByText('t***@parrit.com'));
+
+    fireEvent.change(screen.getByPlaceholderText(/filter by name/i), {
+      target: { value: 'nomatch' },
+    });
+
+    expect(
+      screen.getByText('No workspaces found matching your search.')
+    ).toBeInTheDocument();
+  });
+
+  it('shows workspace fetch errors and allows retrying the connection', async () => {
+    (supabase.rpc as any).mockImplementation((fn: string) => {
+      if (fn === 'admin_get_workspaces') {
+        return Promise.resolve({
+          data: null,
+          error: new Error('Workspace fetch failed'),
+        });
+      }
+      return Promise.resolve({ data: [], error: null });
+    });
+
+    render(<AdminPortal />);
+
+    await waitFor(() => {
+      expect(screen.getByText('System Error')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /retry connection/i }));
+
+    expect(supabase.rpc as any).toHaveBeenCalledWith('admin_get_workspaces');
+  });
+
+  it('loads session stats and handles a stats failure state', async () => {
+    (supabase.rpc as any).mockImplementation((fn: string) => {
+      if (fn === 'admin_get_workspaces') {
+        return Promise.resolve({ data: mockWorkspaces, error: null });
+      }
+      if (fn === 'admin_get_stats') {
+        return Promise.resolve({
+          data: null,
+          error: new Error('Stats unavailable'),
+        });
+      }
+      return Promise.resolve({ data: mockFeedback, error: null });
+    });
+
+    render(<AdminPortal />);
+    await waitFor(() => screen.getByText('t***@parrit.com'));
+
+    fireEvent.click(screen.getByRole('button', { name: /^stats$/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Pairing activity unavailable')
+      ).toBeInTheDocument();
+      expect(screen.getByText('Stats unavailable')).toBeInTheDocument();
+      expect(screen.getByText('Total Workspaces')).toBeInTheDocument();
+      expect(screen.getByText('Active (30d)')).toBeInTheDocument();
+    });
+  });
+
+  it('marks feedback as read and removes the item from the list', async () => {
+    (supabase.rpc as any).mockImplementation(
+      (fn: string, payload?: unknown) => {
+        if (fn === 'admin_get_workspaces') {
+          return Promise.resolve({ data: mockWorkspaces, error: null });
+        }
+        if (fn === 'admin_get_feedback') {
+          return Promise.resolve({ data: mockFeedback, error: null });
+        }
+        if (fn === 'admin_mark_feedback_read' && payload) {
+          return Promise.resolve({ data: null, error: null });
+        }
+        return Promise.resolve({ data: [], error: null });
+      }
+    );
+
+    render(<AdminPortal />);
+    await waitFor(() => screen.getByText('t***@parrit.com'));
+    fireEvent.click(screen.getByRole('button', { name: /feedback/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('The save button does not work.')
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getAllByTitle(/mark as handled/i)[0]);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText('The save button does not work.')
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('Add keyboard shortcuts.')).toBeInTheDocument();
+    });
+  });
 });

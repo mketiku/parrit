@@ -21,6 +21,9 @@ vi.mock('../../../lib/supabase', () => ({
     },
     from: vi.fn(() => ({
       upsert: vi.fn().mockResolvedValue({ error: null }),
+      update: vi.fn(() => ({
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      })),
     })),
   },
 }));
@@ -28,11 +31,35 @@ vi.mock('../../../lib/supabase', () => ({
 describe('SettingsScreen Component', () => {
   const mockSetTheme = vi.fn();
   const mockSetShowFullName = vi.fn();
+  const mockSetStalePairHighlighting = vi.fn();
+  const mockSetPublicViewEnabled = vi.fn();
+  const mockSetOnboardingCompleted = vi.fn();
+  const mockSetStalePairThreshold = vi.fn();
+  const mockSetGettingStartedDismissed = vi.fn();
+  const mockSetMeetingLinkEnabled = vi.fn();
+  const mockSetSlackWebhookUrl = vi.fn();
   const mockExportWorkspace = vi.fn();
   const mockImportWorkspace = vi.fn();
+  const mockWipeWorkspace = vi.fn();
+  const mockSetShareToken = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal(
+      'confirm',
+      vi.fn(() => true)
+    );
+    vi.stubGlobal('alert', vi.fn());
+    Object.defineProperty(globalThis.crypto, 'randomUUID', {
+      value: vi.fn(() => 'mocked-uuid'),
+      configurable: true,
+    });
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+      configurable: true,
+    });
 
     (useAuthStore as any).mockReturnValue({
       user: { id: 'user-1' },
@@ -48,15 +75,20 @@ describe('SettingsScreen Component', () => {
       showFullName: false,
       setShowFullName: mockSetShowFullName,
       stalePairHighlightingEnabled: true,
-      setStalePairHighlighting: vi.fn(),
+      setStalePairHighlighting: mockSetStalePairHighlighting,
       stalePairThreshold: 3,
-      setStalePairThreshold: vi.fn(),
+      setStalePairThreshold: mockSetStalePairThreshold,
       publicViewEnabled: false,
-      setPublicViewEnabled: vi.fn(),
+      setPublicViewEnabled: mockSetPublicViewEnabled,
       onboardingCompleted: true,
-      setOnboardingCompleted: vi.fn(),
+      setOnboardingCompleted: mockSetOnboardingCompleted,
+      gettingStartedDismissed: false,
+      setGettingStartedDismissed: mockSetGettingStartedDismissed,
+      meetingLinkEnabled: false,
+      setMeetingLinkEnabled: mockSetMeetingLinkEnabled,
       slackWebhookUrl: '',
-      setSlackWebhookUrl: vi.fn(),
+      setSlackWebhookUrl: mockSetSlackWebhookUrl,
+      shareToken: 'shared-token-123',
     });
 
     (usePairingStore as any).mockReturnValue({
@@ -64,6 +96,14 @@ describe('SettingsScreen Component', () => {
       importWorkspace: mockImportWorkspace,
       isLoading: false,
     });
+
+    (usePairingStore as any).getState = vi.fn(() => ({
+      wipeWorkspace: mockWipeWorkspace,
+    }));
+
+    (useWorkspacePrefsStore as any).getState = vi.fn(() => ({
+      setShareToken: mockSetShareToken,
+    }));
   });
 
   it('renders correctly and switches tabs', () => {
@@ -147,5 +187,168 @@ describe('SettingsScreen Component', () => {
     fireEvent.click(exportButton);
 
     expect(mockExportWorkspace).toHaveBeenCalled();
+  });
+
+  it('updates pairing preferences and onboarding state', async () => {
+    render(<SettingsScreen />);
+    fireEvent.click(screen.getAllByText('Pairing')[0]);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /warn after 5 consecutive sessions/i })
+    );
+    fireEvent.click(screen.getAllByRole('switch')[0]);
+    fireEvent.click(
+      screen.getByRole('switch', {
+        name: /product tutorial auto-start/i,
+      })
+    );
+    fireEvent.click(
+      screen.getByRole('switch', { name: /show getting started guide/i })
+    );
+    fireEvent.click(
+      screen.getByRole('switch', { name: /meeting links on boards/i })
+    );
+
+    await waitFor(() => {
+      expect(mockSetStalePairThreshold).toHaveBeenCalledWith(5);
+      expect(mockSetStalePairHighlighting).toHaveBeenCalledWith(false);
+      expect(mockSetOnboardingCompleted).toHaveBeenCalledWith(false);
+      expect(mockSetGettingStartedDismissed).toHaveBeenCalledWith(true);
+      expect(mockSetMeetingLinkEnabled).toHaveBeenCalledWith(true);
+      expect(supabase.from).toHaveBeenCalledWith('workspace_settings');
+    });
+  });
+
+  it('manages the public collaboration link', async () => {
+    (useWorkspacePrefsStore as any).mockReturnValue({
+      showFullName: false,
+      setShowFullName: mockSetShowFullName,
+      stalePairHighlightingEnabled: true,
+      setStalePairHighlighting: mockSetStalePairHighlighting,
+      stalePairThreshold: 3,
+      setStalePairThreshold: mockSetStalePairThreshold,
+      publicViewEnabled: true,
+      setPublicViewEnabled: mockSetPublicViewEnabled,
+      onboardingCompleted: true,
+      setOnboardingCompleted: mockSetOnboardingCompleted,
+      gettingStartedDismissed: false,
+      setGettingStartedDismissed: mockSetGettingStartedDismissed,
+      meetingLinkEnabled: false,
+      setMeetingLinkEnabled: mockSetMeetingLinkEnabled,
+      slackWebhookUrl: '',
+      setSlackWebhookUrl: mockSetSlackWebhookUrl,
+      shareToken: 'shared-token-123',
+    });
+
+    render(<SettingsScreen />);
+    fireEvent.click(screen.getAllByText('Privacy')[0]);
+
+    expect(screen.getByText(/\/view\/shared-token-123/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /^copy$/i }));
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      `${window.location.origin}/view/shared-token-123`
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /regenerate link \/ revoke keys/i })
+    );
+
+    await waitFor(() => {
+      expect(mockSetShareToken).toHaveBeenCalledWith('mocked-uuid');
+      expect(alert).toHaveBeenCalledWith('Link rotated successfully!');
+    });
+  });
+
+  it('shows webhook validation errors and accepts valid https urls', () => {
+    render(<SettingsScreen />);
+    fireEvent.click(screen.getAllByText('Integrations')[0]);
+
+    const input = screen.getByPlaceholderText(
+      'https://hooks.slack.com/services/...'
+    );
+    fireEvent.change(input, {
+      target: { value: 'http://hooks.slack.com/foo' },
+    });
+
+    expect(
+      screen.getByText(/Webhook URL must start with https:\/\//i)
+    ).toBeInTheDocument();
+    expect(mockSetSlackWebhookUrl).toHaveBeenCalledWith(
+      'http://hooks.slack.com/foo'
+    );
+
+    fireEvent.change(input, {
+      target: { value: 'https://hooks.slack.com/foo' },
+    });
+
+    expect(
+      screen.getByText(/Leave blank to disable chat notifications/i)
+    ).toBeInTheDocument();
+  });
+
+  it('validates short passwords, handles update failures, and supports import and wipe flows', async () => {
+    render(<SettingsScreen />);
+    fireEvent.click(screen.getAllByText('Security')[0]);
+
+    fireEvent.change(screen.getByPlaceholderText(/^New$/), {
+      target: { value: '123' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/^Confirm$/), {
+      target: { value: '123' },
+    });
+    fireEvent.click(screen.getAllByText('Save')[0]);
+
+    expect(
+      screen.getByText(/Password must be at least 6 characters long/i)
+    ).toBeInTheDocument();
+
+    (supabase.auth.updateUser as any).mockResolvedValueOnce({
+      error: new Error('Auth is down'),
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/^New$/), {
+      target: { value: 'secret123' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/^Confirm$/), {
+      target: { value: 'secret123' },
+    });
+    fireEvent.click(screen.getAllByText('Save')[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText('Auth is down')).toBeInTheDocument();
+    });
+
+    mockImportWorkspace.mockResolvedValueOnce(undefined);
+    const file = new File(['{"boards":[],"people":[]}'], 'workspace.json', {
+      type: 'application/json',
+    });
+
+    fireEvent.click(screen.getByText(/Select JSON/i));
+    const input = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(await screen.findByText(/Destructive Action/i)).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /yes, replace everything/i })
+    );
+
+    await waitFor(() => {
+      expect(mockImportWorkspace).toHaveBeenCalledWith(
+        '{"boards":[],"people":[]}'
+      );
+    });
+
+    (globalThis.confirm as unknown as ReturnType<typeof vi.fn>)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true);
+    fireEvent.click(screen.getByRole('button', { name: /wipe everything/i }));
+
+    await waitFor(() => {
+      expect(mockWipeWorkspace).toHaveBeenCalled();
+    });
   });
 });
