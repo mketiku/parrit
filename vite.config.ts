@@ -73,10 +73,17 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'jsdom',
       setupFiles: './src/test/setup.ts',
+      testTimeout: 10000,
       exclude: ['node_modules', 'tests/e2e/**'],
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'json', 'html'],
+        reporter: ['text', 'json', 'json-summary', 'html'],
+        thresholds: {
+          lines: 70,
+          statements: 70,
+          branches: 70,
+          functions: 60,
+        },
         exclude: [
           'node_modules/',
           'dist/',
@@ -92,6 +99,8 @@ export default defineConfig(({ mode }) => {
           'postcss.config.js',
           'tailwind.config.js',
           'eslint.config.js',
+          'scripts/generate-coverage-badge.mjs',
+          'scripts/update-version.js',
           // Static/content-only/Boilerplate — no unique logic to test
           'src/App.tsx',
           'src/main.tsx',

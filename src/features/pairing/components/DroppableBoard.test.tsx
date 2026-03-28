@@ -1,10 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { DndContext } from '@dnd-kit/core';
 import { DroppableBoard } from './DroppableBoard';
 import React from 'react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
+import { useToastStore } from '../../../store/useToastStore';
 import { createBoard, createPerson } from '../../../test/factories';
 import {
   createMockPairingStore,
@@ -14,13 +15,23 @@ import {
 // Mocks
 vi.mock('../store/usePairingStore');
 vi.mock('../../../store/useWorkspacePrefsStore');
+vi.mock('../../../store/useToastStore');
 
 const mockUsePairingStore = vi.mocked(usePairingStore);
 const mockUseWorkspacePrefsStore = vi.mocked(useWorkspacePrefsStore);
+const mockUseToastStore = vi.mocked(useToastStore);
 
 const defaultStoreValues = createMockPairingStore();
+const mockAddToast = vi.fn();
 
 describe('DroppableBoard Component', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseToastStore.mockReturnValue({
+      addToast: mockAddToast,
+    } as unknown as ReturnType<typeof useToastStore>);
+  });
+
   it('renders board name and goals', () => {
     mockUsePairingStore.mockReturnValue(defaultStoreValues);
     mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
@@ -147,6 +158,81 @@ describe('DroppableBoard Component', () => {
 
     expect(defaultStoreValues.updateBoard).toHaveBeenCalledWith('board-1', {
       isExempt: true,
+    });
+  });
+
+  it('saves goals on blur and shows a toast', async () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1', goals: [] });
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={[]} />
+      </DndContext>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /add board focus/i }));
+
+    const textarea = screen.getByPlaceholderText(
+      /what is this pair working on/i
+    );
+    fireEvent.change(textarea, { target: { value: 'Ship alerts\nFix auth' } });
+    fireEvent.blur(textarea);
+
+    await waitFor(() => {
+      expect(defaultStoreValues.updateBoard).toHaveBeenCalledWith('board-1', {
+        goals: ['Ship alerts', 'Fix auth'],
+      });
+      expect(mockAddToast).toHaveBeenCalledWith('Goals updated', 'success');
+    });
+  });
+
+  it('shows stale pair banner when a repeated pairing crosses the threshold', () => {
+    mockUsePairingStore.mockReturnValue(
+      createMockPairingStore({
+        pairRecency: { 'person-a:person-b': 4 },
+      })
+    );
+    mockUseWorkspacePrefsStore.mockReturnValue(
+      createMockWorkspacePrefsStore({ stalePairHighlightingEnabled: true })
+    );
+
+    const mockBoard = createBoard({ id: 'board-1' });
+    const mockPeople = [
+      createPerson({ id: 'person-a', name: 'Alice' }),
+      createPerson({ id: 'person-b', name: 'Bob' }),
+    ];
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={mockPeople} />
+      </DndContext>
+    );
+
+    expect(screen.getByText(/stale pair/i)).toBeInTheDocument();
+  });
+
+  it('removes the board after delete confirmation', async () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1', name: 'Phoenix' });
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={[]} />
+      </DndContext>
+    );
+
+    fireEvent.click(screen.getByTitle(/delete board/i));
+    fireEvent.click(
+      screen.getAllByRole('button', { name: /^delete board$/i })[1]
+    );
+
+    await waitFor(() => {
+      expect(defaultStoreValues.removeBoard).toHaveBeenCalledWith('board-1');
     });
   });
 });
