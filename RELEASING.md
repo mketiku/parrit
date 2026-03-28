@@ -34,7 +34,7 @@ When you run a release command, the following automated steps occur:
 
 1.  **Pre-check**: Runs `npm run lint` and `npm run test`. If **any** test fails, the release is aborted to prevent broken tags.
 2.  **Version Bump**: Updates the version in `package.json`.
-3.  **Git Tag**: Creates a new git tag matching the version (e.g., `v1.0.1`) with an automated commit message.
+3.  **Git Tag**: Creates a new git tag matching the version (e.g., `v1.0.1`) and a Conventional Commit release commit such as `chore(release): bump version to v1.0.1`.
 4.  **Push**: Automatically pushes the new commit and the new tag to origin.
 
 ## 4. Best Practices

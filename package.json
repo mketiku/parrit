@@ -22,8 +22,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "prepare": "husky",
-    "release:patch": "npm version patch -m \"v%s: [Patch] Automated version bump\"",
-    "release:minor": "npm version minor -m \"v%s: [Minor] Automated version bump\"",
+    "release:patch": "npm version patch -m \"chore(release): bump version to v%s\"",
+    "release:minor": "npm version minor -m \"chore(release): bump version to v%s\"",
     "preversion": "npm run lint && npm run test && npm run typecheck",
     "version": "node scripts/update-version.js && git add public/version.json",
     "postversion": "git push && git push --tags"
