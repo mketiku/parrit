@@ -7,6 +7,7 @@ import { useAuthStore } from '../../auth/store/useAuthStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
+import { useToastStore } from '../../../store/useToastStore';
 import React from 'react';
 
 // Mocks
@@ -15,6 +16,7 @@ vi.mock('../../auth/store/useAuthStore');
 vi.mock('../../../store/useWorkspacePrefsStore');
 vi.mock('../store/useTutorialStore');
 vi.mock('../hooks/useHistoryAnalytics');
+vi.mock('../../../store/useToastStore');
 vi.mock('html-to-image', () => ({
   toPng: vi.fn().mockResolvedValue('data:image/png;base64,...'),
 }));
@@ -35,9 +37,11 @@ describe('PairingWorkspace Component', () => {
   const mockAddBoard = vi.fn();
   const mockSaveSession = vi.fn();
   const mockRecommendPairs = vi.fn();
+  const mockStartTutorial = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAddBoard.mockResolvedValue(undefined);
 
     const mockState = {
       people: [
@@ -78,7 +82,7 @@ describe('PairingWorkspace Component', () => {
       showFullName: true,
     });
     (useTutorialStore as any).mockReturnValue({
-      startTutorial: vi.fn(),
+      startTutorial: mockStartTutorial,
       isActive: false,
       currentStepIndex: 0,
       nextStep: vi.fn(),
@@ -91,6 +95,9 @@ describe('PairingWorkspace Component', () => {
       sessionCount: 0,
       isLoading: false,
       refreshHistory: vi.fn(),
+    });
+    (useToastStore as any).mockReturnValue({
+      addToast: vi.fn(),
     });
   });
 
@@ -106,5 +113,39 @@ describe('PairingWorkspace Component', () => {
     const saveButton = screen.getByText(/Save Session/i);
     fireEvent.click(saveButton);
     expect(mockSaveSession).toHaveBeenCalled();
+  });
+
+  it('calls recommendPairs when clicking recommend pairs', () => {
+    render(<PairingWorkspace />);
+
+    fireEvent.click(screen.getByRole('button', { name: /recommend pairs/i }));
+
+    expect(mockRecommendPairs).toHaveBeenCalled();
+  });
+
+  it('creates a new exempt board from the add board form', async () => {
+    render(<PairingWorkspace />);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /add new pairing board/i })
+    );
+    fireEvent.change(screen.getByPlaceholderText(/board name/i), {
+      target: { value: 'Platform' },
+    });
+    fireEvent.click(screen.getByLabelText(/exempt/i));
+    fireEvent.click(screen.getByRole('button', { name: /^create$/i }));
+
+    expect(mockAddBoard).toHaveBeenCalledWith('Platform', true);
+    expect(
+      await screen.findByRole('button', { name: /add new pairing board/i })
+    ).toBeInTheDocument();
+  });
+
+  it('starts the tutorial from the help button', () => {
+    render(<PairingWorkspace />);
+
+    fireEvent.click(screen.getByRole('button', { name: /help & tutorial/i }));
+
+    expect(mockStartTutorial).toHaveBeenCalled();
   });
 });
