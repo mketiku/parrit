@@ -94,4 +94,62 @@ describe('useVersionGuard', () => {
     expect(window.sessionStorage.getItem('draft')).toBeNull();
     expect(reload).toHaveBeenCalled();
   });
+
+  it('handles errors during hard update and reloads anyway', async () => {
+    const reload = vi.fn();
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    Object.defineProperty(window, 'location', {
+      value: { reload },
+      configurable: true,
+    });
+
+    Object.defineProperty(window, 'caches', {
+      get: () => {
+        throw new Error('Caches broken');
+      },
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => useVersionGuard());
+    await result.current.triggerHardUpdate();
+
+    expect(reload).toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Hard update failed',
+      expect.any(Error)
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it('marks app as not outdated when versions are equal', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ min_required: __APP_VERSION__ }),
+      })
+    );
+
+    const { result } = renderHook(() => useVersionGuard());
+    await waitFor(() => expect(result.current.isOutdated).toBe(false));
+  });
+
+  it('handles errors during version check', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('Fetch failed'))
+    );
+
+    renderHook(() => useVersionGuard());
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error checking application version:',
+        expect.any(Error)
+      );
+    });
+    consoleSpy.mockRestore();
+  });
 });

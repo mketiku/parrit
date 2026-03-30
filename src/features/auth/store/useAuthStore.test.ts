@@ -102,4 +102,64 @@ describe('useAuthStore', () => {
 
     expect(supabase.auth.signOut).toHaveBeenCalled();
   });
+
+  it('should skip re-initialization if already initialized', async () => {
+    (supabase.auth.getSession as any).mockResolvedValue({
+      data: { session: null },
+    });
+
+    const { initialize } = useAuthStore.getState();
+    await initialize();
+    expect(supabase.auth.getSession).toHaveBeenCalledTimes(1);
+
+    await initialize();
+    // Should not call getSession again
+    expect(supabase.auth.getSession).toHaveBeenCalledTimes(1);
+    expect(useAuthStore.getState().isLoading).toBe(false);
+  });
+
+  it('should handle session changes via onAuthStateChange', async () => {
+    let authCallback: any;
+    (supabase.auth.onAuthStateChange as any).mockImplementation((cb: any) => {
+      authCallback = cb;
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+
+    (supabase.auth.getSession as any).mockResolvedValue({
+      data: { session: null },
+    });
+
+    await useAuthStore.getState().initialize();
+
+    // Trigger auth change
+    const mockUser = {
+      id: 'new-user',
+      email: 'new@parrit.com',
+      app_metadata: { role: 'admin' },
+    };
+    const mockSession = { user: mockUser };
+
+    authCallback('SIGNED_IN', mockSession);
+
+    const state = useAuthStore.getState();
+    expect(state.user).toEqual(mockUser);
+    expect(state.isAdmin).toBe(true);
+    expect(state.workspaceName).toBe('new');
+  });
+
+  it('should handle errors during initialization', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    (supabase.auth.getSession as any).mockRejectedValue(
+      new Error('Auth failed')
+    );
+
+    await useAuthStore.getState().initialize();
+
+    expect(useAuthStore.getState().isLoading).toBe(false);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Error initializing auth',
+      expect.any(Error)
+    );
+    consoleSpy.mockRestore();
+  });
 });

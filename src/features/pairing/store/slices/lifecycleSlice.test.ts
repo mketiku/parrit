@@ -427,5 +427,180 @@ describe('lifecycleSlice', () => {
 
       expect(supabase.removeChannel).toHaveBeenCalledWith(channelObj);
     });
+
+    it('updates state when realtime INSERT, UPDATE, DELETE events occur for people', () => {
+      const mockUser = { id: 'user-abc-12345678' };
+      (useAuthStore.getState as any).mockReturnValue({ user: mockUser });
+
+      let peopleCallback: any;
+      const channelObj = {
+        on: vi.fn().mockImplementation((event, filter, cb) => {
+          if (filter.table === 'people') peopleCallback = cb;
+          return channelObj;
+        }),
+        subscribe: vi.fn(),
+      };
+      (supabase.channel as any).mockReturnValue(channelObj);
+
+      useStore.getState().subscribeToRealtime();
+
+      // INSERT
+      const newPerson = {
+        id: 'p3',
+        name: 'Charlie',
+        avatar_color_hex: '#14b8a6',
+        user_id: mockUser.id,
+      };
+      peopleCallback({ eventType: 'INSERT', new: newPerson });
+      expect(useStore.getState().people).toContainEqual({
+        id: 'p3',
+        name: 'Charlie',
+        avatarColorHex: '#14b8a6',
+      });
+
+      // INSERT duplicate (should be ignored)
+      peopleCallback({ eventType: 'INSERT', new: newPerson });
+      expect(
+        useStore.getState().people.filter((p) => p.id === 'p3')
+      ).toHaveLength(1);
+
+      // UPDATE
+      const updatedPerson = { ...newPerson, name: 'Charles' };
+      peopleCallback({ eventType: 'UPDATE', new: updatedPerson });
+      expect(useStore.getState().people.find((p) => p.id === 'p3')?.name).toBe(
+        'Charles'
+      );
+
+      // DELETE
+      peopleCallback({ eventType: 'DELETE', old: { id: 'p3' } });
+      expect(
+        useStore.getState().people.find((p) => p.id === 'p3')
+      ).toBeUndefined();
+    });
+
+    it('updates state when realtime INSERT, UPDATE, DELETE events occur for boards', () => {
+      const mockUser = { id: 'user-abc-12345678' };
+      (useAuthStore.getState as any).mockReturnValue({ user: mockUser });
+
+      let boardsCallback: any;
+      const channelObj = {
+        on: vi.fn().mockImplementation((event, filter, cb) => {
+          if (filter.table === 'pairing_boards') boardsCallback = cb;
+          return channelObj;
+        }),
+        subscribe: vi.fn(),
+      };
+      (supabase.channel as any).mockReturnValue(channelObj);
+
+      useStore.getState().subscribeToRealtime();
+
+      // INSERT
+      const newBoard = {
+        id: 'b2',
+        name: 'Board 2',
+        is_exempt: false,
+        sort_order: 1,
+        goals: [],
+        assigned_person_ids: [],
+        user_id: mockUser.id,
+      };
+      boardsCallback({ eventType: 'INSERT', new: newBoard });
+      expect(useStore.getState().boards).toContainEqual({
+        id: 'b2',
+        name: 'Board 2',
+        isExempt: false,
+        isLocked: false,
+        sortOrder: 1,
+        goals: [],
+        meetingLink: undefined,
+        assignedPersonIds: [],
+      });
+
+      // UPDATE
+      const updatedBoard = { ...newBoard, name: 'Updated Board' };
+      boardsCallback({ eventType: 'UPDATE', new: updatedBoard });
+      expect(useStore.getState().boards.find((b) => b.id === 'b2')?.name).toBe(
+        'Updated Board'
+      );
+
+      // DELETE
+      boardsCallback({ eventType: 'DELETE', old: { id: 'b2' } });
+      expect(
+        useStore.getState().boards.find((b) => b.id === 'b2')
+      ).toBeUndefined();
+    });
+  });
+
+  describe('loadWorkspaceData - Seeding Errors', () => {
+    it('logs errors when seeding fails', async () => {
+      (supabase.auth.getSession as any).mockResolvedValue({
+        data: { session: { user: MOCK_USER } },
+      });
+
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      const boardsSelectChain = makeSelectChain({ data: [], error: null });
+      const boardsInsertChain = {
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'board seed error' },
+        }),
+      };
+
+      const peopleSelectChain = makeSelectChain({ data: [], error: null });
+      const peopleInsertChain = {
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'people seed error' },
+        }),
+      };
+
+      const settingsChain = makeSelectChain({ data: null, error: null });
+
+      let boardsCallCount = 0;
+      let peopleCallCount = 0;
+
+      (supabase.from as any).mockImplementation((table: string) => {
+        if (table === 'people') {
+          peopleCallCount++;
+          return peopleCallCount === 1 ? peopleSelectChain : peopleInsertChain;
+        }
+        if (table === 'pairing_boards') {
+          boardsCallCount++;
+          return boardsCallCount === 1 ? boardsSelectChain : boardsInsertChain;
+        }
+        if (table === 'workspace_settings') return settingsChain;
+      });
+
+      await useStore.getState().loadWorkspaceData();
+
+      expect(consoleSpy).toHaveBeenCalledWith('Board seed error:', {
+        message: 'board seed error',
+      });
+      expect(consoleSpy).toHaveBeenCalledWith('People seed error:', {
+        message: 'people seed error',
+      });
+      consoleSpy.mockRestore();
+    });
+
+    it('handles general catch block in loadWorkspaceData', async () => {
+      (supabase.auth.getSession as any).mockRejectedValue(new Error('Panic!'));
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      await useStore.getState().loadWorkspaceData();
+
+      expect(useStore.getState().isLoading).toBe(false);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'General loadWorkspaceData error:',
+        expect.any(Error)
+      );
+      consoleSpy.mockRestore();
+    });
   });
 });

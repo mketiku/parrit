@@ -11,7 +11,11 @@ This guide defines the architectural and code quality standards for the **Parrit
   - `src/hooks`: General-purpose hooks.
   - `src/lib`: External client configurations (Supabase, QueryClient).
   - `src/features`: Business logic and complex UI modules.
-- **Strict Typing**: Use TypeScript for all code. Avoid `any` at all costs. Use `zod` for runtime validation if needed.
+- **Strict Typing**: Use TypeScript for all code. Avoid `any` at all costs. The `@typescript-eslint/no-explicit-any` rule is enforced — `any` is a lint error, not just a style concern. Always check compilation (`npx tsc --noEmit`) before completion.
+  - **When a third-party type is missing** (e.g. a Supabase table not yet in the generated types): use a narrowing cast via `unknown` — `(value as unknown as MyType)` — and leave a `// TODO: regenerate supabase types` comment so the cast is obviously temporary. Do not use `as any` or `// eslint-disable`.
+  - **When you genuinely cannot type a value**: define a named `interface` or `type` for it rather than reaching for `any`. If the only option is to escape the type system, use `unknown` and narrow with a type guard.
+  - **When Supabase `.from()` rejects a table name**: the table is not in the generated types. Regenerate types with `npx supabase gen types typescript --local > src/types/supabase-generated.ts` (or the appropriate project path) rather than suppressing the error.
+  - **Type Integrity**: Never remove referenced types/stubs without checking all dependents. Use `zod` for runtime validation if needed.
 
 ## 2. React Excellence (Version 19+)
 

@@ -108,6 +108,39 @@ describe('usePairingStore - Slices Integration', () => {
       await updatePromise;
       expect(supabase.from).toHaveBeenCalledWith('pairing_boards');
     });
+
+    it('should handle errors when adding a board', async () => {
+      const mockChain = {
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Insert failed' },
+        }),
+      };
+      (supabase.from as any).mockReturnValue(mockChain);
+
+      const { addBoard } = usePairingStore.getState();
+      await addBoard('Fail Board');
+
+      expect(usePairingStore.getState().boards).toHaveLength(0);
+    });
+
+    it('should rollback on updateBoard failure', async () => {
+      (supabase.from as any).mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: { message: 'Update failed' } }),
+      });
+
+      const board = createBoard({ id: 'b1', name: 'Original' });
+      usePairingStore.setState({ boards: [board] });
+
+      const { updateBoard } = usePairingStore.getState();
+      await updateBoard('b1', { name: 'New Name' });
+
+      // Should rollback to original
+      expect(usePairingStore.getState().boards[0].name).toBe('Original');
+    });
   });
 
   describe('PeopleSlice', () => {
@@ -176,6 +209,46 @@ describe('usePairingStore - Slices Integration', () => {
       expect(usePairingStore.getState().isRecommending).toBe(true);
       await promise;
       expect(usePairingStore.getState().isRecommending).toBe(false);
+    });
+
+    it('should return early if people length is less than 2', async () => {
+      usePairingStore.setState({
+        people: [createPerson({ id: 'p1' })],
+        boards: [createBoard({ id: 'b1' })],
+      });
+
+      const { recommendPairs } = usePairingStore.getState();
+      await recommendPairs();
+
+      expect(usePairingStore.getState().isRecommending).toBe(false);
+      expect(supabase.from).not.toHaveBeenCalledWith('pairing_history');
+    });
+
+    it('should handle errors during recommendation', async () => {
+      usePairingStore.setState({
+        people: [createPerson({ id: 'p1' }), createPerson({ id: 'p2' })],
+        boards: [createBoard({ id: 'b1' })],
+      });
+
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const mockQueryResult = {
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'History fetch error' },
+        }),
+      };
+      (supabase.from as any).mockReturnValue(mockQueryResult);
+
+      const { recommendPairs } = usePairingStore.getState();
+      await recommendPairs();
+
+      expect(usePairingStore.getState().isRecommending).toBe(false);
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
   });
 });
