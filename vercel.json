@@ -4,5 +4,15 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "headers": [
+    {
+      "source": "/",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/sw-v2.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    }
   ]
 }
