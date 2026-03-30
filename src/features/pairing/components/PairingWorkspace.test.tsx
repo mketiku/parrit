@@ -228,4 +228,70 @@ describe('PairingWorkspace Component', () => {
 
     expect(screen.queryByText(/1 teammate selected/i)).not.toBeInTheDocument();
   });
+
+  it('allows moving multiple people to a board via bulk move menu', async () => {
+    const mockMovePerson = vi.fn();
+    const mockSetBoards = vi.fn();
+    (usePairingStore as any).mockImplementation((selector: any) => {
+      const state = {
+        people: [
+          { id: 'p1', name: 'Alice', avatarColorHex: '#ff0000', boardId: null },
+          { id: 'p2', name: 'Bob', avatarColorHex: '#00ff00', boardId: 'b1' },
+        ],
+        boards: [{ id: 'b1', name: 'Board 1', isExempt: false }],
+        movePerson: mockMovePerson,
+        setBoards: mockSetBoards,
+      };
+      return selector ? selector(state) : state;
+    });
+
+    render(<PairingWorkspace />);
+
+    // Multi-select Alice and Bob
+    fireEvent.click(screen.getByText('Alice'), { ctrlKey: true });
+    fireEvent.click(screen.getByText('Bob'), { ctrlKey: true });
+
+    expect(screen.getByText(/2 teammates selected/i)).toBeInTheDocument();
+
+    // Open bulk move menu
+    fireEvent.click(screen.getByRole('button', { name: /move to/i }));
+
+    // Click Board 1 in the menu
+    // The menu has a header "Select Target Board"
+    expect(screen.getByText(/select target board/i)).toBeInTheDocument();
+
+    const boardButtons = screen.getAllByText('Board 1');
+    const menuButton = boardButtons.find((b) => b.closest('button'));
+    if (menuButton) fireEvent.click(menuButton);
+
+    expect(mockSetBoards).toHaveBeenCalled();
+    expect(screen.queryByText(/2 teammates selected/i)).not.toBeInTheDocument();
+  });
+
+  it('allows unpairing multiple people via bulk move menu', async () => {
+    const mockMovePerson = vi.fn();
+    const mockSetBoards = vi.fn();
+    (usePairingStore as any).mockImplementation((selector: any) => {
+      const state = {
+        people: [
+          { id: 'p1', name: 'Alice', avatarColorHex: '#ff0000', boardId: 'b1' },
+          { id: 'p2', name: 'Bob', avatarColorHex: '#00ff00', boardId: 'b1' },
+        ],
+        boards: [{ id: 'b1', name: 'Board 1', isExempt: false }],
+        movePerson: mockMovePerson,
+        setBoards: mockSetBoards,
+      };
+      return selector ? selector(state) : state;
+    });
+
+    render(<PairingWorkspace />);
+
+    fireEvent.click(screen.getByText('Alice'), { ctrlKey: true });
+    fireEvent.click(screen.getByText('Bob'), { ctrlKey: true });
+
+    fireEvent.click(screen.getByRole('button', { name: /move to/i }));
+    fireEvent.click(screen.getByText(/unpair all selected/i));
+
+    expect(mockSetBoards).toHaveBeenCalled();
+  });
 });

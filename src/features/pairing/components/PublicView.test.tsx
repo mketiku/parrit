@@ -105,4 +105,85 @@ describe('PublicView Component', () => {
       expect(screen.getByTestId('dashboard')).toBeInTheDocument();
     });
   });
+
+  it('should show Access Restricted for invalid share token format', async () => {
+    setupAuth(false, false);
+
+    render(
+      <MemoryRouter initialEntries={['/view/invalid-token-format']}>
+        <Routes>
+          <Route path="/view/:shareToken" element={<PublicView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    });
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it('should show Access Restricted if settings for token are not found', async () => {
+    setupAuth(false, false);
+
+    (supabase.from as any).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    });
+
+    render(
+      <MemoryRouter
+        initialEntries={['/view/550e8400-e29b-41d4-a716-446655440000']}
+      >
+        <Routes>
+          <Route path="/view/:shareToken" element={<PublicView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    });
+  });
+
+  it('should fetch and display people and boards on success', async () => {
+    setupAuth(false, false);
+
+    const actualUserId = 'test-user-id';
+    (supabase.from as any).mockImplementation((table: string) => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      maybeSingle:
+        table === 'workspace_settings'
+          ? vi.fn().mockResolvedValue({
+              data: { public_view_enabled: true, user_id: actualUserId },
+            })
+          : vi.fn(),
+      then: (resolve: any) => {
+        if (table === 'people')
+          resolve({ data: [{ id: 'p1', name: 'Alice' }] });
+        if (table === 'pairing_boards')
+          resolve({ data: [{ id: 'b1', name: 'Board 1' }] });
+        return Promise.resolve();
+      },
+    }));
+
+    render(
+      <MemoryRouter
+        initialEntries={['/view/550e8400-e29b-41d4-a716-446655440000']}
+      >
+        <Routes>
+          <Route path="/view/:shareToken" element={<PublicView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('dashboard')).toBeInTheDocument();
+    });
+    expect(supabase.from).toHaveBeenCalledWith('people');
+    expect(supabase.from).toHaveBeenCalledWith('pairing_boards');
+  });
 });

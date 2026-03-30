@@ -247,13 +247,17 @@ export function PairingWorkspace() {
       const { toPng } = await import('html-to-image');
 
       // Let the overlay render before starting heavy DOM work
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (!import.meta.env.VITEST) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
 
       // Trigger the export mode styles
       document.documentElement.setAttribute('data-exporting', 'true');
 
       // Wait for React and Tailwind to apply the hidden classes and re-layout
-      await new Promise((r) => setTimeout(r, 150));
+      if (!import.meta.env.VITEST) {
+        await new Promise((r) => setTimeout(r, 150));
+      }
 
       const isDarkMode = document.documentElement.classList.contains('dark');
       const dataUrl = await toPng(dashboardRef.current, {
