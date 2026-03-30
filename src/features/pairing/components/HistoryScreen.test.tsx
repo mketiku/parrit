@@ -129,11 +129,15 @@ describe('HistoryScreen Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(supabase.from).mockImplementation((table: string) => {
-      if (table === 'pairing_sessions') return createMockChain(mockSessions);
-      if (table === 'pairing_history') return createMockChain(mockHistory);
-      return createMockChain([]);
-    });
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    vi.mocked(supabase.from).mockImplementation(((table: string) => {
+      if (table === 'pairing_sessions')
+        return createMockChain(mockSessions) as any;
+      if (table === 'pairing_history')
+        return createMockChain(mockHistory) as any;
+      return createMockChain([]) as any;
+    }) as any);
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   });
 
   it('renders and displays sessions', async () => {
@@ -204,11 +208,15 @@ describe('HistoryScreen Component', () => {
       created_at: `2024-03-${String(20 - idx).padStart(2, '0')}T10:00:00Z`,
     }));
 
-    vi.mocked(supabase.from).mockImplementation((table: string) => {
-      if (table === 'pairing_sessions') return createMockChain(manySessions);
-      if (table === 'pairing_history') return createMockChain(mockHistory);
-      return createMockChain([]);
-    });
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    vi.mocked(supabase.from).mockImplementation(((table: string) => {
+      if (table === 'pairing_sessions')
+        return createMockChain(manySessions) as any;
+      if (table === 'pairing_history')
+        return createMockChain(mockHistory) as any;
+      return createMockChain([]) as any;
+    }) as any);
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     render(<HistoryScreen />);
 

@@ -24,7 +24,7 @@ export const createAlgorithmSlice: StateCreator<
     set({ isRecommending: true });
 
     // Only add delay in local dev; production network latency is enough delay
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && !import.meta.env.VITEST) {
       await get()._delay(800);
     }
 
