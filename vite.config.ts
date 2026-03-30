@@ -19,7 +19,8 @@ export default defineConfig(({ mode }) => {
       ...(!isTest
         ? [
             VitePWA({
-              registerType: 'prompt',
+              registerType: 'autoUpdate',
+              filename: 'sw-v2.js',
               includeAssets: ['favicon.svg'],
               manifest: {
                 name: 'Parrit - Modern Pairing',
