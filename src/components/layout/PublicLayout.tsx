@@ -187,12 +187,14 @@ export default function PublicLayout() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link
               to="/about"
+              onClick={() => window.scrollTo(0, 0)}
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               About
             </Link>
             <Link
               to="/guide"
+              onClick={() => window.scrollTo(0, 0)}
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               Guide
@@ -200,12 +202,14 @@ export default function PublicLayout() {
 
             <Link
               to="/privacy"
+              onClick={() => window.scrollTo(0, 0)}
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               Privacy
             </Link>
             <Link
               to="/terms"
+              onClick={() => window.scrollTo(0, 0)}
               className="text-xs font-medium text-neutral-500 hover:text-brand-600 transition-colors"
             >
               Terms
@@ -219,14 +223,9 @@ export default function PublicLayout() {
           </div>
 
           <div className="flex justify-center">
-            <a
-              href="https://github.com/mketiku/parrit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 hover:text-brand-600 dark:bg-neutral-800 dark:text-neutral-400 transition-colors"
-            >
+            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
               v{__APP_VERSION__}
-            </a>
+            </span>
           </div>
 
           <div className="flex justify-end">
