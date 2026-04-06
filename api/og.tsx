@@ -27,6 +27,8 @@ export default function handler(request: Request) {
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
           background:
             'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
           position: 'relative',
@@ -61,16 +63,32 @@ export default function handler(request: Request) {
           }}
         />
 
+        {/* Bottom-right decorative glow */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: -100,
+            right: -100,
+            width: 500,
+            height: 500,
+            borderRadius: '50%',
+            background:
+              'radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)',
+            display: 'flex',
+          }}
+        />
+
         {/* Content */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             justifyContent: 'center',
-            height: '100%',
-            padding: '60px 80px',
+            textAlign: 'center',
+            padding: '0 80px',
             position: 'relative',
+            width: '100%',
           }}
         >
           {/* Logo row */}
@@ -78,28 +96,28 @@ export default function handler(request: Request) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 20,
-              marginBottom: 40,
+              gap: 16,
+              marginBottom: 36,
             }}
           >
             <div
               style={{
                 display: 'flex',
-                height: 72,
-                width: 72,
+                height: 64,
+                width: 64,
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: 18,
+                borderRadius: 16,
                 background: 'linear-gradient(135deg, #6366f1, #3b82f6)',
-                fontSize: 40,
-                boxShadow: '0 0 40px rgba(99,102,241,0.5)',
+                fontSize: 36,
+                boxShadow: '0 0 30px rgba(99,102,241,0.5)',
               }}
             >
               🦜
             </div>
             <span
               style={{
-                fontSize: 36,
+                fontSize: 30,
                 fontWeight: 'bold',
                 color: 'white',
                 letterSpacing: '-0.02em',
@@ -109,47 +127,67 @@ export default function handler(request: Request) {
             </span>
           </div>
 
-          {/* Main headline */}
+          {/* Headline */}
           {isHomepage ? (
-            <>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
               <div
                 style={{
-                  fontSize: 72,
+                  fontSize: 58,
                   fontWeight: 'bold',
                   color: 'white',
                   letterSpacing: '-0.03em',
-                  lineHeight: 1.1,
-                  marginBottom: 24,
                   display: 'flex',
                 }}
               >
                 Pair programming,
-                <br />
+              </div>
+              <div
+                style={{
+                  fontSize: 58,
+                  fontWeight: 'bold',
+                  color: 'white',
+                  letterSpacing: '-0.03em',
+                  marginBottom: 24,
+                  display: 'flex',
+                }}
+              >
                 beautifully organized.
               </div>
               <div
                 style={{
-                  fontSize: 30,
+                  fontSize: 26,
                   color: '#a5b4fc',
-                  lineHeight: 1.5,
                   display: 'flex',
-                  maxWidth: 700,
+                  textAlign: 'center',
+                  maxWidth: 620,
                 }}
               >
-                Visual drag-and-drop rotation boards for engineering teams. Open
-                source. Free forever.
+                Visual drag-and-drop rotation boards for engineering teams —
+                open source, free forever.
               </div>
-            </>
+            </div>
           ) : (
-            <>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
               <div
                 style={{
-                  fontSize: 28,
+                  fontSize: 22,
                   color: '#a5b4fc',
                   fontWeight: 600,
-                  letterSpacing: '0.08em',
+                  letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  marginBottom: 16,
+                  marginBottom: 12,
                   display: 'flex',
                 }}
               >
@@ -157,13 +195,14 @@ export default function handler(request: Request) {
               </div>
               <div
                 style={{
-                  fontSize: 72,
+                  fontSize: 64,
                   fontWeight: 'bold',
                   color: 'white',
                   letterSpacing: '-0.03em',
-                  lineHeight: 1.1,
                   marginBottom: 24,
                   display: 'flex',
+                  textAlign: 'center',
+                  maxWidth: 900,
                 }}
               >
                 {workspace}
@@ -173,12 +212,11 @@ export default function handler(request: Request) {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
+                    gap: 10,
                     background: 'rgba(99,102,241,0.2)',
                     border: '1px solid rgba(99,102,241,0.4)',
                     borderRadius: 12,
-                    padding: '12px 24px',
-                    marginTop: 8,
+                    padding: '10px 24px',
                   }}
                 >
                   <div
@@ -192,7 +230,7 @@ export default function handler(request: Request) {
                   />
                   <span
                     style={{
-                      fontSize: 28,
+                      fontSize: 26,
                       color: '#a5b4fc',
                       display: 'flex',
                     }}
@@ -203,7 +241,7 @@ export default function handler(request: Request) {
               ) : (
                 <div
                   style={{
-                    fontSize: 28,
+                    fontSize: 26,
                     color: '#64748b',
                     display: 'flex',
                   }}
@@ -211,24 +249,9 @@ export default function handler(request: Request) {
                   Visual pair rotation board
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
-
-        {/* Bottom-right decorative glow */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: -80,
-            right: -80,
-            width: 400,
-            height: 400,
-            borderRadius: '50%',
-            background:
-              'radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%)',
-            display: 'flex',
-          }}
-        />
       </div>,
       {
         width: 1200,
