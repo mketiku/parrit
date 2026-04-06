@@ -157,7 +157,7 @@ export default function handler(request: Request) {
                   display: 'flex',
                 }}
               >
-                beautifully organized.
+                simplified.
               </div>
               <div
                 style={{
