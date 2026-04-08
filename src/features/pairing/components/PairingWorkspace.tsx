@@ -37,10 +37,12 @@ import {
   ArrowRight,
   Download,
   BarChart3,
+  Bird,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { GettingStartedCard } from './GettingStartedCard';
 import { ContextualHint } from './ContextualHint';
+import { FeatherBurst } from '../../../components/ui/FeatherBurst';
 import { formatLocalDate, formatToday } from '../utils/dateUtils';
 import { useHistoryAnalytics } from '../hooks/useHistoryAnalytics';
 import { applyBulkMove, getHintVisibility } from './pairingWorkspace.helpers';
@@ -56,6 +58,12 @@ const PairingMatrixView = React.lazy(() =>
   import('./PairingMatrixView').then((m) => ({ default: m.PairingMatrixView }))
 );
 
+function getGreeting(hour: number, name: string): string {
+  if (hour < 12) return `Morning, ${name}! Who's pairing today?`;
+  if (hour < 18) return `Good afternoon, ${name}. Ready to rotate?`;
+  return `Good evening, ${name}. Late session?`;
+}
+
 export function PairingWorkspace() {
   const people = usePairingStore((s) => s.people);
   const boards = usePairingStore((s) => s.boards);
@@ -68,6 +76,7 @@ export function PairingWorkspace() {
   const isSaving = usePairingStore((s) => s.isSaving);
   const isRecommending = usePairingStore((s) => s.isRecommending);
   const dashboardRef = useRef<HTMLDivElement>(null);
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
 
   // const [isSelectMode, setIsSelectMode] = useState(false); // Removed per user request
   const [isAddingBoard, setIsAddingBoard] = useState(false);
@@ -80,10 +89,16 @@ export function PairingWorkspace() {
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [isMoveMenuOpen, setIsMoveMenuOpen] = useState(false);
   const [hasJustSaved, setHasJustSaved] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationCoords, setCelebrationCoords] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const prevIsSaving = useRef(isSaving);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
+
   const {
     matrix,
     sessionCount,
@@ -141,7 +156,14 @@ export function PairingWorkspace() {
     if (prevIsSaving.current && !isSaving) {
       refreshHistory();
       // We delay the celebratory hint slightly to ensure history data is processed
-      setTimeout(() => setHasJustSaved(true), 100);
+      setTimeout(() => {
+        setHasJustSaved(true);
+        const rect = saveButtonRef.current?.getBoundingClientRect();
+        if (rect) {
+          setCelebrationCoords({ x: rect.x, y: rect.y });
+        }
+        setShowCelebration(true);
+      }, 100);
     }
     prevIsSaving.current = isSaving;
   }, [isSaving, refreshHistory]);
@@ -154,8 +176,10 @@ export function PairingWorkspace() {
   }, [hasAnyGoals, hintGoalsSeen, setHintGoalsSeen]);
 
   const { workspaceName: username } = useAuthStore();
-  const workspaceTitle =
-    username.charAt(0).toUpperCase() + username.slice(1) + ' Workspace';
+  const displayName = username.charAt(0).toUpperCase() + username.slice(1);
+  const greeting = getGreeting(new Date().getHours(), displayName);
+
+  const workspaceTitle = displayName + ' Workspace';
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -178,6 +202,29 @@ export function PairingWorkspace() {
     boards.flatMap((b) => b.assignedPersonIds || [])
   );
   const unpairedPeople = people.filter((p) => !allAssignedIds.has(p.id));
+
+  const hasCelebratedAllFilled = useRef(false);
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    const isAllFilled = unpairedPeople.length === 0 && boards.length > 0;
+
+    // Don't celebrate on the very first load
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (isAllFilled) {
+        hasCelebratedAllFilled.current = true;
+      }
+      return;
+    }
+
+    if (isAllFilled && !hasCelebratedAllFilled.current) {
+      setShowCelebration(true);
+      hasCelebratedAllFilled.current = true;
+    } else if (!isAllFilled) {
+      hasCelebratedAllFilled.current = false;
+    }
+  }, [unpairedPeople.length, boards.length]);
 
   const handlePersonClick = (personId: string, e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
@@ -395,14 +442,34 @@ export function PairingWorkspace() {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
               {!isExporting && (
                 <div className="flex flex-col">
-                  <h1 className="text-xl sm:text-2xl 2xl:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 transition-all">
-                    Active Pairing Boards
-                  </h1>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
-                      Live Session
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      animate={{ rotate: [0, -10, 10, 0] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 4,
+                        ease: 'easeInOut',
+                      }}
+                    >
+                      <Bird className="h-6 w-6 sm:h-8 sm:w-8 text-brand-500" />
+                    </motion.div>
+                    <h1 className="text-2xl sm:text-3xl 2xl:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 transition-all">
+                      {greeting}
+                    </h1>
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-50 border border-brand-100 dark:bg-brand-900/20 dark:border-brand-800">
+                      <div className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-brand-700 dark:text-brand-300">
+                        {boards.length}{' '}
+                        {boards.length === 1 ? 'board' : 'boards'} active
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neutral-50 border border-neutral-100 dark:bg-neutral-800/50 dark:border-neutral-700">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
+                        {people.length} teammates
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -454,6 +521,7 @@ export function PairingWorkspace() {
 
                 <button
                   id="save-session-btn"
+                  ref={saveButtonRef}
                   onClick={saveSession}
                   disabled={isSaving}
                   title="Save Pairing Session to history"
@@ -791,9 +859,23 @@ export function PairingWorkspace() {
           onDismiss={() => setHintHeatmapSeen(true)}
         />
       )}
+
+      {showCelebration && (
+        <FeatherBurst
+          originX={celebrationCoords?.x}
+          originY={celebrationCoords?.y}
+          onComplete={() => setShowCelebration(false)}
+        />
+      )}
     </>
   );
 }
+
+const UNPAIRED_QUIPS = [
+  'The nest is empty — great job! 🦜',
+  'All birds on boards. Champion rotation!',
+  'Zero bench, maximum velocity.',
+];
 
 function DroppableUnpairedPool({
   people,
@@ -808,6 +890,9 @@ function DroppableUnpairedPool({
   isLoading?: boolean;
   isDragActive?: boolean;
 }) {
+  const [quip] = useState(
+    () => UNPAIRED_QUIPS[Math.floor(Math.random() * UNPAIRED_QUIPS.length)]
+  );
   const { isOver, setNodeRef } = useDroppable({
     id: 'unpaired',
   });
@@ -866,10 +951,29 @@ function DroppableUnpairedPool({
             </AnimatePresence>
           </div>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center text-center opacity-40">
-            <div className="mb-3 h-12 w-12 rounded-full border-2 border-dashed border-neutral-300 dark:border-neutral-700" />
-            <p className="text-xs font-bold text-neutral-400">
-              Everyone is paired!
+          <div className="flex flex-1 flex-col items-center justify-center text-center px-6">
+            <svg
+              viewBox="0 0 80 80"
+              className="mb-4 h-16 w-16 text-brand-300/60 dark:text-brand-700/60"
+              fill="currentColor"
+            >
+              {/* Body */}
+              <circle cx="40" cy="50" r="18" />
+              {/* Head */}
+              <circle cx="45" cy="25" r="11" />
+              {/* Beak */}
+              <path d="M54 22l7 4-7 4z" />
+              {/* Tail */}
+              <path
+                d="M26 58c-4 8-12 12-12 12"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+                strokeLinecap="round"
+              />
+            </svg>
+            <p className="text-xs font-bold text-neutral-400 dark:text-neutral-50 max-w-[140px] leading-relaxed">
+              {quip}
             </p>
           </div>
         )}

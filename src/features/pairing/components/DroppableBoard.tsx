@@ -19,12 +19,38 @@ import {
   GripVertical,
   AlertTriangle,
   Moon,
+  Bird,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
 import { useToastStore } from '../../../store/useToastStore';
 import { DraggablePerson } from './DraggablePerson';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FeatherBurst } from '../../../components/ui/FeatherBurst';
+
+const EMPTY_PROMPTS = [
+  'Drop a bird here 🦜',
+  'Awaiting its first pair…',
+  'This board is lonely.',
+  "Who's flying in?",
+];
+
+const BOARD_ACCENT_COLORS = [
+  '#3b82f6', // macaw blue
+  '#10b981', // tropical green
+  '#f59e0b', // sunset amber
+  '#f43f5e', // rose
+  '#8b5cf6', // violet
+  '#06b6d4', // cyan
+  '#d946ef', // fuchsia
+  '#84cc16', // lime / cockatoo green
+];
+
+function getBoardAccentColor(boardId: string): string {
+  const hash = boardId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return BOARD_ACCENT_COLORS[hash % BOARD_ACCENT_COLORS.length];
+}
+
 import type { PairingBoard, Person } from '../types';
 
 interface DroppableBoardProps {
@@ -42,6 +68,9 @@ function DroppableBoardComponent({
   onPersonClick,
   isDragActive,
 }: DroppableBoardProps) {
+  const [emptyPrompt] = useState(
+    () => EMPTY_PROMPTS[Math.floor(Math.random() * EMPTY_PROMPTS.length)]
+  );
   const {
     attributes,
     listeners,
@@ -55,11 +84,16 @@ function DroppableBoardComponent({
     data: { type: 'BOARD' },
   });
 
+  const accentColor = useMemo(() => getBoardAccentColor(board.id), [board.id]);
+
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
     zIndex: isDragging ? 50 : undefined,
     opacity: isDragging ? 0.3 : 1,
+    background: board.isExempt
+      ? `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.015) 8px, rgba(0,0,0,0.015) 16px), linear-gradient(to bottom, ${accentColor}08, transparent)`
+      : `linear-gradient(to bottom, ${accentColor}08, transparent)`,
   };
 
   const { removeBoard, updateBoard, pairRecency } = usePairingStore();
@@ -67,21 +101,24 @@ function DroppableBoardComponent({
     useWorkspacePrefsStore();
   const { addToast } = useToastStore();
 
-  const hasStalePairs = useMemo(() => {
+  const stalePersonIds = useMemo(() => {
     if (!stalePairHighlightingEnabled || board.isExempt || people.length < 2)
-      return false;
+      return new Set<string>();
     const threshold = stalePairThreshold || 3;
     const boardPeopleIds = new Set(people.map((p) => p.id));
-    // O(s): iterate the stale pairs set and check if both members are on this board,
-    // rather than checking all O(n²) board-member combinations.
+    const staleIds = new Set<string>();
+
     for (const [key, count] of Object.entries(pairRecency)) {
       if (count < threshold) continue;
       const sep = key.indexOf(':');
       const a = key.slice(0, sep);
       const b = key.slice(sep + 1);
-      if (boardPeopleIds.has(a) && boardPeopleIds.has(b)) return true;
+      if (boardPeopleIds.has(a) && boardPeopleIds.has(b)) {
+        staleIds.add(a);
+        staleIds.add(b);
+      }
     }
-    return false;
+    return staleIds;
   }, [
     stalePairHighlightingEnabled,
     board.isExempt,
@@ -90,12 +127,20 @@ function DroppableBoardComponent({
     stalePairThreshold,
   ]);
 
+  const hasStalePairs = stalePersonIds.size > 0;
+
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingGoals, setIsEditingGoals] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [showLockCelebration, setShowLockCelebration] = useState(false);
+  const [celebrationCoords, setCelebrationCoords] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [goalsText, setGoalsText] = useState((board.goals || []).join('\n'));
   const [editedName, setEditedName] = useState(board.name);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lockButtonRef = useRef<HTMLButtonElement>(null);
   const goalsTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -168,18 +213,37 @@ function DroppableBoardComponent({
         [html[data-exporting='true']_&]:min-h-0 [html[data-exporting='true']_&]:p-5 [html[data-exporting='true']_&]:shadow-none
       `}
     >
+      <div
+        className="absolute top-0 inset-x-0 h-[3px] rounded-t-3xl"
+        style={{ background: accentColor }}
+      />
       {/* Stale Pair Banner */}
       {hasStalePairs && !isOver && !isDragging && (
-        <div className="mb-3 flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 dark:bg-amber-900/20">
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-            Stale pair — consider rotating
+        <motion.div
+          animate={{ x: [0, 2, -2, 0] }}
+          transition={{ repeat: 3, duration: 0.4, delay: 0.5 }}
+          className="mb-3 flex items-center gap-1.5 rounded-lg border border-amber-200/50 bg-amber-50 px-2.5 py-1.5 shadow-sm dark:border-amber-800/30 dark:bg-amber-900/20"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(245, 158, 11, 0.03) 8px, rgba(245, 158, 11, 0.03) 16px)',
+          }}
+        >
+          <div className="flex shrink-0 items-center gap-1">
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+            <Bird className="h-3 w-3 text-amber-400" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 leading-tight">
+            These two have been glued together — shake up the flock! 🦜
           </span>
-        </div>
+        </motion.div>
       )}
 
       {/* Board Header */}
-      <div className="mb-3 sm:mb-4 flex items-start justify-between">
+      <div
+        className={`mb-3 sm:mb-4 flex items-start justify-between transition-all ${
+          board.isLocked && !board.isExempt ? 'saturate-[0.5] opacity-70' : ''
+        }`}
+      >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <button
@@ -216,9 +280,15 @@ function DroppableBoardComponent({
                 />
               </div>
             ) : (
-              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-tight">
-                {board.name}
-              </h3>
+              <div className="flex items-center gap-2 overflow-hidden">
+                <div
+                  className="h-2 w-2 shrink-0 rounded-full shadow-sm"
+                  style={{ backgroundColor: accentColor }}
+                />
+                <h3 className="font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-tight">
+                  {board.name}
+                </h3>
+              </div>
             )}
           </div>
 
@@ -248,9 +318,18 @@ function DroppableBoardComponent({
               <Pencil className="h-3.5 w-3.5" />
             </button>
             <button
-              onClick={() =>
-                updateBoard(board.id, { isLocked: !board.isLocked })
-              }
+              ref={lockButtonRef}
+              onClick={() => {
+                const nextLocked = !board.isLocked;
+                updateBoard(board.id, { isLocked: nextLocked });
+                if (nextLocked) {
+                  const rect = lockButtonRef.current?.getBoundingClientRect();
+                  if (rect) {
+                    setCelebrationCoords({ x: rect.x, y: rect.y });
+                    setShowLockCelebration(true);
+                  }
+                }
+              }}
               className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                 board.isLocked
                   ? 'text-brand-500 bg-brand-50 hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20'
@@ -339,6 +418,7 @@ function DroppableBoardComponent({
                 sourceId={board.id}
                 isSelected={selectedPersonIds?.has(person.id)}
                 isExempt={board.isExempt}
+                isStale={stalePersonIds.has(person.id)}
                 onClick={(e) => onPersonClick?.(person.id, e)}
               />
             ))}
@@ -347,9 +427,28 @@ function DroppableBoardComponent({
 
         {people.length === 0 && !isOver && (
           <div className="flex flex-1 items-center justify-center p-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-300 dark:text-neutral-700">
-              Empty Board
-            </span>
+            <motion.div
+              animate={{ y: [0, -3, 0] }}
+              transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+              className="flex items-center gap-1.5"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="opacity-40"
+              >
+                <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.07 1.27L1 10l5-1 7 5 7-5 5 1-1.55-5.27a2 2 0 00-1.07-1.27z" />
+              </svg>
+              <span className="text-[10px] font-black uppercase tracking-widest text-neutral-300 dark:text-neutral-700">
+                {emptyPrompt}
+              </span>
+            </motion.div>
           </div>
         )}
       </div>
@@ -408,6 +507,15 @@ function DroppableBoardComponent({
             </div>
           </div>
         </div>
+      )}
+
+      {showLockCelebration && celebrationCoords && (
+        <FeatherBurst
+          originX={celebrationCoords.x}
+          originY={celebrationCoords.y}
+          count={6}
+          onComplete={() => setShowLockCelebration(false)}
+        />
       )}
     </div>
   );

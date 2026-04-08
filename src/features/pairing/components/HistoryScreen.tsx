@@ -598,19 +598,23 @@ export function HistoryScreen() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-neutral-900 rounded-3xl p-10 text-center border border-dashed border-neutral-200 dark:border-neutral-800"
+                className="bg-white dark:bg-neutral-900 rounded-[2rem] p-12 text-center border-2 border-dashed border-neutral-100 dark:border-neutral-800"
               >
-                <div className="h-16 w-16 bg-neutral-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6 text-neutral-300">
-                  <Bird className="h-8 w-8" />
+                <div className="h-20 w-20 bg-brand-50 dark:bg-brand-500/10 rounded-full flex items-center justify-center mx-auto mb-8 text-brand-500 shadow-inner">
+                  <Bird className="h-10 w-10" />
                 </div>
-                <p className="text-sm font-bold text-neutral-500 mb-4">
-                  The archives are empty. *sad parrot noises*
+                <h3 className="text-xl font-black text-neutral-900 dark:text-white mb-3">
+                  The nest is empty! 🪹
+                </h3>
+                <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-8 max-w-[280px] mx-auto leading-relaxed">
+                  Your flock's history starts the moment you save your first
+                  session.
                 </p>
                 <Link
                   to="/app"
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-xs font-bold text-white shadow-lg transition-all hover:bg-brand-600"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-3.5 text-sm font-bold text-white shadow-xl shadow-brand-500/20 transition-all hover:bg-brand-600 active:scale-95"
                 >
-                  Start a Session
+                  Enter the Flock
                 </Link>
               </motion.div>
             ) : (

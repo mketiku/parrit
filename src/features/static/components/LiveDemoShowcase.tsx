@@ -6,6 +6,7 @@ import {
   Sparkles,
   History,
   MousePointer2,
+  Bird,
 } from 'lucide-react';
 
 interface Person {
@@ -287,9 +288,9 @@ export function LiveDemoShowcase() {
             <div className="ml-4 flex-1 max-w-md rounded-xl bg-neutral-100 dark:bg-neutral-800 px-4 py-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-400 tracking-tight flex items-center justify-between gap-4">
               <span className="truncate">parrit.org/app</span>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[8px] uppercase tracking-widest opacity-50">
-                  Live
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                <span className="text-[8px] uppercase tracking-widest text-neutral-500 dark:text-neutral-300">
+                  Parrit is live
                 </span>
               </div>
             </div>
@@ -304,6 +305,18 @@ export function LiveDemoShowcase() {
         </div>
 
         <div className="p-4 sm:p-8 flex flex-col xl:flex-row gap-8 relative">
+          {/* Parrot Mascot */}
+          <motion.div
+            animate={{ y: [0, -8, 0], rotate: [0, 5, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+            className="absolute -top-12 right-12 z-50 hidden md:block"
+          >
+            <div className="bg-white dark:bg-neutral-800 p-2.5 rounded-2xl shadow-xl border border-neutral-100 dark:border-neutral-700">
+              <Bird className="h-8 w-8 text-brand-500" />
+            </div>
+            <div className="absolute -bottom-1 right-4 w-3 h-3 bg-white dark:bg-neutral-800 border-r border-b border-neutral-100 dark:border-neutral-700 rotate-45" />
+          </motion.div>
+
           <div className="flex-1 order-last xl:order-first">
             <div className="mb-6 flex items-center justify-between">
               <p className="font-black tracking-tight text-neutral-900 dark:text-neutral-100">

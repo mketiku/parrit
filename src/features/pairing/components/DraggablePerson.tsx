@@ -11,6 +11,7 @@ interface DraggablePersonProps {
   isOverlay?: boolean;
   isSelected?: boolean;
   isExempt?: boolean;
+  isStale?: boolean;
   onClick?: (e: React.MouseEvent) => void;
 }
 
@@ -20,6 +21,7 @@ function DraggablePersonComponent({
   isOverlay,
   isSelected,
   isExempt,
+  isStale,
   onClick,
 }: DraggablePersonProps) {
   const { showFullName } = useWorkspacePrefsStore();
@@ -65,6 +67,7 @@ function DraggablePersonComponent({
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.8, opacity: 0 }}
+      whileHover={{ scale: 1.15, rotate: [-2, 2, -1, 0] }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       className="relative flex items-center justify-start"
     >
@@ -79,14 +82,17 @@ function DraggablePersonComponent({
         onBlur={handleMouseLeave}
         className={`
           relative flex shrink-0 cursor-grab items-center justify-center rounded-full 
-          text-xs font-bold text-white transition-all shadow-inner
+          text-xs font-bold text-white shadow-inner transition-all
           ${showFullName ? 'h-8 w-auto min-w-[2.5rem] px-3' : 'h-10 w-10'}
           ${
             isSelected && !isOverlay
-              ? 'ring-4 ring-brand-500 scale-110 shadow-md outline-none'
-              : 'ring-1 ring-black/10 dark:ring-white/20'
+              ? 'ring-4 ring-brand-500 shadow-md outline-none'
+              : isStale && !isOverlay
+                ? 'ring-2 ring-amber-400 ring-offset-1 dark:ring-offset-neutral-900'
+                : 'ring-1 ring-black/10 dark:ring-white/20'
           }
-          ${isDragging ? 'z-[100] scale-110 cursor-grabbing shadow-2xl ring-2' : 'hover:scale-105 hover:shadow-md active:scale-95 active:opacity-80 active:shadow-inner transition-all duration-200'}
+          ${isDragging ? 'z-[100] scale-110 cursor-grabbing shadow-2xl ring-2' : 'hover:shadow-md active:scale-95 active:opacity-80 active:shadow-inner'}
+          ${isStale && !isSelected && !isOverlay ? 'animate-pulse' : ''}
         `}
         onClick={(e) => {
           if (e.defaultPrevented) return;
@@ -97,9 +103,14 @@ function DraggablePersonComponent({
           opacity: isDragging && !isOverlay ? 0 : isExempt ? 0.4 : 1,
         }}
       >
-        {isExempt && !showFullName && (
-          <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 shadow-sm dark:bg-white">
+        {isExempt && !showFullName && !isOverlay && (
+          <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 shadow-sm ring-1 ring-white dark:bg-white dark:ring-neutral-900 z-10">
             <Moon className="h-2.5 w-2.5 text-white dark:text-neutral-900" />
+          </div>
+        )}
+        {isStale && !showFullName && !isOverlay && (
+          <div className="absolute -left-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 shadow-sm ring-1 ring-white dark:ring-neutral-900 z-10">
+            <span className="text-[8px] leading-none">⏱</span>
           </div>
         )}
         <span className={showFullName ? 'whitespace-nowrap px-1' : ''}>
@@ -108,7 +119,7 @@ function DraggablePersonComponent({
       </button>
 
       {/* Hover Tooltip - only show if name is not already visible inside the pill */}
-      {showTooltip && !isDragging && !showFullName && (
+      {showTooltip && !isDragging && !showFullName && !isOverlay && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}

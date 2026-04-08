@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
+import { Bird, XCircle, Info, X } from 'lucide-react';
 import { useToastStore, type Toast } from '../../store/useToastStore';
 
 const icons = {
-  success: <CheckCircle2 className="h-4 w-4 shrink-0 text-brand-500" />,
+  success: <Bird className="h-4 w-4 shrink-0 text-brand-500" />,
   error: <XCircle className="h-4 w-4 shrink-0 text-red-500" />,
   info: <Info className="h-4 w-4 shrink-0 text-brand-500" />,
 };
