@@ -27,6 +27,7 @@ import { useToastStore } from '../../../store/useToastStore';
 import { DraggablePerson } from './DraggablePerson';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FeatherBurst } from '../../../components/ui/FeatherBurst';
+import { getBoardAccentColor } from '../utils/visualHelpers';
 
 const EMPTY_PROMPTS = [
   'Drop a bird here 🦜',
@@ -34,22 +35,6 @@ const EMPTY_PROMPTS = [
   'This board is lonely.',
   "Who's flying in?",
 ];
-
-const BOARD_ACCENT_COLORS = [
-  '#3b82f6', // macaw blue
-  '#10b981', // tropical green
-  '#f59e0b', // sunset amber
-  '#f43f5e', // rose
-  '#8b5cf6', // violet
-  '#06b6d4', // cyan
-  '#d946ef', // fuchsia
-  '#84cc16', // lime / cockatoo green
-];
-
-function getBoardAccentColor(boardId: string): string {
-  const hash = boardId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return BOARD_ACCENT_COLORS[hash % BOARD_ACCENT_COLORS.length];
-}
 
 import type { PairingBoard, Person } from '../types';
 

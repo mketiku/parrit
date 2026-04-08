@@ -58,11 +58,7 @@ const PairingMatrixView = React.lazy(() =>
   import('./PairingMatrixView').then((m) => ({ default: m.PairingMatrixView }))
 );
 
-function getGreeting(hour: number, name: string): string {
-  if (hour < 12) return `Morning, ${name}! Who's pairing today?`;
-  if (hour < 18) return `Good afternoon, ${name}. Ready to rotate?`;
-  return `Good evening, ${name}. Late session?`;
-}
+import { getGreeting } from '../utils/visualHelpers';
 
 export function PairingWorkspace() {
   const people = usePairingStore((s) => s.people);
