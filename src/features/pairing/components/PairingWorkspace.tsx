@@ -37,7 +37,6 @@ import {
   ArrowRight,
   Download,
   BarChart3,
-  Bird,
 } from 'lucide-react';
 import { useTutorialStore } from '../store/useTutorialStore';
 import { GettingStartedCard } from './GettingStartedCard';
@@ -435,46 +434,41 @@ export function PairingWorkspace() {
               </div>
             )}
 
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
+            <div className="mb-6 flex flex-col gap-4 sm:mb-8">
               {!isExporting && (
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-3">
-                    <motion.div
-                      animate={{ rotate: [0, -10, 10, 0] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 4,
-                        ease: 'easeInOut',
-                      }}
-                    >
-                      <Bird className="h-6 w-6 sm:h-8 sm:w-8 text-brand-500" />
-                    </motion.div>
-                    <h1 className="text-2xl sm:text-3xl 2xl:text-4xl font-black tracking-tight text-neutral-900 dark:text-neutral-100 transition-all">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm sm:text-[15px]">
+                    <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-300 sm:text-[15px]">
                       {greeting}
-                    </h1>
-                  </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-50 border border-brand-100 dark:bg-brand-900/20 dark:border-brand-800">
-                      <div className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-brand-700 dark:text-brand-300">
-                        {boards.length}{' '}
-                        {boards.length === 1 ? 'board' : 'boards'} active
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neutral-50 border border-neutral-100 dark:bg-neutral-800/50 dark:border-neutral-700">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
-                        {people.length} teammates
-                      </span>
-                    </div>
+                    </p>
+                    <span
+                      aria-hidden="true"
+                      className="hidden text-neutral-400 sm:inline"
+                    >
+                      /
+                    </span>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+                      {boards.length} {boards.length === 1 ? 'board' : 'boards'}{' '}
+                      active
+                    </p>
+                    <span
+                      aria-hidden="true"
+                      className="hidden text-neutral-400 sm:inline"
+                    >
+                      /
+                    </span>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+                      {people.length} teammates
+                    </p>
                   </div>
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center gap-3 [html[data-exporting='true']_&]:hidden sm:flex-nowrap">
+              <div className="flex flex-wrap items-center gap-3 [html[data-exporting='true']_&]:hidden">
                 <button
                   id="heatmap-toggle"
                   onClick={() => setShowHeatmap(!showHeatmap)}
-                  className={`flex items-center justify-center gap-2 h-10 px-4 min-w-[130px] rounded-xl border text-sm font-semibold transition-all shadow-sm
+                  className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold whitespace-nowrap transition-all shadow-sm
                     ${
                       showHeatmap
                         ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20'
@@ -505,7 +499,7 @@ export function PairingWorkspace() {
                   }
                   title="Recommend Pairs based on history and availability"
                   aria-label="Recommend Pairs"
-                  className="flex items-center justify-center gap-2 h-10 rounded-xl bg-white px-4 text-sm font-semibold text-neutral-700 shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-all dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+                  className="flex h-10 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-700 shadow-sm whitespace-nowrap transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
                 >
                   {isRecommending ? (
                     <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
@@ -522,7 +516,7 @@ export function PairingWorkspace() {
                   disabled={isSaving}
                   title="Save Pairing Session to history"
                   aria-label="Save Session"
-                  className="flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 disabled:scale-100 transition-all disabled:opacity-50"
+                  className="flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 whitespace-nowrap transition-all hover:bg-brand-600 active:scale-95 disabled:scale-100 disabled:opacity-50"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

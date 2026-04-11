@@ -76,9 +76,6 @@ function DroppableBoardComponent({
     transition,
     zIndex: isDragging ? 50 : undefined,
     opacity: isDragging ? 0.3 : 1,
-    background: board.isExempt
-      ? `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.015) 8px, rgba(0,0,0,0.015) 16px), linear-gradient(to bottom, ${accentColor}08, transparent)`
-      : `linear-gradient(to bottom, ${accentColor}08, transparent)`,
   };
 
   const { removeBoard, updateBoard, pairRecency } = usePairingStore();
@@ -182,7 +179,7 @@ function DroppableBoardComponent({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative flex min-h-[200px] sm:min-h-[240px] flex-col rounded-3xl border-2 p-4 sm:p-5 shadow-sm transition-all duration-300
+      className={`group relative flex min-h-[200px] sm:min-h-[240px] flex-col rounded-3xl border-[2px] p-4 sm:p-5 shadow-sm transition-all duration-300
         ${
           isOver
             ? 'border-brand-500 bg-brand-50/20 shadow-lg shadow-brand-500/10 ring-4 ring-brand-500/5'
@@ -191,17 +188,13 @@ function DroppableBoardComponent({
                 ? 'border-neutral-200 bg-neutral-100/50 dark:border-neutral-700 dark:bg-neutral-800/20 ring-2 ring-brand-300/40 ring-offset-1'
                 : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ring-2 ring-brand-300/40 ring-offset-1'
               : board.isExempt
-                ? 'border-neutral-200/60 bg-neutral-50 dark:border-neutral-800/60 dark:bg-neutral-900/40'
+                ? 'border-neutral-200/60 bg-neutral-50/90 hover:border-neutral-300/80 hover:shadow-md dark:border-neutral-800/60 dark:bg-neutral-900/50 dark:hover:border-neutral-700'
                 : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700'
         }
         ${isDragging ? 'cursor-grabbing opacity-80 shadow-2xl z-50' : ''}
         [html[data-exporting='true']_&]:min-h-0 [html[data-exporting='true']_&]:p-5 [html[data-exporting='true']_&]:shadow-none
       `}
     >
-      <div
-        className="absolute top-0 inset-x-0 h-[3px] rounded-t-3xl"
-        style={{ background: accentColor }}
-      />
       {/* Stale Pair Banner */}
       {hasStalePairs && !isOver && !isDragging && (
         <motion.div
