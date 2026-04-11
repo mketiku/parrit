@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, ChevronDown, X, Bird } from 'lucide-react';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
+import { FeatherBurst } from '../../../components/ui/FeatherBurst';
 import type { Person, PairingBoard } from '../types';
 
 interface GettingStartedCardProps {
@@ -27,6 +28,8 @@ export function GettingStartedCard({
   const [collapsed, setCollapsed] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
+  const [showCelebration, setShowCelebration] = useState(false);
+  const hasCelebrated = React.useRef(false);
 
   const hasPeople = people.length > 0;
   const hasBoard = boards.filter((b) => !b.isExempt).length > 0;
@@ -74,6 +77,13 @@ export function GettingStartedCard({
 
   const completedCount = items.filter((i) => i.done).length;
   const allDone = completedCount === items.length;
+
+  React.useEffect(() => {
+    if (allDone && !hasCelebrated.current && completedCount > 0) {
+      setShowCelebration(true);
+      hasCelebrated.current = true;
+    }
+  }, [allDone, completedCount]);
 
   const handleDismiss = () => {
     setGettingStartedDismissed(true);
@@ -195,7 +205,7 @@ export function GettingStartedCard({
                     onClick={handleDismiss}
                     className="w-full rounded-xl bg-brand-500 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all"
                   >
-                    🎉 All done — dismiss this guide
+                    The flock is ready. Let's fly! 🦜
                   </button>
                 </div>
               )}
@@ -203,6 +213,10 @@ export function GettingStartedCard({
           )}
         </AnimatePresence>
       </motion.div>
+
+      {showCelebration && (
+        <FeatherBurst onComplete={() => setShowCelebration(false)} />
+      )}
     </AnimatePresence>
   );
 }

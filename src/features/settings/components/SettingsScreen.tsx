@@ -30,33 +30,42 @@ import {
   validatePasswordUpdate,
 } from './settingsScreen.helpers';
 
-const THEMES: { id: AppTheme; name: string; color: string; accent: string }[] =
-  [
-    {
-      id: 'macaw-elite',
-      name: 'Macaw Elite',
-      color: '#3b82f6',
-      accent: '#f59e0b',
-    },
-    {
-      id: 'night-parrot',
-      name: 'Night Parrot',
-      color: '#64748b',
-      accent: '#f43f5e',
-    },
-    {
-      id: 'cyber-cockatoo',
-      name: 'Cyber Cockatoo',
-      color: '#84cc16',
-      accent: '#d946ef',
-    },
-    {
-      id: 'sunset-parakeet',
-      name: 'Sunset Parakeet',
-      color: '#f97316',
-      accent: '#a855f7',
-    },
-  ];
+const THEMES: {
+  id: AppTheme;
+  name: string;
+  description: string;
+  color: string;
+  accent: string;
+}[] = [
+  {
+    id: 'macaw-elite',
+    name: 'Macaw Elite',
+    description: 'Vivid & Professional',
+    color: '#3b82f6',
+    accent: '#f59e0b',
+  },
+  {
+    id: 'night-parrot',
+    name: 'Night Parrot',
+    description: 'Dark & Focused',
+    color: '#64748b',
+    accent: '#f43f5e',
+  },
+  {
+    id: 'cyber-cockatoo',
+    name: 'Cyber Cockatoo',
+    description: 'Bold & Energetic',
+    color: '#84cc16',
+    accent: '#d946ef',
+  },
+  {
+    id: 'sunset-parakeet',
+    name: 'Sunset Parakeet',
+    description: 'Warm & Creative',
+    color: '#f97316',
+    accent: '#a855f7',
+  },
+];
 
 export function SettingsScreen() {
   const { user, workspaceName } = useAuthStore();
@@ -304,14 +313,8 @@ export function SettingsScreen() {
                         <h3 className="text-sm font-black text-neutral-900 dark:text-neutral-100">
                           {t.name}
                         </h3>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                          {t.id === 'macaw-elite'
-                            ? 'Azure & Gold'
-                            : t.id === 'night-parrot'
-                              ? 'Slate & Rose'
-                              : t.id === 'cyber-cockatoo'
-                                ? 'Lime & Neon'
-                                : 'Orange & Purple'}
+                        <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">
+                          {t.description}
                         </p>
                       </div>
                     </button>

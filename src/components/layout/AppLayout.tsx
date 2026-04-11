@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Bird, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
@@ -146,9 +147,13 @@ export default function AppLayout() {
               to="/app"
               className="flex items-center gap-2 transition-opacity hover:opacity-80"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm shadow-brand-500/20">
+              <motion.div
+                whileHover={{ rotate: [0, -15, 10, 0] }}
+                transition={{ duration: 0.5 }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm shadow-brand-500/20"
+              >
                 <Bird className="h-5 w-5" />
-              </div>
+              </motion.div>
               <span className="font-bold tracking-tight">Parrit</span>
             </Link>
 

@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Wifi,
   MousePointerClick,
-  Share2,
   Sparkles,
   CheckCircle2,
 } from 'lucide-react';
@@ -28,16 +27,16 @@ const features = [
       'Move people between boards with a natural, lag-free experience. Bulk-move groups with ease.',
   },
   {
+    icon: Bird,
+    title: 'Smart Pairing',
+    description:
+      'Get one-click pairing suggestions based on historical data and rotation rules.',
+  },
+  {
     icon: Wifi,
     title: 'Real-time Sync',
     description:
       'Updates instantly across all teammates in the workspace. No manual refreshing required.',
-  },
-  {
-    icon: Share2,
-    title: 'Public View Links',
-    description:
-      'Share a read-only live dashboard of current pairings with stakeholders or TV displays.',
   },
 ];
 
@@ -86,37 +85,36 @@ export function LandingPage() {
             transition={{ duration: 0.5 }}
           >
             {user ? (
-              <div className="mb-8 inline-flex items-center gap-3 rounded-2xl bg-brand-50/50 px-6 py-3 border border-brand-100 dark:bg-brand-500/5 dark:border-brand-500/10">
+              <div className="mb-8 inline-flex items-center gap-3 rounded-2xl bg-brand-50/50 px-6 py-3 border border-brand-100 dark:bg-brand-500/5 dark:border-brand-500/10 shadow-sm">
                 <div className="h-8 w-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-brand-500/20">
                   {workspaceName.substring(0, 1).toUpperCase()}
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] text-neutral-500 dark:text-neutral-300 font-black uppercase tracking-widest">
-                    Signed in as
+                  <p className="text-[10px] text-neutral-500 dark:text-neutral-300 font-black uppercase tracking-widest leading-tight">
+                    Welcome back, {workspaceName}!
                   </p>
                   <p className="text-sm font-bold text-neutral-900 dark:text-white capitalize leading-tight">
-                    {workspaceName} Workspace
+                    Your flock is waiting
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 mb-8">
+              <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 mb-8 shadow-sm">
                 <Bird className="h-3.5 w-3.5" />
-                Spiritual successor to parrit.io
+                Built for engineering flocks that move fast 🦜
               </div>
             )}
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
-              Pairing,{' '}
+              Stop guessing.{' '}
               <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">
-                done right.
+                Start pairing.
               </span>
             </h1>
 
             <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl font-medium text-neutral-500 dark:text-neutral-300 leading-relaxed">
-              Parrit is a fast, beautiful pairing board designed for engineering
-              teams practicing pair programming. Sync live with teammates and
-              track your rotations over time — without a single email required.
+              Parrit is the pair programming board your team actually wants to
+              open. Live sync, smart rotation, zero email.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -125,7 +123,7 @@ export function LandingPage() {
                   to="/app"
                   className="group inline-flex items-center gap-2 rounded-2xl bg-neutral-900 px-8 py-4 text-base font-bold text-white shadow-xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all dark:bg-brand-500 dark:hover:bg-brand-600"
                 >
-                  Enter Dashboard
+                  Enter the Flock
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               ) : (
@@ -162,6 +160,19 @@ export function LandingPage() {
         >
           <LiveDemoShowcase />
         </motion.div>
+
+        {/* Trust Strip */}
+        <div className="mt-8 border-y border-neutral-100 dark:border-neutral-800/50 bg-neutral-50/50 dark:bg-neutral-900/20 py-6 overflow-hidden">
+          <motion.div
+            animate={{ x: [0, -20, 0] }}
+            transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut' }}
+            className="flex items-center justify-center gap-8 whitespace-nowrap"
+          >
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
+              Trusted by engineering flocks worldwide 🦜
+            </span>
+          </motion.div>
+        </div>
       </section>
 
       {/* Features */}
