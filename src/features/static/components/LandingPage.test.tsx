@@ -43,8 +43,8 @@ describe('LandingPage Component', { timeout: 10000 }, () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText(/Signed in as/i)).toBeInTheDocument();
-    expect(screen.getByText(/Acme Workspace/i)).toBeInTheDocument();
-    expect(screen.getByText(/Enter Dashboard/i)).toBeInTheDocument();
+    expect(screen.getByText(/Welcome back/i)).toBeInTheDocument();
+    expect(screen.getByText(/Acme/i)).toBeInTheDocument();
+    expect(screen.getByText(/Enter the Flock/i)).toBeInTheDocument();
   });
 });

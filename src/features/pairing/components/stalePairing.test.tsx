@@ -49,15 +49,11 @@ describe('DroppableBoard - Stale Person Logic', () => {
       id: 'p1',
       name: 'Alice',
       avatarColorHex: '#ff0000',
-      workspaceId: 'w1',
-      createdAt: '',
     },
     {
       id: 'p2',
       name: 'Bob',
       avatarColorHex: '#00ff00',
-      workspaceId: 'w1',
-      createdAt: '',
     },
   ];
 

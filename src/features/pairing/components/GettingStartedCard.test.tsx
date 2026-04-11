@@ -47,7 +47,9 @@ describe('GettingStartedCard', () => {
     );
 
     expect(screen.getByText(/5 of 5 done/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /all done/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /the flock is ready/i })
+    );
 
     expect(mockSetGettingStartedDismissed).toHaveBeenCalledWith(true);
   });
