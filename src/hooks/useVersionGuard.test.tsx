@@ -152,4 +152,29 @@ describe('useVersionGuard', () => {
     });
     consoleSpy.mockRestore();
   });
+
+  it('handles non-ok response during version check', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderHook(() => useVersionGuard());
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    // Should return early and not update isOutdated
+  });
+
+  it('correctly compares version strings of different lengths', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ min_required: '1.2' }),
+      })
+    );
+    // 1.2.2 vs 1.2
+    const { result } = renderHook(() => useVersionGuard());
+    await waitFor(() => expect(result.current.isOutdated).toBe(false));
+  });
 });

@@ -294,4 +294,55 @@ describe('PairingWorkspace Component', () => {
 
     expect(mockSetBoards).toHaveBeenCalled();
   });
+
+  it('toggles the add board form visibility', () => {
+    render(<PairingWorkspace />);
+
+    const addButton = screen.getByRole('button', {
+      name: /add new pairing board/i,
+    });
+    fireEvent.click(addButton);
+
+    expect(screen.getByPlaceholderText(/board name/i)).toBeInTheDocument();
+
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    expect(
+      screen.queryByPlaceholderText(/board name/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it('does not add a board with an empty name', () => {
+    render(<PairingWorkspace />);
+
+    const addButton = screen.getByRole('button', {
+      name: /add new pairing board/i,
+    });
+    fireEvent.click(addButton);
+
+    const saveButton = screen.getByRole('button', { name: /^create$/i });
+    fireEvent.click(saveButton);
+
+    // Form should still be open
+    expect(screen.getByPlaceholderText(/board name/i)).toBeInTheDocument();
+  });
+
+  it('clears selection and closes menu on Escape', () => {
+    render(<PairingWorkspace />);
+
+    // Select someone
+    fireEvent.click(screen.getByText('Alice'), { ctrlKey: true });
+    expect(screen.getByText(/1 teammate selected/i)).toBeInTheDocument();
+
+    // Open menu
+    fireEvent.click(screen.getByRole('button', { name: /move to/i }));
+    expect(screen.getByText(/select target board/i)).toBeInTheDocument();
+
+    // Press Escape
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(screen.queryByText(/1 teammate selected/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/select target board/i)).not.toBeInTheDocument();
+  });
 });

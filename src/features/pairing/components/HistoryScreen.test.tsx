@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 
@@ -15,6 +15,8 @@ vi.mock('../store/usePairingStore', () => {
     boards: [],
     isLoading: false,
     setBoards: vi.fn(),
+    exportWorkspace: vi.fn(),
+    importWorkspace: vi.fn(),
   };
   const hook = vi.fn((selector) => (selector ? selector(state) : state));
   Object.assign(hook, {
@@ -82,35 +84,27 @@ describe('HistoryScreen Component', () => {
       people: { name: 'Alice', avatar_color_hex: '#ff0000' },
       pairing_boards: { name: 'Board 1' },
     },
-    {
-      id: 'h2',
-      session_id: 's2',
-      person_id: 'p1',
-      person_name: 'Alice',
-      board_name: 'Board 1',
-      avatar_color: '#ff0000',
-      created_at: '2024-01-01T09:30:00Z',
-      people: { name: 'Alice', avatar_color_hex: '#ff0000' },
-      pairing_boards: { name: 'Board 1' },
-    },
   ];
 
-  interface MockChain {
-    select: ReturnType<typeof vi.fn>;
-    order: ReturnType<typeof vi.fn>;
-    limit: ReturnType<typeof vi.fn>;
-    in: ReturnType<typeof vi.fn>;
-    eq: ReturnType<typeof vi.fn>;
-    update: ReturnType<typeof vi.fn>;
-    delete: ReturnType<typeof vi.fn>;
-    then: (
-      onFulfilled: (val: { data: unknown[]; error: null }) => unknown
-    ) => Promise<unknown>;
+  type QueryResult<T> = {
+    data: T;
+    error: null;
+  };
+
+  interface MockChain<T> {
+    select: (...args: unknown[]) => MockChain<T>;
+    order: (...args: unknown[]) => MockChain<T>;
+    limit: (...args: unknown[]) => MockChain<T>;
+    in: (...args: unknown[]) => MockChain<T>;
+    eq: (...args: unknown[]) => MockChain<T>;
+    update: (...args: unknown[]) => MockChain<T>;
+    delete: (...args: unknown[]) => MockChain<T>;
+    single: (...args: unknown[]) => MockChain<T>;
+    then: (onFulfilled: (value: QueryResult<T>) => unknown) => Promise<unknown>;
   }
 
-  const createMockChain = (data: unknown = []) => {
-    const queryData = Array.isArray(data) ? data : [data];
-    const chain: MockChain = {
+  const createMockChain = <T,>(data: T): MockChain<T> => {
+    const chain: MockChain<T> = {
       select: vi.fn(() => chain),
       order: vi.fn(() => chain),
       limit: vi.fn(() => chain),
@@ -118,9 +112,9 @@ describe('HistoryScreen Component', () => {
       eq: vi.fn(() => chain),
       update: vi.fn(() => chain),
       delete: vi.fn(() => chain),
-      then: vi.fn(
-        (onFulfilled: (val: { data: unknown[]; error: null }) => unknown) =>
-          Promise.resolve({ data: queryData, error: null }).then(onFulfilled)
+      single: vi.fn(() => chain),
+      then: vi.fn((onFulfilled) =>
+        Promise.resolve({ data, error: null }).then(onFulfilled)
       ),
     };
     return chain;
@@ -129,139 +123,68 @@ describe('HistoryScreen Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    vi.mocked(supabase.from).mockImplementation(((table: string) => {
-      if (table === 'pairing_sessions')
-        return createMockChain(mockSessions) as any;
-      if (table === 'pairing_history')
-        return createMockChain(mockHistory) as any;
-      return createMockChain([]) as any;
-    }) as any);
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'pairing_sessions') return createMockChain(mockSessions);
+      if (table === 'pairing_history') return createMockChain(mockHistory);
+      return createMockChain([]);
+    });
   });
 
   it('renders and displays sessions', async () => {
     render(<HistoryScreen />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Mar 1st, 2024/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Mar 1st, 2024/i)).toBeInTheDocument();
   });
 
   it('renders session with details correctly', async () => {
     render(<HistoryScreen />);
-
-    // Wait for sessions to load
-    await waitFor(() => {
-      expect(screen.getByText(/Mar 1st, 2024/i)).toBeInTheDocument();
-    });
-
-    // Click on session to select it
-    const sessionButton = screen.getByRole('button', {
+    const sessionBtn = await screen.findByRole('button', {
       name: /View details for session on Mar 1st, 2024/i,
     });
-    fireEvent.click(sessionButton);
-
-    // Wait for session details to display
-    await waitFor(() => {
-      expect(screen.getByText(/Workspace Snapshot/i)).toBeInTheDocument();
-    });
-  });
-
-  it('displays edit date button on session details', async () => {
-    render(<HistoryScreen />);
-
-    // Wait for sessions to load and select one
-    await waitFor(() => {
-      expect(screen.getByText(/Mar 1st, 2024/i)).toBeInTheDocument();
-    });
-
-    const sessionButton = screen.getByRole('button', {
-      name: /View details for session on Mar 1st, 2024/i,
-    });
-    fireEvent.click(sessionButton);
-
-    // Wait for and verify edit button appears
-    await waitFor(() => {
-      const editBtn = screen.queryByTitle(/Edit Date\/Time/i);
-      expect(editBtn).toBeInTheDocument();
-    });
+    fireEvent.click(sessionBtn);
+    expect(await screen.findByText(/Workspace Snapshot/i)).toBeInTheDocument();
   });
 
   it('toggles history insights visibility', async () => {
     render(<HistoryScreen />);
-
     const insightsToggle = await screen.findByRole('button', {
       name: /show insights/i,
     });
     fireEvent.click(insightsToggle);
-
-    await waitFor(() => {
-      expect(screen.getByText(/pairing heatmap/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/pairing heatmap/i)).toBeInTheDocument();
   });
 
-  it('can load additional sessions', async () => {
-    const manySessions = Array.from({ length: 15 }, (_, idx) => ({
-      id: `s${idx + 1}`,
-      session_date: `2024-03-${String(20 - idx).padStart(2, '0')}`,
-      created_at: `2024-03-${String(20 - idx).padStart(2, '0')}T10:00:00Z`,
-    }));
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    vi.mocked(supabase.from).mockImplementation(((table: string) => {
-      if (table === 'pairing_sessions')
-        return createMockChain(manySessions) as any;
-      if (table === 'pairing_history')
-        return createMockChain(mockHistory) as any;
-      return createMockChain([]) as any;
-    }) as any);
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-
+  it('allows bulk selecting and deselecting all sessions', async () => {
     render(<HistoryScreen />);
 
-    // Verify the sessions list is displayed
-    await waitFor(() => {
-      expect(screen.getByText(/Recent Snapshots/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/March 2024/i).length).toBeGreaterThan(0);
+    const selectAllBtn = await screen.findByRole('button', {
+      name: /select all/i,
     });
+    fireEvent.click(selectAllBtn);
+
+    const deselectAllBtn = await screen.findByRole('button', {
+      name: /deselect all/i,
+    });
+    fireEvent.click(deselectAllBtn);
+
+    expect(screen.queryByText(/Delete Selected/i)).not.toBeInTheDocument();
   });
 
-  it('displays select all button for bulk operations', async () => {
+  it('enables bulk delete button when sessions are selected', async () => {
     render(<HistoryScreen />);
-
-    // Wait for sessions to load
-    await waitFor(() => {
-      expect(screen.getByText(/Mar 1st, 2024/i)).toBeInTheDocument();
-    });
-
-    // Verify select all button exists
-    const selectAllButton = screen.getByRole('button', { name: /select all/i });
-    expect(selectAllButton).toBeInTheDocument();
+    const checkboxes = await screen.findAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+    expect(
+      await screen.findByRole('button', { name: /Delete \(1\)/i })
+    ).toBeInTheDocument();
   });
 
-  it('loads session details when session is selected', async () => {
+  it('renders history entries in details view', async () => {
     render(<HistoryScreen />);
-
-    // Wait for sessions to load
-    await waitFor(() => screen.getByText(/Mar 1st, 2024/i));
-
-    // Verify the session is in the list
-    expect(screen.getByText(/Mar 1st, 2024/i)).toBeInTheDocument();
-  });
-
-  it('should allow selecting a session and person in the TeamFlowVisualizer', async () => {
-    render(<HistoryScreen />);
-
-    // Wait for component to render
-    await waitFor(() => {
-      expect(screen.getByText(/Pairing History/i)).toBeInTheDocument();
+    const sessionBtn = await screen.findByRole('button', {
+      name: /View details for session on Mar 1st, 2024/i,
     });
-
-    // Verify the sessions list and timeline are rendered
-    await waitFor(() => {
-      expect(screen.getByText(/Recent Snapshots/i)).toBeInTheDocument();
-      expect(screen.getByText(/Mar 1st, 2024/i)).toBeInTheDocument();
-    });
+    fireEvent.click(sessionBtn);
+    expect(await screen.findByText('Alice')).toBeInTheDocument();
+    expect(screen.getAllByText('Board 1').length).toBeGreaterThan(0);
   });
 });

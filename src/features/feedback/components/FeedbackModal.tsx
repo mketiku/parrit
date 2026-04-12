@@ -4,6 +4,7 @@ import { X, Bug, Lightbulb, MessageSquare, Loader2 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { useToastStore } from '../../../store/useToastStore';
+import { BuyMeACoffeeButton } from '../../../components/ui/BuyMeACoffeeButton';
 
 type FeedbackType = 'bug' | 'idea' | 'general';
 
@@ -126,6 +127,20 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
             <p className="mt-1 text-right text-xs text-neutral-400">
               {message.length}/1000
             </p>
+          </div>
+
+          <div className="pt-2">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neutral-100 dark:border-neutral-800" />
+              </div>
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+                <span className="bg-white px-3 text-neutral-400 dark:bg-neutral-900">
+                  Support the project
+                </span>
+              </div>
+            </div>
+            <BuyMeACoffeeButton className="w-full justify-center" />
           </div>
 
           {/* Actions */}

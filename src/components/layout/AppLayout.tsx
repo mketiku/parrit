@@ -7,6 +7,7 @@ import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { Toaster } from '../ui/Toaster';
 import { useThemeStore } from '../../store/useThemeStore';
 import { FeedbackModal } from '../../features/feedback/components/FeedbackModal';
+import { BuyMeACoffeeButton } from '../ui/BuyMeACoffeeButton';
 
 export default function AppLayout() {
   const { signOut, isAdmin } = useAuthStore();
@@ -179,6 +180,20 @@ export default function AppLayout() {
           </div>
 
           <div className="flex items-center gap-2">
+            <BuyMeACoffeeButton className="hidden md:flex" compact />
+            <a
+              href="https://buymeacoffee.com/mketiku"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFDD00] text-black shadow-sm transition-colors hover:bg-[#FFCC00]"
+              aria-label="Buy me a coffee"
+            >
+              <img
+                src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+                alt="BMC"
+                className="h-4 w-4"
+              />
+            </a>
             <button
               onClick={toggleDark}
               className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"

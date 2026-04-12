@@ -121,6 +121,48 @@ describe('DroppableBoard Component', () => {
     });
   });
 
+  it('cancels renaming when Escape is pressed', async () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1', name: 'Phoenix' });
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={[]} />
+      </DndContext>
+    );
+
+    const editButton = screen.getByTitle('Rename board');
+    fireEvent.click(editButton);
+
+    const input = screen.getByDisplayValue('Phoenix');
+    fireEvent.change(input, { target: { value: 'Changed' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+
+    expect(screen.queryByDisplayValue('Changed')).not.toBeInTheDocument();
+    expect(screen.getByText('Phoenix')).toBeInTheDocument();
+  });
+
+  it('cancels delete after showing confirmation', async () => {
+    mockUsePairingStore.mockReturnValue(defaultStoreValues);
+    mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
+
+    const mockBoard = createBoard({ id: 'board-1', name: 'Phoenix' });
+
+    render(
+      <DndContext>
+        <DroppableBoard board={mockBoard} people={[]} />
+      </DndContext>
+    );
+
+    fireEvent.click(screen.getByTitle(/delete board/i));
+    expect(screen.getByText(/Delete Board\?/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByText(/Delete Board\?/i)).not.toBeInTheDocument();
+  });
+
   it('calls updateBoard when toggling lock status', () => {
     mockUsePairingStore.mockReturnValue(defaultStoreValues);
     mockUseWorkspacePrefsStore.mockReturnValue(createMockWorkspacePrefsStore());
