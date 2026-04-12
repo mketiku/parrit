@@ -57,7 +57,8 @@ describe('TemplateManager Component', () => {
     vi.mocked(useToastStore).mockReturnValue({
       addToast: mockAddToast,
     });
-    vi.mocked(supabase.from).mockImplementation(() => createMockChain<[]>([]));
+    vi.mocked(supabase.from).mockImplementation((() =>
+      createMockChain<[]>([])) as never);
   });
 
   it('toggles the dropdown and loads templates', async () => {
@@ -69,9 +70,8 @@ describe('TemplateManager Component', () => {
         boards: [],
       },
     ];
-    vi.mocked(supabase.from).mockImplementation(() =>
-      createMockChain(mockTemplates)
-    );
+    vi.mocked(supabase.from).mockImplementation((() =>
+      createMockChain(mockTemplates)) as never);
 
     render(<TemplateManager />);
     fireEvent.click(screen.getByRole('button', { name: /manage templates/i }));

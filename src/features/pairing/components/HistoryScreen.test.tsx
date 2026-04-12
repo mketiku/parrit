@@ -123,11 +123,11 @@ describe('HistoryScreen Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(supabase.from).mockImplementation((table: string) => {
+    vi.mocked(supabase.from).mockImplementation(((table: string) => {
       if (table === 'pairing_sessions') return createMockChain(mockSessions);
       if (table === 'pairing_history') return createMockChain(mockHistory);
       return createMockChain([]);
-    });
+    }) as never);
   });
 
   it('renders and displays sessions', async () => {
