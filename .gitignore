@@ -47,8 +47,10 @@ supabase/.branches/
 .claude/*
 !.claude/CLAUDE.md
 !.claude/.gitignore
+!.claude/commands/
 .gemini/*
 !.gemini/GEMINI.md
+!.gemini/policies/
 .antigravity/*
 !.antigravity/ANTIGRAVITY.md
 .anthropic/
