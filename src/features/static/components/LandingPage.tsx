@@ -101,7 +101,7 @@ export function LandingPage() {
             ) : (
               <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 mb-8 shadow-sm">
                 <Bird className="h-3.5 w-3.5" />
-                Built for engineering flocks that move fast 🦜
+                Built for engineering flocks that move fast
               </div>
             )}
 

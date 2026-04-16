@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PairingBoard, Person } from '../types';
 import { Bird, Target, ShieldCheck } from 'lucide-react';
+import { sanitizeAvatarColor } from '../store/slices/helpers';
 
 interface WorkspaceDashboardDisplayProps {
   boards: PairingBoard[];
@@ -115,7 +116,11 @@ export function WorkspaceDashboardDisplay({
                       >
                         <div
                           className="flex h-7 w-7 items-center justify-center rounded-xl text-[10px] font-black text-white"
-                          style={{ backgroundColor: p.avatarColorHex }}
+                          style={{
+                            backgroundColor: sanitizeAvatarColor(
+                              p.avatarColorHex
+                            ),
+                          }}
                         >
                           {p.name.charAt(0)}
                         </div>
@@ -167,7 +172,9 @@ export function WorkspaceDashboardDisplay({
                 >
                   <div
                     className="flex h-8 w-8 items-center justify-center rounded-xl text-[11px] font-black text-white shadow-sm"
-                    style={{ backgroundColor: p.avatarColorHex }}
+                    style={{
+                      backgroundColor: sanitizeAvatarColor(p.avatarColorHex),
+                    }}
                   >
                     {p.name.charAt(0)}
                   </div>

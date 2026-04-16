@@ -20,12 +20,12 @@ interface FeatherBurstProps {
   onComplete?: () => void;
 }
 
-const DEFAULT_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#f43f5e', '#8b5cf6'];
+const DEFAULT_COLORS = ['#f59e0b', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4'];
 
 export function FeatherBurst({
   originX = typeof window !== 'undefined' ? window.innerWidth / 2 : 0,
   originY = typeof window !== 'undefined' ? window.innerHeight / 2 : 0,
-  count = 16,
+  count = 10,
   colors = DEFAULT_COLORS,
   onComplete,
 }: FeatherBurstProps) {
@@ -34,16 +34,16 @@ export function FeatherBurst({
   useEffect(() => {
     const newParticles: Particle[] = Array.from({ length: count }).map(
       (_, i) => {
-        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-        const distance = 100 + Math.random() * 150;
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+        const distance = 60 + Math.random() * 80;
         return {
           id: i,
           x: originX,
           y: originY,
           targetX: originX + Math.cos(angle) * distance,
           targetY: originY + Math.sin(angle) * distance,
-          rotate: Math.random() * 360,
-          scale: 0.5 + Math.random() * 0.5,
+          rotate: Math.random() * 180,
+          scale: 0.4 + Math.random() * 0.35,
           color: colors[i % colors.length],
         };
       }
@@ -52,7 +52,7 @@ export function FeatherBurst({
 
     const timer = setTimeout(() => {
       onComplete?.();
-    }, 1500);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, [originX, originY, count, colors, onComplete]);
@@ -64,10 +64,10 @@ export function FeatherBurst({
           <motion.div
             key={p.id}
             initial={{
-              x: p.x - 6,
-              y: p.y - 6,
-              opacity: 1,
-              scale: 0.5,
+              x: p.x - 4,
+              y: p.y - 2,
+              opacity: 0.85,
+              scale: 0.3,
               rotate: 0,
             }}
             animate={{
@@ -78,25 +78,17 @@ export function FeatherBurst({
               rotate: p.rotate,
             }}
             transition={{
-              duration: 1.2,
+              duration: 0.9,
               ease: [0.22, 1, 0.36, 1],
-              delay: Math.random() * 0.2,
+              delay: Math.random() * 0.1,
             }}
-            className="absolute h-3 w-6 rounded-full"
+            className="absolute h-1.5 w-4 rounded-full"
             style={{
               backgroundColor: p.color,
+              opacity: 0.7,
               willChange: 'transform, opacity',
             }}
-          >
-            <div
-              className="absolute inset-0 opacity-30"
-              style={{
-                backgroundImage:
-                  'linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.4) 50%)',
-                backgroundSize: '2px 100%',
-              }}
-            />
-          </motion.div>
+          />
         ))}
       </AnimatePresence>
     </div>

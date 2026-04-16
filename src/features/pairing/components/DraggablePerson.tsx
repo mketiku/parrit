@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Moon } from 'lucide-react';
 import type { Person, DragItem } from '../types';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
+import { sanitizeAvatarColor } from '../store/slices/helpers';
 
 interface DraggablePersonProps {
   person: Person;
@@ -92,14 +93,14 @@ function DraggablePersonComponent({
                 : 'ring-1 ring-black/10 dark:ring-white/20'
           }
           ${isDragging ? 'z-[100] scale-110 cursor-grabbing shadow-2xl ring-2' : 'hover:shadow-md active:scale-95 active:opacity-80 active:shadow-inner'}
-          ${isStale && !isSelected && !isOverlay ? 'animate-pulse' : ''}
+          ${isStale && !isSelected && !isOverlay ? 'animate-pulse-slow' : ''}
         `}
         onClick={(e) => {
           if (e.defaultPrevented) return;
           onClick?.(e);
         }}
         style={{
-          backgroundColor: person.avatarColorHex,
+          backgroundColor: sanitizeAvatarColor(person.avatarColorHex),
           opacity: isDragging && !isOverlay ? 0 : isExempt ? 0.4 : 1,
         }}
       >

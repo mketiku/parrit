@@ -46,6 +46,11 @@ export const useAuthStore = create<AuthState>((set) => ({
           `Workspace ${user.id.slice(0, 5)}`;
 
         role = user.app_metadata?.role || null;
+
+        // Stamp current app version into user metadata for admin visibility
+        if (user.user_metadata?.app_version !== __APP_VERSION__) {
+          supabase.auth.updateUser({ data: { app_version: __APP_VERSION__ } });
+        }
       }
 
       set({

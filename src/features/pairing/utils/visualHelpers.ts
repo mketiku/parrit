@@ -11,7 +11,6 @@ export function getGreeting(hour: number, name: string): string {
  * Board accent colors derived from ID
  */
 export const BOARD_ACCENT_COLORS = [
-  '#3b82f6', // macaw blue
   '#10b981', // tropical green
   '#f59e0b', // sunset amber
   '#f43f5e', // rose
