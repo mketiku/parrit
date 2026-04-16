@@ -77,18 +77,119 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       globals: true,
-      environment: 'jsdom',
-      setupFiles: './src/test/setup.ts',
       testTimeout: 10000,
-      exclude: ['node_modules', 'tests/e2e/**'],
+      // Auto-clear mock call history between every test — prevents subtle
+      // ordering bugs where a test passes only because a prior test set up state.
+      clearMocks: true,
+
+      // ── Speed: worker_threads — eliminates per-test fork overhead.
+      pool: 'threads',
+      maxWorkers: 8,
+
+      // ── Speed: pre-bundle heavy deps once per run instead of re-parsing
+      //    in every worker. Only include deps that are actually used in tests
+      //    (mocked modules don't benefit).
+      deps: {
+        optimizer: {
+          ssr: {
+            enabled: true,
+            include: [
+              '@tanstack/react-query',
+              'react',
+              'react-dom',
+              'zustand',
+              '@dnd-kit/core',
+              '@dnd-kit/sortable',
+            ],
+          },
+        },
+      },
+
+      projects: [
+        // ── Unit: pure Node environment — store slices, utils, helpers, algorithms.
+        //    No DOM, no framer-motion mock, no cleanup. Fastest feedback loop.
+        {
+          extends: true,
+          test: {
+            name: 'unit',
+            environment: 'node',
+            setupFiles: ['./src/test/setup-unit.ts'],
+            include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'],
+            exclude: [
+              'node_modules/**',
+              'tests/e2e/**',
+              // Tests that reference window/document — move to component tier
+              'src/features/pairing/hooks/useHistoryAnalytics.test.ts',
+              'src/store/useThemeStore.test.ts',
+            ],
+          },
+        },
+
+        // ── Component: jsdom environment — render/renderHook tests and anything
+        //    that touches window/document/localStorage.
+        {
+          extends: true,
+          test: {
+            name: 'component',
+            environment: 'jsdom',
+            setupFiles: ['./src/test/setup-component.ts'],
+            include: [
+              'src/**/*.test.tsx',
+              // Hook/store tests that use renderHook or DOM APIs
+              'src/features/pairing/hooks/useHistoryAnalytics.test.ts',
+              'src/store/useThemeStore.test.ts',
+            ],
+            exclude: ['node_modules/**'],
+          },
+        },
+      ],
+
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'json-summary', 'html'],
         thresholds: {
+          // Global floor — keeps the overall codebase healthy.
           lines: 70,
           statements: 70,
           branches: 70,
           functions: 60,
+
+          // ── Critical paths — tighter enforcement on code that is hard to
+          //    debug in production and where regressions are most costly.
+
+          // Core pairing algorithm — business logic heart of the app.
+          'src/features/pairing/utils/pairingLogic.ts': {
+            lines: 90,
+            statements: 90,
+            branches: 80,
+            functions: 90,
+          },
+          // Auth store — session/role handling, workspace name derivation.
+          'src/features/auth/store/useAuthStore.ts': {
+            lines: 90,
+            statements: 90,
+            branches: 80,
+            functions: 90,
+          },
+          // Store slices — stateful workflows (lifecycle, session, boards).
+          'src/features/pairing/store/slices/lifecycleSlice.ts': {
+            lines: 90,
+            statements: 90,
+            branches: 85,
+            functions: 90,
+          },
+          'src/features/pairing/store/slices/sessionSlice.ts': {
+            lines: 90,
+            statements: 90,
+            branches: 85,
+            functions: 90,
+          },
+          'src/features/pairing/store/slices/boardsSlice.ts': {
+            lines: 90,
+            statements: 90,
+            branches: 85,
+            functions: 90,
+          },
         },
         exclude: [
           'node_modules/',
