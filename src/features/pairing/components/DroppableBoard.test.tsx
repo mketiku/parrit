@@ -253,7 +253,9 @@ describe('DroppableBoard Component', () => {
       </DndContext>
     );
 
-    expect(screen.getByText(/shake up the flock/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/stale pair — consider rotating/i)
+    ).toBeInTheDocument();
   });
 
   it('removes the board after delete confirmation', async () => {

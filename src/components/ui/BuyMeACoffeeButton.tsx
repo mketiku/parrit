@@ -14,7 +14,7 @@ export function BuyMeACoffeeButton({
       href="https://buymeacoffee.com/mketiku"
       target="_blank"
       rel="noopener noreferrer"
-      className={`flex items-center gap-2 rounded-xl bg-[#FFDD00] font-black text-black shadow-lg shadow-yellow-500/20 transition-all hover:bg-[#FFCC00] active:scale-95 ${
+      className={`flex items-center gap-2 rounded-xl bg-neutral-100 font-semibold text-neutral-600 transition-all hover:bg-neutral-200 active:scale-95 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 ${
         compact ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
       } ${className}`}
     >

@@ -17,6 +17,7 @@ const workspaces: WorkspaceInfo[] = [
     public_view_enabled: true,
     member_count: 4,
     board_count: 2,
+    app_version: '1.2.2',
   },
   {
     id: 'workspace-2',
@@ -26,6 +27,7 @@ const workspaces: WorkspaceInfo[] = [
     public_view_enabled: false,
     member_count: 2,
     board_count: 1,
+    app_version: null,
   },
 ];
 

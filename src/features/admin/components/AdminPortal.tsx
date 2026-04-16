@@ -294,9 +294,20 @@ export function AdminPortal() {
                         >
                           {maskWorkspaceLabel(w)}
                         </h3>
-                        <p className="text-[10px] font-mono text-neutral-400 mt-1 uppercase">
-                          ID: {w.id.slice(0, 8)}...
-                        </p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className="text-[10px] font-mono text-neutral-400 uppercase">
+                            ID: {w.id.slice(0, 8)}...
+                          </p>
+                          {w.app_version ? (
+                            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                              v{w.app_version}
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
+                              unknown
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 border-t border-neutral-100 pt-4 dark:border-neutral-800">

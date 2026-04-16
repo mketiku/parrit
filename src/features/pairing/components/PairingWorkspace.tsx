@@ -862,9 +862,8 @@ export function PairingWorkspace() {
 }
 
 const UNPAIRED_QUIPS = [
-  'The nest is empty — great job! 🦜',
+  'The nest is empty — great job!',
   'All birds on boards. Champion rotation!',
-  'Zero bench, maximum velocity.',
 ];
 
 function DroppableUnpairedPool({

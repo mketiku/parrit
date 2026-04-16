@@ -5,6 +5,10 @@ import path from 'path';
 
 import { VitePWA } from 'vite-plugin-pwa';
 
+function getBuildDate(): string {
+  return new Date().toISOString().slice(0, 10); // e.g. "2026-04-15"
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isTest = mode === 'test' || process.env.VITEST === 'true';
@@ -12,6 +16,7 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+      __APP_BUILD_DATE__: JSON.stringify(getBuildDate()),
     },
     plugins: [
       react(),

@@ -19,7 +19,6 @@ import {
   GripVertical,
   AlertTriangle,
   Moon,
-  Bird,
 } from 'lucide-react';
 import { usePairingStore } from '../store/usePairingStore';
 import { useWorkspacePrefsStore } from '../../../store/useWorkspacePrefsStore';
@@ -206,12 +205,9 @@ function DroppableBoardComponent({
               'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(245, 158, 11, 0.03) 8px, rgba(245, 158, 11, 0.03) 16px)',
           }}
         >
-          <div className="flex shrink-0 items-center gap-1">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-            <Bird className="h-3 w-3 text-amber-400" />
-          </div>
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
           <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 leading-tight">
-            These two have been glued together — shake up the flock! 🦜
+            Stale pair — consider rotating
           </span>
         </motion.div>
       )}

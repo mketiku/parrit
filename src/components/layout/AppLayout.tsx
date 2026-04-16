@@ -185,7 +185,7 @@ export default function AppLayout() {
               href="https://buymeacoffee.com/mketiku"
               target="_blank"
               rel="noopener noreferrer"
-              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFDD00] text-black shadow-sm transition-colors hover:bg-[#FFCC00]"
+              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
               aria-label="Buy me a coffee"
             >
               <img
@@ -278,9 +278,12 @@ export default function AppLayout() {
             </button>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-0.5">
             <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
               v{__APP_VERSION__}
+            </span>
+            <span className="text-[10px] text-neutral-400 dark:text-neutral-600">
+              {__APP_BUILD_DATE__}
             </span>
           </div>
 

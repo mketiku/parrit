@@ -16,6 +16,7 @@ export interface WorkspaceInfo {
   public_view_enabled: boolean;
   member_count: number;
   board_count: number;
+  app_version: string | null;
 }
 
 export interface AdminStats {

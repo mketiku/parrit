@@ -6,6 +6,16 @@ import type {
   SnapshotData,
 } from '../../types';
 
+// Colors that have been retired because they conflict with app UI (e.g. brand buttons).
+// Maps old hex → replacement hex so existing DB records are remapped at render time.
+const RETIRED_AVATAR_COLORS: Record<string, string> = {
+  '#3b82f6': '#6366f1', // blue → indigo
+};
+
+export function sanitizeAvatarColor(hex: string): string {
+  return RETIRED_AVATAR_COLORS[hex.toLowerCase()] ?? hex;
+}
+
 export const AVATAR_COLORS = [
   '#6366f1',
   '#ec4899',
@@ -13,10 +23,10 @@ export const AVATAR_COLORS = [
   '#f59e0b',
   '#22c55e',
   '#ef4444',
-  '#3b82f6',
   '#a855f7',
   '#f97316',
   '#06b6d4',
+  '#84cc16',
 ];
 
 export function rowToPerson(row: PersonRecord): Person {

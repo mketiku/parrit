@@ -7,6 +7,7 @@ import {
   MessageCircleQuestion,
   ArrowRight,
   Code2,
+  Coffee,
 } from 'lucide-react';
 
 export function AboutScreen() {
@@ -208,6 +209,15 @@ export function AboutScreen() {
               >
                 <Linkedin className="h-5 w-5" />
                 LinkedIn
+              </a>
+              <a
+                href="https://buymeacoffee.com/mketiku"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 rounded-2xl border border-white/20 px-8 py-4 font-bold text-white transition-all hover:bg-white/10 active:scale-95"
+              >
+                <Coffee className="h-5 w-5" />
+                Support the project
               </a>
             </div>
           </div>
