@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PublicView } from './PublicView';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { supabase } from '../../../lib/supabase';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { renderWithProviders } from '../../../test/utils';
 import React from 'react';
+
+const ROUTE = '/view/:shareToken';
+const VALID_TOKEN = '550e8400-e29b-41d4-a716-446655440000';
 
 // Mock child component to focus on PublicView logic
 vi.mock('./WorkspaceDashboardDisplay', () => ({
@@ -33,23 +36,19 @@ describe('PublicView Component', () => {
   };
 
   it('should show loading spinner while auth is resolving', () => {
-    setupAuth(false, true); // Admin=false, Loading=true
+    setupAuth(false, true);
 
-    render(
-      <MemoryRouter initialEntries={['/view/test-token']}>
-        <Routes>
-          <Route path="/view/:shareToken" element={<PublicView />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderWithProviders(<PublicView />, {
+      route: `/view/test-token`,
+      path: ROUTE,
+    });
 
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('should show Access Restricted if workspace is private and user is not admin', async () => {
-    setupAuth(false, false); // Not admin, not loading
+    setupAuth(false, false);
 
-    // Mock private settings
     (supabase.from as any).mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -58,15 +57,10 @@ describe('PublicView Component', () => {
       }),
     });
 
-    render(
-      <MemoryRouter
-        initialEntries={['/view/550e8400-e29b-41d4-a716-446655440000']}
-      >
-        <Routes>
-          <Route path="/view/:shareToken" element={<PublicView />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderWithProviders(<PublicView />, {
+      route: `/view/${VALID_TOKEN}`,
+      path: ROUTE,
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Access Restricted')).toBeInTheDocument();
@@ -74,9 +68,8 @@ describe('PublicView Component', () => {
   });
 
   it('should bypass restriction and show data if user is an admin', async () => {
-    setupAuth(true, false); // IS ADMIN, not loading
+    setupAuth(true, false);
 
-    // Mock private settings
     (supabase.from as any).mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -85,21 +78,15 @@ describe('PublicView Component', () => {
       }),
     });
 
-    // Mock successful RPC for admin data
     (supabase.rpc as any).mockResolvedValue({
       data: { people: [], boards: [] },
       error: null,
     });
 
-    render(
-      <MemoryRouter
-        initialEntries={['/view/550e8400-e29b-41d4-a716-446655440000']}
-      >
-        <Routes>
-          <Route path="/view/:shareToken" element={<PublicView />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderWithProviders(<PublicView />, {
+      route: `/view/${VALID_TOKEN}`,
+      path: ROUTE,
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId('dashboard')).toBeInTheDocument();
@@ -109,13 +96,10 @@ describe('PublicView Component', () => {
   it('should show Access Restricted for invalid share token format', async () => {
     setupAuth(false, false);
 
-    render(
-      <MemoryRouter initialEntries={['/view/invalid-token-format']}>
-        <Routes>
-          <Route path="/view/:shareToken" element={<PublicView />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderWithProviders(<PublicView />, {
+      route: `/view/invalid-token-format`,
+      path: ROUTE,
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Access Restricted')).toBeInTheDocument();
@@ -132,15 +116,10 @@ describe('PublicView Component', () => {
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
     });
 
-    render(
-      <MemoryRouter
-        initialEntries={['/view/550e8400-e29b-41d4-a716-446655440000']}
-      >
-        <Routes>
-          <Route path="/view/:shareToken" element={<PublicView />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderWithProviders(<PublicView />, {
+      route: `/view/${VALID_TOKEN}`,
+      path: ROUTE,
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Access Restricted')).toBeInTheDocument();
@@ -170,15 +149,10 @@ describe('PublicView Component', () => {
       },
     }));
 
-    render(
-      <MemoryRouter
-        initialEntries={['/view/550e8400-e29b-41d4-a716-446655440000']}
-      >
-        <Routes>
-          <Route path="/view/:shareToken" element={<PublicView />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderWithProviders(<PublicView />, {
+      route: `/view/${VALID_TOKEN}`,
+      path: ROUTE,
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId('dashboard')).toBeInTheDocument();
