@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 import { render, renderHook } from '@testing-library/react';
 import type { RenderOptions, RenderHookOptions } from '@testing-library/react';
