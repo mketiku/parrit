@@ -7,10 +7,10 @@
     "node": ">=24"
   },
   "scripts": {
-    "db": "supabase start -x studio,mailpit,logflare,vector,imgproxy",
+    "db": "supabase start -x mailpit,logflare,vector,imgproxy,studio",
     "db:admin": "supabase start",
     "db:stop": "supabase stop",
-    "db:restart": "supabase stop && supabase start -x studio,mailpit,logflare,vector,imgproxy",
+    "db:restart": "supabase stop && supabase start -x mailpit,logflare,vector,imgproxy,studio",
     "db:reset": "supabase db reset",
     "dev": "vite",
     "build": "tsc && vite build",
