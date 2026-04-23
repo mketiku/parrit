@@ -82,7 +82,7 @@ This guide defines the architectural and code quality standards for the **Parrit
 
 - **Formatting**: Code MUST be formatted with Prettier and linted with ESLint before any push. Run `npm run lint`.
 - **Pre-push gate**: Lint → typecheck → tests + coverage → build. All must pass. See `.agents/skills/validation.md`.
-- **Clean Commits**: Follow the **Conventional Commits** specification:
+- **Clean Commits**: Follow the **Conventional Commits** specification. Always a single line — no multi-line bodies.
   - `feat`: new feature for the user
   - `fix`: bug fix for the user
   - `docs`: documentation changes
@@ -91,6 +91,10 @@ This guide defines the architectural and code quality standards for the **Parrit
   - `test`: adding or fixing tests; no production code change
   - `chore`: tooling, config, deps
   - Example: `feat(pairing): add bulk move functionality` or `fix(auth): resolve session timeout on mobile`
+  - **One intent per commit**: if you need a comma or "and" to describe the change, either split the commit or find the single phrase that unifies both changes.
+  - **No implementation noise**: omit "across N files", "across N places", file counts, or similar — the diff shows that.
+  - **No visual/positional detail**: positional or styling descriptions belong in the PR body, not the commit.
+  - **No vague qualifiers**: avoid trailing phrases like "and hardening", "and tighten", "and cleanup" — name the actual change.
 - **Skip CI for non-code changes**: Append `[skip ci]` to commit messages when pushing docs, ADRs, or any change that doesn't affect the running app. This prevents a Vercel build from firing unnecessarily.
   - Examples: `docs: update architecture notes [skip ci]`, `chore: update AGENTS.md [skip ci]`
 

@@ -83,6 +83,24 @@ git push
 
 ---
 
+### 7. Pull Request (when raising one)
+
+```bash
+gh pr create --draft --title "type(scope): summary" --body "$(cat <<'EOF'
+## Summary
+- ...
+
+## Test plan
+- [ ] ...
+EOF
+)"
+```
+
+**Rules:**
+
+- Always `--draft`. Never open a ready-for-review PR directly.
+- Never include `claude.ai/code/session_*` URLs anywhere in the PR.
+
 ## Rules
 
 - Never use `--no-verify` unless the user explicitly asks.
