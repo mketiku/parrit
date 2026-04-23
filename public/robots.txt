@@ -8,8 +8,7 @@ Allow: /about
 Allow: /guide
 Allow: /view/
 Disallow: /admin
-Disallow: /app/
-Disallow: /login
+Disallow: /app
 
 # -------------------------------------------------------
 # Standard search engine crawlers — same rules, named
@@ -24,8 +23,7 @@ Allow: /about
 Allow: /guide
 Allow: /view/
 Disallow: /admin
-Disallow: /app/
-Disallow: /login
+Disallow: /app
 
 # -------------------------------------------------------
 # AI training crawlers — blocked entirely.
