@@ -38,7 +38,8 @@ I wanted to build a modern successor that felt "alive"—using real-time sync, a
 
 ### Prerequisites
 
-- Node.js (v18+)
+- Node.js 24+ (ships with npm, used to install Bun)
+- Bun — `npm install -g bun`
 - A [Supabase](https://supabase.com/) project
 
 ### 1. Clone and install
@@ -46,7 +47,7 @@ I wanted to build a modern successor that felt "alive"—using real-time sync, a
 ```bash
 git clone https://github.com/mketiku/parrit.git
 cd parrit
-npm install
+bun install
 ```
 
 ### 2. Configure environment variables
@@ -77,7 +78,7 @@ Then in **Supabase → Authentication → Providers → Email**, disable:
 ### 4. Start the development server
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 ## Project Structure
@@ -121,7 +122,7 @@ git push -u origin main
 Go to [vercel.com/new](https://vercel.com/new), import the GitHub repository.
 
 - Framework: **Vite** (auto-detected)
-- Build command: `npm run build`
+- Build command: `bun run build`
 - Output directory: `dist`
 
 **3. Set environment variables**

@@ -20,9 +20,9 @@ By participating in this project, you agree to abide by our Code of Conduct. We 
 ## Development Setup
 
 1. Follow the local setup instructions in the [README.md](README.md).
-2. Run `npm install` to get dependencies.
-3. Run `npm run dev` to start the development server.
-4. Run `npm run test` to ensure all tests pass before submitting.
+2. Run `bun install` to get dependencies.
+3. Run `bun run dev` to start the development server.
+4. Run `bun test` to ensure all tests pass before submitting.
 
 ## Acknowledgements
 

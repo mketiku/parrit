@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.2.3",
   "type": "module",
+  "packageManager": "bun@1.3.12",
   "engines": {
     "node": ">=24"
   },
@@ -25,10 +26,14 @@
     "test:watch:component": "vitest watch --project component",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "capture:screenshots": "node scripts/capture-screenshots.mjs",
+    "capture:screenshots:local": "BASE_URL=http://localhost:5173 node scripts/capture-screenshots.mjs",
+    "capture:video": "node scripts/capture-video.mjs",
+    "capture:video:local": "BASE_URL=http://localhost:5173 node scripts/capture-video.mjs",
     "prepare": "husky",
-    "release:patch": "npm version patch -m \"chore(release): bump version to v%s\"",
-    "release:minor": "npm version minor -m \"chore(release): bump version to v%s\"",
-    "preversion": "npm run lint && npm run test && npm run typecheck",
+    "release:patch": "bun pm version patch -m \"chore(release): bump version to v%s\"",
+    "release:minor": "bun pm version minor -m \"chore(release): bump version to v%s\"",
+    "preversion": "bun run lint && bun run test && bun run typecheck",
     "version": "node scripts/update-version.js && git add public/version.json",
     "postversion": "git push && git push --tags"
   },
@@ -71,7 +76,6 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "fast-check": "^4.6.0",
@@ -90,11 +94,14 @@
     "vitest": "^3.0.7"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": [
+    "*.{ts,tsx}": [
       "eslint --fix",
-      "prettier --write"
+      "vitest related --run --project=unit"
     ],
-    "*.{css,md,json}": [
+    "*.{js,jsx}": [
+      "eslint --fix"
+    ],
+    "*.{ts,tsx,js,jsx,css,md,json}": [
       "prettier --write"
     ]
   },
